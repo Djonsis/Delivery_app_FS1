@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FastBasketIcon } from "@/components/icons";
+import { FastBasketIcon, UserProfileIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, User } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { Cart } from "@/components/cart";
 
@@ -61,7 +61,7 @@ export default function SiteHeader() {
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="https://placehold.co/100x100.png" />
                   <AvatarFallback>
-                    <User className="h-5 w-5" />
+                    <UserProfileIcon className="h-5 w-5" />
                   </AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Меню пользователя</span>
