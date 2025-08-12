@@ -28,6 +28,15 @@ export default function ProductCatalog() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Все");
   const [sortOption, setSortOption] = useState<SortOption>("popularity");
+  const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({});
+
+  const handlePriceChange = (field: 'min' | 'max', value: string) => {
+    const numValue = value ? parseFloat(value) : undefined;
+    setPriceRange(prev => ({...prev, [field]: numValue }));
+  }
+
+  const isPriceFilterActive = priceRange.min !== undefined || priceRange.max !== undefined;
+
 
   const sortProducts = (products: Product[], option: SortOption): Product[] => {
     switch (option) {
@@ -54,10 +63,19 @@ export default function ProductCatalog() {
       )
       .filter((product) =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      )
+       .filter(product => {
+        if (priceRange.min !== undefined && product.price < priceRange.min) {
+          return false;
+        }
+        if (priceRange.max !== undefined && product.price > priceRange.max) {
+          return false;
+        }
+        return true;
+      });
     
     return sortProducts(filtered, sortOption);
-  }, [searchTerm, selectedCategory, sortOption]);
+  }, [searchTerm, selectedCategory, sortOption, priceRange]);
 
   return (
     <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
@@ -105,9 +123,37 @@ export default function ProductCatalog() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button variant="outline" size="icon" className="shrink-0">
-          <SlidersHorizontal className="h-4 w-4" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="shrink-0 relative">
+              <SlidersHorizontal className="h-4 w-4" />
+              {isPriceFilterActive && (
+                 <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-primary border-2 border-background" />
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56 p-4">
+             <DropdownMenuLabel className="p-0">Цена</DropdownMenuLabel>
+             <div className="mt-4 flex items-center gap-2">
+                <Input 
+                  type="number" 
+                  placeholder="от" 
+                  value={priceRange.min ?? ''} 
+                  onChange={(e) => handlePriceChange('min', e.target.value)}
+                  className="h-9"
+                />
+                <span className="text-muted-foreground">-</span>
+                 <Input 
+                  type="number" 
+                  placeholder="до"
+                  value={priceRange.max ?? ''} 
+                  onChange={(e) => handlePriceChange('max', e.target.value)}
+                  className="h-9"
+                />
+             </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <ScrollArea className="w-full whitespace-nowrap">
           <div className="flex w-max space-x-2">
             <Button
