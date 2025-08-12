@@ -89,10 +89,10 @@ export default function ProductCatalog() {
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="flex-1">
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Вкусная грядка
+            🥦😋 Вкусная грядка
           </h1>
           <p className="mt-2 text-lg text-muted-foreground">
-            Доставка свежих фруктов и овощей в Сочи
+            Доставка свежих фруктов и овощей в Сочи 🍎
           </p>
         </div>
         <div className="relative w-full md:w-72">
