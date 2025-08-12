@@ -17,13 +17,23 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addToCart, updateQuantity, getCartItem } = useCart();
   const cartItem = getCartItem(product.id);
 
+  const getPrecision = (step: number) => {
+    const stepStr = step.toString();
+    if (stepStr.includes('.')) {
+      return stepStr.split('.')[1].length;
+    }
+    return 0;
+  };
+  const precision = getPrecision(product.step_quantity);
+
   const handleQuantityChange = (newQuantity: number) => {
+    const roundedQuantity = parseFloat(newQuantity.toFixed(precision));
     // Ensure quantity is not less than the minimum order quantity
-    if (newQuantity < 0) return;
-    if (newQuantity > 0 && newQuantity < product.min_order_quantity) {
+    if (roundedQuantity < 0) return;
+    if (roundedQuantity > 0 && roundedQuantity < product.min_order_quantity) {
       updateQuantity(product.id, product.min_order_quantity);
     } else {
-      updateQuantity(product.id, newQuantity);
+      updateQuantity(product.id, roundedQuantity);
     }
   };
 
@@ -36,7 +46,7 @@ export function ProductCard({ product }: ProductCardProps) {
     }
     const quantity = parseFloat(value);
     if (!isNaN(quantity) && quantity >= 0) {
-      handleQuantityChange(quantity);
+      updateQuantity(product.id, quantity); // Directly update, onBlur will handle final validation
     }
   };
 
@@ -45,7 +55,8 @@ export function ProductCard({ product }: ProductCardProps) {
     if (currentQuantity === 0) {
       handleQuantityChange(product.min_order_quantity);
     } else {
-      handleQuantityChange(currentQuantity + product.step_quantity);
+      const newQuantity = currentQuantity + product.step_quantity;
+      handleQuantityChange(newQuantity);
     }
   };
   
@@ -59,6 +70,8 @@ export function ProductCard({ product }: ProductCardProps) {
       }
     }
   };
+
+  const displayedQuantity = cartItem?.quantity ? (cartItem.quantity.toFixed(precision)) : '0';
 
   return (
     <Card className="flex h-full flex-col overflow-hidden rounded-xl shadow-sm transition-shadow hover:shadow-lg">
@@ -96,13 +109,13 @@ export function ProductCard({ product }: ProductCardProps) {
                 type="number"
                 min="0"
                 step={product.step_quantity}
-                value={cartItem.quantity}
+                value={displayedQuantity}
                 onChange={handleInputChange}
                 onBlur={(e) => {
                   const quantity = parseFloat(e.target.value);
-                  if (!isNaN(quantity) && quantity > 0 && quantity < product.min_order_quantity) {
-                    updateQuantity(product.id, product.min_order_quantity);
-                  } else if (isNaN(quantity) || quantity <= 0) {
+                  if (!isNaN(quantity)) {
+                    handleQuantityChange(quantity);
+                  } else {
                     updateQuantity(product.id, 0);
                   }
                 }}

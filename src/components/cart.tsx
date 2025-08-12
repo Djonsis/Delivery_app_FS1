@@ -20,6 +20,14 @@ export function Cart() {
     });
   };
 
+  const getPrecision = (step: number) => {
+    const stepStr = step.toString();
+    if (stepStr.includes('.')) {
+      return stepStr.split('.')[1].length;
+    }
+    return 0;
+  };
+
   return (
     <>
       <SheetHeader>
@@ -30,58 +38,81 @@ export function Cart() {
         <div className="flex h-full flex-col justify-between">
           <ScrollArea className="flex-1 pr-4">
             <div className="flex flex-col gap-6">
-              {cartItems.map(({ product, quantity }) => (
-                <div key={product.id} className="flex items-center gap-4">
-                  <div className="relative h-20 w-20 overflow-hidden rounded-md">
-                    <Image
-                      src={product.imageUrl}
-                      alt={product.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium">{product.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {Math.round(product.price)} ₽
-                    </p>
-                    <div className="mt-2 flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => updateQuantity(product.id, quantity - product.step_quantity)}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <Input
-                        type="number"
-                        value={quantity}
-                        onChange={(e) => updateQuantity(product.id, parseFloat(e.target.value) || 0)}
-                        className="h-7 w-12 text-center"
-                        step={product.step_quantity}
-                        min={0}
+              {cartItems.map(({ product, quantity }) => {
+                const precision = getPrecision(product.step_quantity);
+                const displayedQuantity = quantity.toFixed(precision);
+
+                return (
+                  <div key={product.id} className="flex items-center gap-4">
+                    <div className="relative h-20 w-20 overflow-hidden rounded-md">
+                      <Image
+                        src={product.imageUrl}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
                       />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => updateQuantity(product.id, quantity + product.step_quantity)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
                     </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium">{product.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {Math.round(product.price)} ₽
+                      </p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => {
+                            const newQuantity = parseFloat((quantity - product.step_quantity).toFixed(precision));
+                            updateQuantity(product.id, newQuantity)
+                          }}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <Input
+                          type="number"
+                          value={displayedQuantity}
+                          onChange={(e) => updateQuantity(product.id, parseFloat(e.target.value) || 0)}
+                          onBlur={(e) => {
+                            const value = parseFloat(e.target.value);
+                            if (!isNaN(value)) {
+                               if (value > 0 && value < product.min_order_quantity) {
+                                  updateQuantity(product.id, product.min_order_quantity);
+                               } else {
+                                  updateQuantity(product.id, parseFloat(value.toFixed(precision)));
+                               }
+                            } else {
+                                updateQuantity(product.id, 0);
+                            }
+                          }}
+                          className="h-7 w-12 text-center"
+                          step={product.step_quantity}
+                          min={0}
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => {
+                            const newQuantity = parseFloat((quantity + product.step_quantity).toFixed(precision));
+                            updateQuantity(product.id, newQuantity)
+                          }}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground"
+                      onClick={() => removeFromCart(product.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground"
-                    onClick={() => removeFromCart(product.id)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </ScrollArea>
           <SheetFooter className="mt-6">
