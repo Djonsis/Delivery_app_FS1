@@ -15,9 +15,9 @@ const categories = [
 export default function CategoryGrid() {
     return (
         <div className="mt-12">
-            <div className="grid grid-cols-3 gap-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-6">
+            <div className="grid grid-cols-3 gap-6 sm:grid-cols-3 md:gap-8 lg:grid-cols-6">
                 {categories.map((category) => (
-                    <Link key={category.name} href={category.href} className="group relative flex flex-col items-center justify-center text-center">
+                    <Link key={category.name} href={category.href} className="group relative flex flex-col items-center text-center">
                         <div className="relative aspect-square w-full overflow-hidden rounded-lg sm:aspect-[4/3]">
                              <Image
                                 src={category.imageUrl}
@@ -27,7 +27,7 @@ export default function CategoryGrid() {
                                 data-ai-hint={category.hint}
                             />
                         </div>
-                        <span className="mt-2 text-sm font-medium text-foreground group-hover:text-primary">{category.name}</span>
+                        <span className="mt-2 flex h-10 items-center justify-center text-sm font-medium text-foreground group-hover:text-primary">{category.name}</span>
                     </Link>
                 ))}
             </div>
