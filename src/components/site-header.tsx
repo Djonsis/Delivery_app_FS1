@@ -23,7 +23,7 @@ import { useCart } from "@/hooks/use-cart";
 import { Cart } from "@/components/cart";
 
 export default function SiteHeader() {
-  const { itemCount } = useCart();
+  const { cartTotal } = useCart();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -40,12 +40,12 @@ export default function SiteHeader() {
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
-                {itemCount > 0 && (
+                {cartTotal > 0 && (
                   <Badge
                     variant="destructive"
-                    className="absolute -right-2 -top-2 h-5 w-5 justify-center rounded-full p-0 text-xs"
+                    className="absolute -right-4 -top-2 h-auto w-auto justify-center rounded-full px-2 py-0.5 text-xs"
                   >
-                    {itemCount}
+                    ${cartTotal.toFixed(2)}
                   </Badge>
                 )}
                 <span className="sr-only">Open cart</span>
