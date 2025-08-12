@@ -59,7 +59,6 @@ export default function SiteHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="https://placehold.co/100x100.png" />
                   <AvatarFallback>
                     <UserProfileIcon className="h-5 w-5" />
                   </AvatarFallback>
