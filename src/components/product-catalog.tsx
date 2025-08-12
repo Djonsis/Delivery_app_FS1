@@ -35,6 +35,13 @@ export default function ProductCatalog() {
     setPriceRange(prev => ({...prev, [field]: numValue }));
   }
 
+  const handleResetFilters = () => {
+    setSearchTerm('');
+    setSelectedCategory('Все');
+    setSortOption('popularity');
+    setPriceRange({});
+  }
+
   const isPriceFilterActive = priceRange.min !== undefined || priceRange.max !== undefined;
 
 
@@ -132,9 +139,14 @@ export default function ProductCatalog() {
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 p-4">
-             <DropdownMenuLabel className="p-0">Цена</DropdownMenuLabel>
-             <div className="mt-4 flex items-center gap-2">
+          <DropdownMenuContent className="w-64 p-4">
+             <div className="flex justify-between items-center mb-4">
+                <DropdownMenuLabel className="p-0 font-bold">Цена</DropdownMenuLabel>
+                <Button variant="ghost" size="sm" onClick={handleResetFilters} className="h-auto p-1 text-xs">
+                    Сброс
+                </Button>
+             </div>
+             <div className="flex items-center gap-2">
                 <Input 
                   type="number" 
                   placeholder="от" 
