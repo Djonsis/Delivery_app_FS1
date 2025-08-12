@@ -9,12 +9,12 @@ import { Search } from "lucide-react";
 
 export default function ProductCatalog() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("Все");
 
   const filteredProducts = useMemo(() => {
     return products
       .filter((product) =>
-        selectedCategory === "All" ? true : product.category === selectedCategory
+        selectedCategory === "Все" ? true : product.category === selectedCategory
       )
       .filter((product) =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -26,17 +26,17 @@ export default function ProductCatalog() {
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="flex-1">
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Fresh Picks for You
+            Свежие продукты для вас
           </h1>
           <p className="mt-2 text-lg text-muted-foreground">
-            Browse our curated selection of high-quality groceries.
+            Ознакомьтесь с нашим тщательно подобранным выбором высококачественных продуктов.
           </p>
         </div>
         <div className="relative w-full md:w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search products..."
+            placeholder="Искать продукты..."
             className="w-full rounded-full pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -50,7 +50,7 @@ export default function ProductCatalog() {
         className="mt-8"
       >
         <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:grid-flow-col">
-          <TabsTrigger value="All">All</TabsTrigger>
+          <TabsTrigger value="Все">Все</TabsTrigger>
           {categories.map((category) => (
             <TabsTrigger key={category} value={category}>
               {category}
@@ -66,8 +66,8 @@ export default function ProductCatalog() {
       </div>
       {filteredProducts.length === 0 && (
         <div className="col-span-full mt-16 flex flex-col items-center justify-center">
-            <p className="text-lg text-muted-foreground">No products found.</p>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+            <p className="text-lg text-muted-foreground">Продукты не найдены.</p>
+            <p className="text-sm text-muted-foreground">Попробуйте изменить поиск или фильтры.</p>
         </div>
       )}
     </div>

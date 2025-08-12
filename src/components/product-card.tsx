@@ -35,11 +35,11 @@ export function ProductCard({ product }: ProductCardProps) {
         <CardTitle className="mt-1 text-lg font-semibold">{product.name}</CardTitle>
         <div className="mt-2 flex items-center gap-2">
           <StarRating rating={product.rating} />
-          <span className="text-xs text-muted-foreground">({product.reviews} reviews)</span>
+          <span className="text-xs text-muted-foreground">({product.reviews} отзывов)</span>
         </div>
         <CardDescription className="mt-2 flex-1 text-sm">{product.description}</CardDescription>
         <div className="mt-4 flex items-baseline justify-between">
-          <p className="text-2xl font-bold text-primary">${product.price.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-primary">{product.price.toFixed(2)} ₽</p>
           {product.weight && <p className="text-sm text-muted-foreground">{product.weight}</p>}
         </div>
       </CardContent>
@@ -67,7 +67,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         ) : (
           <Button className="w-full" onClick={() => addToCart(product)}>
-            Add to Cart
+            Добавить в корзину
           </Button>
         )}
       </CardFooter>

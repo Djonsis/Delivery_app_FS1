@@ -30,7 +30,7 @@ export default function SiteHeader() {
       <div className="container flex h-16 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <FastBasketIcon className="h-6 w-6 text-primary" />
-          <span className="hidden font-bold sm:inline-block">FastBasket</span>
+          <span className="hidden font-bold sm:inline-block">БыстраяКорзина</span>
         </Link>
         <nav className="flex-1">
           {/* Add nav links here if needed */}
@@ -45,10 +45,10 @@ export default function SiteHeader() {
                     variant="destructive"
                     className="absolute -right-4 -top-2 h-auto w-auto justify-center rounded-full px-2 py-0.5 text-xs"
                   >
-                    ${cartTotal.toFixed(2)}
+                    {cartTotal.toFixed(2)} ₽
                   </Badge>
                 )}
-                <span className="sr-only">Open cart</span>
+                <span className="sr-only">Открыть корзину</span>
               </Button>
             </SheetTrigger>
             <SheetContent className="flex w-full flex-col sm:max-w-md">
@@ -64,17 +64,17 @@ export default function SiteHeader() {
                     <User className="h-5 w-5" />
                   </AvatarFallback>
                 </Avatar>
-                <span className="sr-only">User menu</span>
+                <span className="sr-only">Меню пользователя</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>Мой аккаунт</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Orders</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem>Профиль</DropdownMenuItem>
+              <DropdownMenuItem>Заказы</DropdownMenuItem>
+              <DropdownMenuItem>Настройки</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Log Out</DropdownMenuItem>
+              <DropdownMenuItem>Выйти</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

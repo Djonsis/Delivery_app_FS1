@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { CartProvider } from '@/contexts/cart-context';
 
 export const metadata: Metadata = {
-  title: 'FastBasket',
-  description: 'A fresh way to shop for groceries online.',
+  title: 'БыстраяКорзина',
+  description: 'Свежий взгляд на покупку продуктов онлайн.',
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ru" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

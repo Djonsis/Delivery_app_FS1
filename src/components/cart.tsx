@@ -15,15 +15,15 @@ export function Cart() {
 
   const handleCheckout = () => {
     toast({
-      title: "Checkout Initiated",
-      description: "Your order has been placed and is awaiting confirmation.",
+      title: "Оформление заказа",
+      description: "Ваш заказ был размещен и ожидает подтверждения.",
     });
   };
 
   return (
     <>
       <SheetHeader>
-        <SheetTitle>Shopping Cart ({itemCount})</SheetTitle>
+        <SheetTitle>Корзина ({itemCount})</SheetTitle>
       </SheetHeader>
       <Separator className="my-4" />
       {cartItems.length > 0 ? (
@@ -43,7 +43,7 @@ export function Cart() {
                   <div className="flex-1">
                     <h3 className="font-medium">{product.name}</h3>
                     <p className="text-sm text-muted-foreground">
-                      ${product.price.toFixed(2)}
+                      {product.price.toFixed(2)} ₽
                     </p>
                     <div className="mt-2 flex items-center gap-2">
                       <Button
@@ -86,18 +86,18 @@ export function Cart() {
             <div className="flex w-full flex-col gap-4">
               <Separator />
               <div className="flex justify-between text-lg font-semibold">
-                <span>Subtotal</span>
-                <span>${cartTotal.toFixed(2)}</span>
+                <span>Итого</span>
+                <span>{cartTotal.toFixed(2)} ₽</span>
               </div>
               <Button size="lg" onClick={handleCheckout}>
-                Initiate Checkout
+                Оформить заказ
               </Button>
             </div>
           </SheetFooter>
         </div>
       ) : (
         <div className="flex h-full flex-col items-center justify-center gap-4">
-          <p className="text-muted-foreground">Your cart is empty.</p>
+          <p className="text-muted-foreground">Ваша корзина пуста.</p>
         </div>
       )}
     </>
