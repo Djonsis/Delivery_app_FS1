@@ -72,9 +72,15 @@ export function Cart() {
                         <Input
                           type="number"
                           value={displayedQuantity}
-                          onChange={(e) => updateQuantity(product.id, parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(',', '.');
+                             if (value.includes('.') && value.split('.')[1].length > precision) {
+                                return;
+                             }
+                            updateQuantity(product.id, parseFloat(value) || 0)
+                          }}
                           onBlur={(e) => {
-                            const value = parseFloat(e.target.value);
+                             const value = parseFloat(e.target.value.replace(',', '.'));
                             if (!isNaN(value)) {
                                if (value > 0 && value < product.min_order_quantity) {
                                   updateQuantity(product.id, product.min_order_quantity);
@@ -82,7 +88,7 @@ export function Cart() {
                                   updateQuantity(product.id, parseFloat(value.toFixed(precision)));
                                }
                             } else {
-                                updateQuantity(product.id, 0);
+                                updateQuantity(product.id, quantity);
                             }
                           }}
                           className="h-7 w-12 text-center"

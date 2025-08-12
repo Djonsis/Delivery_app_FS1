@@ -29,9 +29,10 @@ export function ProductCard({ product }: ProductCardProps) {
   const precision = getPrecision(product.step_quantity);
 
   const handleQuantityChange = (newQuantity: number) => {
-    const roundedQuantity = parseFloat(newQuantity.toFixed(precision));
-    if (roundedQuantity < 0) return;
+    if (newQuantity < 0) return;
     
+    let roundedQuantity = parseFloat(newQuantity.toFixed(precision));
+
     if (roundedQuantity > 0 && roundedQuantity < product.min_order_quantity) {
       updateQuantity(product.id, product.min_order_quantity);
     } else {
@@ -41,15 +42,20 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+     if (value.includes('.') && value.split('.')[1].length > precision) {
+      return;
+    }
     setInputValue(value);
   };
 
   const handleInputBlur = () => {
-    const quantity = parseFloat(inputValue.toString());
+    let quantity = parseFloat(inputValue.toString().replace(',', '.'));
     if (!isNaN(quantity)) {
       handleQuantityChange(quantity);
     } else {
-      updateQuantity(product.id, 0);
+      if (cartItem) {
+        updateQuantity(product.id, cartItem.quantity);
+      }
     }
     setInputValue(''); // Reset local state
   };
@@ -59,14 +65,14 @@ export function ProductCard({ product }: ProductCardProps) {
     if (currentQuantity === 0) {
       handleQuantityChange(product.min_order_quantity);
     } else {
-      const newQuantity = currentQuantity + product.step_quantity;
+      const newQuantity = parseFloat((currentQuantity + product.step_quantity).toFixed(precision));
       handleQuantityChange(newQuantity);
     }
   };
   
   const decrementQuantity = () => {
     if (cartItem) {
-      const newQuantity = cartItem.quantity - product.step_quantity;
+      const newQuantity = parseFloat((cartItem.quantity - product.step_quantity).toFixed(precision));
       if (newQuantity > 0 && newQuantity < product.min_order_quantity) {
          updateQuantity(product.id, 0);
       } else {
