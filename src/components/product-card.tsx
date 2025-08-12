@@ -7,7 +7,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { StarRating } from "@/components/star-rating";
 import { useCart } from "@/hooks/use-cart";
 import { Plus, Minus } from "lucide-react";
-import { useState, useEffect } from "react";
 
 interface ProductCardProps {
   product: Product;
@@ -102,7 +101,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         ) : (
            <Button className="w-full" onClick={() => addToCart(product)}>
-            Добавить в корзину
+            В корзину
           </Button>
         )}
       </CardFooter>
