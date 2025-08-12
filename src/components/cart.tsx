@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useCart } from "@/hooks/use-cart";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
@@ -64,37 +63,18 @@ export function Cart() {
                           className="h-7 w-7"
                           onClick={() => {
                             const newQuantity = parseFloat((quantity - product.step_quantity).toFixed(precision));
-                            updateQuantity(product.id, newQuantity)
+                            if (newQuantity > 0 && newQuantity < product.min_order_quantity) {
+                                updateQuantity(product.id, 0);
+                            } else {
+                                updateQuantity(product.id, newQuantity)
+                            }
                           }}
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
-                        <Input
-                          type="number"
-                          value={displayedQuantity}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(',', '.');
-                             if (value.includes('.') && value.split('.')[1].length > precision) {
-                                return;
-                             }
-                            updateQuantity(product.id, parseFloat(value) || 0)
-                          }}
-                          onBlur={(e) => {
-                             const value = parseFloat(e.target.value.replace(',', '.'));
-                            if (!isNaN(value)) {
-                               if (value > 0 && value < product.min_order_quantity) {
-                                  updateQuantity(product.id, product.min_order_quantity);
-                               } else {
-                                  updateQuantity(product.id, parseFloat(value.toFixed(precision)));
-                               }
-                            } else {
-                                updateQuantity(product.id, quantity);
-                            }
-                          }}
-                          className="h-7 w-12 text-center"
-                          step={product.step_quantity}
-                          min={0}
-                        />
+                        <div className="flex h-7 w-12 items-center justify-center rounded-md border border-input bg-background text-center text-sm">
+                            {displayedQuantity}
+                        </div>
                         <Button
                           variant="outline"
                           size="icon"
