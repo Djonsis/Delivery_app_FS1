@@ -3,6 +3,7 @@
 import Image from "next/image";
 import type { Product } from "@/lib/types";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { StarRating } from "@/components/star-rating";
 import { useCart } from "@/hooks/use-cart";
@@ -48,7 +49,18 @@ export function ProductCard({ product }: ProductCardProps) {
             <Button variant="outline" size="icon" onClick={() => updateQuantity(product.id, cartItem.quantity - 1)}>
               <Minus className="h-4 w-4" />
             </Button>
-            <span className="text-lg font-bold">{cartItem.quantity}</span>
+            <Input
+                type="number"
+                min="0"
+                value={cartItem.quantity}
+                onChange={(e) => {
+                  const quantity = parseInt(e.target.value, 10);
+                  if (!isNaN(quantity) && quantity >= 0) {
+                    updateQuantity(product.id, quantity);
+                  }
+                }}
+                className="w-16 text-center font-bold"
+              />
             <Button variant="outline" size="icon" onClick={() => updateQuantity(product.id, cartItem.quantity + 1)}>
               <Plus className="h-4 w-4" />
             </Button>
