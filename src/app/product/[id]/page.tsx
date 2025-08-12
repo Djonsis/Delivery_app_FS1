@@ -1,12 +1,15 @@
+
 "use client";
 
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { notFound, useParams } from 'next/navigation';
 import { products } from '@/lib/products';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Star, MessageCircle, Plus, Minus } from 'lucide-react';
+import { Star, MessageCircle, Plus, Minus, ChevronLeft } from 'lucide-react';
 import SiteHeader from '@/components/site-header';
 import ProductCarousel from './_components/product-carousel';
 import { useCart } from '@/hooks/use-cart';
@@ -15,6 +18,7 @@ export default function ProductPage() {
   const params = useParams() as { id: string };
   const product = products.find((p) => p.id === params.id);
   const { addToCart, updateQuantity, getCartItem } = useCart();
+  const router = useRouter();
 
   if (!product) {
     notFound();
@@ -62,6 +66,12 @@ export default function ProductPage() {
       <SiteHeader />
       <main className="flex-1 py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-6">
+            <Button variant="ghost" onClick={() => router.back()} className="text-sm text-muted-foreground hover:text-foreground">
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Назад
+            </Button>
+          </div>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
             <div className="relative aspect-square w-full overflow-hidden rounded-xl">
               <Image
@@ -185,3 +195,5 @@ export default function ProductPage() {
     </div>
   );
 }
+
+    
