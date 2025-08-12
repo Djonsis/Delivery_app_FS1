@@ -45,7 +45,7 @@ export default function SiteHeader() {
                     variant="destructive"
                     className="absolute -right-4 -top-2 h-auto w-auto justify-center rounded-full px-2 py-0.5 text-xs"
                   >
-                    {cartTotal.toFixed(2)} ₽
+                    {Math.round(cartTotal)} ₽
                   </Badge>
                 )}
                 <span className="sr-only">Открыть корзину</span>

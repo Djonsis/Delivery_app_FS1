@@ -43,28 +43,30 @@ export function Cart() {
                   <div className="flex-1">
                     <h3 className="font-medium">{product.name}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {product.price.toFixed(2)} ₽
+                      {Math.round(product.price)} ₽
                     </p>
                     <div className="mt-2 flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="icon"
                         className="h-7 w-7"
-                        onClick={() => updateQuantity(product.id, quantity - 1)}
+                        onClick={() => updateQuantity(product.id, quantity - product.step_quantity)}
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
                       <Input
                         type="number"
                         value={quantity}
-                        onChange={(e) => updateQuantity(product.id, parseInt(e.target.value) || 1)}
+                        onChange={(e) => updateQuantity(product.id, parseFloat(e.target.value) || 0)}
                         className="h-7 w-12 text-center"
+                        step={product.step_quantity}
+                        min={0}
                       />
                       <Button
                         variant="outline"
                         size="icon"
                         className="h-7 w-7"
-                        onClick={() => updateQuantity(product.id, quantity + 1)}
+                        onClick={() => updateQuantity(product.id, quantity + product.step_quantity)}
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
@@ -87,7 +89,7 @@ export function Cart() {
               <Separator />
               <div className="flex justify-between text-lg font-semibold">
                 <span>Итого</span>
-                <span>{cartTotal.toFixed(2)} ₽</span>
+                <span>{Math.round(cartTotal)} ₽</span>
               </div>
               <Button size="lg" onClick={handleCheckout}>
                 Оформить заказ

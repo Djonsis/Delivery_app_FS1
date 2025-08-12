@@ -26,14 +26,14 @@ function cartReducer(state: CartState, action: CartAction): CartState {
           ...state,
           cartItems: state.cartItems.map(item =>
             item.product.id === product.id
-              ? { ...item, quantity: item.quantity + 1 }
+              ? { ...item, quantity: item.quantity + product.step_quantity }
               : item
           ),
         };
       }
       return {
         ...state,
-        cartItems: [...state.cartItems, { product, quantity: 1 }],
+        cartItems: [...state.cartItems, { product, quantity: product.min_order_quantity }],
       };
     }
     case 'REMOVE_FROM_CART': {
