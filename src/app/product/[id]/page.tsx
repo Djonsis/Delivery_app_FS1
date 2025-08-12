@@ -1,7 +1,7 @@
 "use client";
 
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { products } from '@/lib/products';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -11,7 +11,8 @@ import SiteHeader from '@/components/site-header';
 import ProductCarousel from './_components/product-carousel';
 import { useCart } from '@/hooks/use-cart';
 
-export default function ProductPage({ params }: { params: { id: string } }) {
+export default function ProductPage() {
+  const params = useParams() as { id: string };
   const product = products.find((p) => p.id === params.id);
   const { addToCart, updateQuantity, getCartItem } = useCart();
 
