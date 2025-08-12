@@ -8,6 +8,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { StarRating } from "@/components/star-rating";
 import { useCart } from "@/hooks/use-cart";
 import { Plus, Minus } from "lucide-react";
+import { useState } from "react";
 
 interface ProductCardProps {
   product: Product;
@@ -16,6 +17,7 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart, updateQuantity, getCartItem } = useCart();
   const cartItem = getCartItem(product.id);
+  const [inputValue, setInputValue] = useState<string | number>('');
 
   const getPrecision = (step: number) => {
     const stepStr = step.toString();
@@ -28,8 +30,8 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const handleQuantityChange = (newQuantity: number) => {
     const roundedQuantity = parseFloat(newQuantity.toFixed(precision));
-    // Ensure quantity is not less than the minimum order quantity
     if (roundedQuantity < 0) return;
+    
     if (roundedQuantity > 0 && roundedQuantity < product.min_order_quantity) {
       updateQuantity(product.id, product.min_order_quantity);
     } else {
@@ -39,17 +41,19 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Allow empty input to let user type
-    if (value === '') {
-      updateQuantity(product.id, 0); // Or handle as you see fit
-      return;
-    }
-    const quantity = parseFloat(value);
-    if (!isNaN(quantity) && quantity >= 0) {
-      updateQuantity(product.id, quantity); // Directly update, onBlur will handle final validation
-    }
+    setInputValue(value);
   };
 
+  const handleInputBlur = () => {
+    const quantity = parseFloat(inputValue.toString());
+    if (!isNaN(quantity)) {
+      handleQuantityChange(quantity);
+    } else {
+      updateQuantity(product.id, 0);
+    }
+    setInputValue(''); // Reset local state
+  };
+  
   const incrementQuantity = () => {
     const currentQuantity = cartItem ? cartItem.quantity : 0;
     if (currentQuantity === 0) {
@@ -63,7 +67,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const decrementQuantity = () => {
     if (cartItem) {
       const newQuantity = cartItem.quantity - product.step_quantity;
-      if (newQuantity < product.min_order_quantity && newQuantity > 0) {
+      if (newQuantity > 0 && newQuantity < product.min_order_quantity) {
          updateQuantity(product.id, 0);
       } else {
          handleQuantityChange(newQuantity);
@@ -109,16 +113,9 @@ export function ProductCard({ product }: ProductCardProps) {
                 type="number"
                 min="0"
                 step={product.step_quantity}
-                value={displayedQuantity}
+                value={inputValue !== '' ? inputValue : displayedQuantity}
                 onChange={handleInputChange}
-                onBlur={(e) => {
-                  const quantity = parseFloat(e.target.value);
-                  if (!isNaN(quantity)) {
-                    handleQuantityChange(quantity);
-                  } else {
-                    updateQuantity(product.id, 0);
-                  }
-                }}
+                onBlur={handleInputBlur}
                 className="w-16 text-center font-bold"
               />
             <Button variant="outline" size="icon" onClick={incrementQuantity}>
