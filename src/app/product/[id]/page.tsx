@@ -14,8 +14,10 @@ import SiteHeader from '@/components/site-header';
 import ProductCarousel from './_components/product-carousel';
 import { useCart } from '@/hooks/use-cart';
 
-export default function ProductPage({ params }: { params: { id: string } }) {
-  const product = products.find((p) => p.id === params.id);
+export default function ProductPage() {
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const product = products.find((p) => p.id === id);
   const { addToCart, updateQuantity, getCartItem } = useCart();
   const router = useRouter();
 
