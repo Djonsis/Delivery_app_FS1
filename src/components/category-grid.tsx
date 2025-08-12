@@ -15,7 +15,7 @@ const categories = [
 export default function CategoryGrid() {
     return (
         <div className="mt-12">
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-6">
+            <div className="grid grid-cols-3 gap-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-6">
                 {categories.map((category) => (
                     <Link key={category.name} href={category.href} className="group relative flex flex-col items-center justify-center text-center">
                         <div className="relative aspect-square w-full overflow-hidden rounded-lg sm:aspect-[4/3]">
