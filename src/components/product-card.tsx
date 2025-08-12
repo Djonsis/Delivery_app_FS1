@@ -4,9 +4,8 @@ import Image from "next/image";
 import type { Product } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { StarRating } from "@/components/star-rating";
 import { useCart } from "@/hooks/use-cart";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Star } from "lucide-react";
 
 interface ProductCardProps {
   product: Product;
@@ -74,11 +73,13 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col p-4">
-        <p className="text-sm font-medium text-muted-foreground">{product.category}</p>
         <CardTitle className="mt-1 text-lg font-semibold">{product.name}</CardTitle>
         <div className="mt-2 flex items-center gap-2">
-          <StarRating rating={product.rating} />
-          <span className="text-xs text-muted-foreground">({product.reviews} отзывов)</span>
+            <div className="flex items-center gap-1">
+                <Star className="h-4 w-4 text-[#ffc247] fill-[#ffc247]" />
+                <span className="text-sm font-medium">{product.rating.toFixed(1)}</span>
+            </div>
+            <span className="text-xs text-muted-foreground">({product.reviews} отзывов)</span>
         </div>
         <CardDescription className="mt-2 flex-1 text-sm">{product.description}</CardDescription>
         <div className="mt-4 flex items-baseline justify-between">
