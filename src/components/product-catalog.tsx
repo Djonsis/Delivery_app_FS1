@@ -5,23 +5,66 @@ import { products, categories } from "@/lib/products";
 import { ProductCard } from "@/components/product-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, ArrowUpDown, SlidersHorizontal } from "lucide-react";
+import { Search, ArrowUpDown, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { Product } from "@/lib/types";
+
+
+type SortOption = "popularity" | "price_desc" | "price_asc" | "rating_desc" | "discount_desc";
+
 
 export default function ProductCatalog() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Все");
+  const [sortOption, setSortOption] = useState<SortOption>("popularity");
 
-  const filteredProducts = useMemo(() => {
-    return products
+  const sortProducts = (products: Product[], option: SortOption): Product[] => {
+    switch (option) {
+      case "price_desc":
+        return [...products].sort((a, b) => b.price - a.price);
+      case "price_asc":
+        return [...products].sort((a, b) => a.price - b.price);
+      case "rating_desc":
+         return [...products].sort((a, b) => b.rating - a.rating);
+      case "popularity":
+        return [...products].sort((a, b) => b.reviews - a.reviews);
+      // NOTE: Discount sorting is not implemented yet as product data does not contain discount info.
+      case "discount_desc":
+      default:
+        return products;
+    }
+  };
+
+
+  const filteredAndSortedProducts = useMemo(() => {
+    const filtered = products
       .filter((product) =>
         selectedCategory === "Все" ? true : product.category === selectedCategory
       )
       .filter((product) =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
-  }, [searchTerm, selectedCategory]);
+    
+    return sortProducts(filtered, sortOption);
+  }, [searchTerm, selectedCategory, sortOption]);
+
+  const sortOptionLabels: { [key in SortOption]: string } = {
+    popularity: "По популярности",
+    price_desc: "Сначала дороже",
+    price_asc: "Сначала дешевле",
+    rating_desc: "По рейтингу",
+    discount_desc: "По размеру скидки"
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
@@ -47,9 +90,27 @@ export default function ProductCatalog() {
       </div>
 
       <div className="mt-8 flex items-center gap-2">
-        <Button variant="outline" size="icon" className="shrink-0">
-          <ArrowUpDown className="h-4 w-4" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="shrink-0">
+              <ArrowUpDown className="h-4 w-4 mr-2" />
+              <span>{sortOptionLabels[sortOption]}</span>
+              <ChevronDown className="h-4 w-4 ml-2" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuLabel>Сортировать по</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
+              <DropdownMenuRadioItem value="popularity">Популярности</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="rating_desc">Рейтингу</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="price_desc">Сначала дороже</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="price_asc">Сначала дешевле</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="discount_desc" disabled>По размеру скидки</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <Button variant="outline" size="icon" className="shrink-0">
           <SlidersHorizontal className="h-4 w-4" />
         </Button>
@@ -78,11 +139,11 @@ export default function ProductCatalog() {
       </div>
 
       <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredProducts.map((product) => (
+        {filteredAndSortedProducts.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
-      {filteredProducts.length === 0 && (
+      {filteredAndSortedProducts.length === 0 && (
         <div className="col-span-full mt-16 flex flex-col items-center justify-center">
             <p className="text-lg text-muted-foreground">Продукты не найдены.</p>
             <p className="text-sm text-muted-foreground">Попробуйте изменить поиск или фильтры.</p>
