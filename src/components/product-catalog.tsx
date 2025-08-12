@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -58,14 +59,6 @@ export default function ProductCatalog() {
     return sortProducts(filtered, sortOption);
   }, [searchTerm, selectedCategory, sortOption]);
 
-  const sortOptionLabels: { [key in SortOption]: string } = {
-    popularity: "По популярности",
-    price_desc: "Сначала дороже",
-    price_asc: "Сначала дешевле",
-    rating_desc: "По рейтингу",
-    discount_desc: "По размеру скидки"
-  };
-
   return (
     <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -92,10 +85,11 @@ export default function ProductCatalog() {
       <div className="mt-8 flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="shrink-0">
-              <ArrowUpDown className="h-4 w-4 mr-2" />
-              <span>{sortOptionLabels[sortOption]}</span>
-              <ChevronDown className="h-4 w-4 ml-2" />
+            <Button variant="outline" size="icon" className="shrink-0 relative">
+              <ArrowUpDown className="h-4 w-4" />
+              {sortOption !== 'popularity' && (
+                <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-primary border-2 border-background" />
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56">
