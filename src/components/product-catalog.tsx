@@ -1,12 +1,13 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
-import { products, categories } from "@/lib/products";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from 'next/navigation'
+import { products as allProducts, categories } from "@/lib/products";
 import { ProductCard } from "@/components/product-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, ArrowUpDown, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { Search, ArrowUpDown, SlidersHorizontal } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import {
@@ -25,10 +26,17 @@ type SortOption = "popularity" | "price_desc" | "price_asc" | "rating_desc" | "d
 
 
 export default function ProductCatalog() {
+  const searchParams = useSearchParams();
+  const initialCategory = searchParams.get('category') || 'Все';
+  
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Все");
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [sortOption, setSortOption] = useState<SortOption>("popularity");
   const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({});
+
+  useEffect(() => {
+    setSelectedCategory(initialCategory);
+  }, [initialCategory]);
 
   const handlePriceChange = (field: 'min' | 'max', value: string) => {
     const numValue = value ? parseFloat(value) : undefined;
@@ -64,7 +72,7 @@ export default function ProductCatalog() {
 
 
   const filteredAndSortedProducts = useMemo(() => {
-    const filtered = products
+    const filtered = allProducts
       .filter((product) =>
         selectedCategory === "Все" ? true : product.category === selectedCategory
       )
@@ -86,16 +94,8 @@ export default function ProductCatalog() {
 
   return (
     <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            🥦😋 Вкусная грядка
-          </h1>
-          <p className="mt-2 text-lg text-muted-foreground">
-            Доставка свежих фруктов и овощей в Сочи 🍎
-          </p>
-        </div>
-        <div className="relative w-full md:w-72">
+      <div className="flex items-center gap-4">
+        <div className="relative w-full flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             type="search"
@@ -105,67 +105,70 @@ export default function ProductCatalog() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+
+        <div className="flex items-center gap-2">
+            <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="shrink-0 relative">
+                <ArrowUpDown className="h-4 w-4" />
+                {sortOption !== 'popularity' && (
+                    <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-primary border-2 border-background" />
+                )}
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Сортировать по</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
+                <DropdownMenuRadioItem value="popularity">Популярности</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="rating_desc">Рейтингу</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="price_desc">Сначала дороже</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="price_asc">Сначала дешевле</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="discount_desc" disabled>По размеру скидки</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="shrink-0 relative">
+                <SlidersHorizontal className="h-4 w-4" />
+                {isPriceFilterActive && (
+                    <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-primary border-2 border-background" />
+                )}
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-64 p-4">
+                <div className="flex justify-between items-center mb-4">
+                    <DropdownMenuLabel className="p-0 font-bold">Цена</DropdownMenuLabel>
+                    <Button variant="ghost" size="sm" onClick={handleResetFilters} className="h-auto p-1 text-xs">
+                        Сброс
+                    </Button>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Input 
+                    type="number" 
+                    placeholder="от" 
+                    value={priceRange.min ?? ''} 
+                    onChange={(e) => handlePriceChange('min', e.target.value)}
+                    className="h-9"
+                    />
+                    <span className="text-muted-foreground">-</span>
+                    <Input 
+                    type="number" 
+                    placeholder="до"
+                    value={priceRange.max ?? ''} 
+                    onChange={(e) => handlePriceChange('max', e.target.value)}
+                    className="h-9"
+                    />
+                </div>
+            </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
-      <div className="mt-8 flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="shrink-0 relative">
-              <ArrowUpDown className="h-4 w-4" />
-              {sortOption !== 'popularity' && (
-                <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-primary border-2 border-background" />
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            <DropdownMenuLabel>Сортировать по</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuRadioGroup value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
-              <DropdownMenuRadioItem value="popularity">Популярности</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="rating_desc">Рейтингу</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="price_desc">Сначала дороже</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="price_asc">Сначала дешевле</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="discount_desc" disabled>По размеру скидки</DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="shrink-0 relative">
-              <SlidersHorizontal className="h-4 w-4" />
-              {isPriceFilterActive && (
-                 <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-primary border-2 border-background" />
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-64 p-4">
-             <div className="flex justify-between items-center mb-4">
-                <DropdownMenuLabel className="p-0 font-bold">Цена</DropdownMenuLabel>
-                <Button variant="ghost" size="sm" onClick={handleResetFilters} className="h-auto p-1 text-xs">
-                    Сброс
-                </Button>
-             </div>
-             <div className="flex items-center gap-2">
-                <Input 
-                  type="number" 
-                  placeholder="от" 
-                  value={priceRange.min ?? ''} 
-                  onChange={(e) => handlePriceChange('min', e.target.value)}
-                  className="h-9"
-                />
-                <span className="text-muted-foreground">-</span>
-                 <Input 
-                  type="number" 
-                  placeholder="до"
-                  value={priceRange.max ?? ''} 
-                  onChange={(e) => handlePriceChange('max', e.target.value)}
-                  className="h-9"
-                />
-             </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
+      <div className="mt-8">
         <ScrollArea className="w-full whitespace-nowrap">
           <div className="flex w-max space-x-2">
             <Button

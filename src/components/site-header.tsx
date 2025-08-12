@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FastBasketIcon, UserProfileIcon } from "@/components/icons";
+import { FastBasketIcon, UserProfileIcon, CatalogIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -16,25 +16,44 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { Cart } from "@/components/cart";
+import { Input } from "./ui/input";
+import { Search } from "lucide-react";
+
 
 export default function SiteHeader() {
   const { cartTotal } = useCart();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        <Link href="/" className="mr-6 flex items-center space-x-2">
+      <div className="container flex h-16 items-center gap-4">
+        <Link href="/" className="mr-2 flex items-center space-x-2">
           <FastBasketIcon className="h-6 w-6 text-primary" />
           <span className="hidden font-bold sm:inline-block">БыстраяКорзина</span>
         </Link>
-        <nav className="flex-1">
-          {/* Add nav links here if needed */}
-        </nav>
+        
+        <div className="hidden md:flex">
+             <Link href="/catalog">
+                <Button>
+                    <CatalogIcon className="mr-2 h-5 w-5" />
+                    Каталог
+                </Button>
+            </Link>
+        </div>
+
+        <div className="relative hidden flex-1 md:block">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Искать продукты..."
+            className="w-full rounded-full pl-10"
+          />
+        </div>
+
         <div className="flex items-center justify-end space-x-4">
           <Sheet>
             <SheetTrigger asChild>
@@ -60,7 +79,7 @@ export default function SiteHeader() {
               <Button variant="ghost" size="icon">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback>
-                    <UserProfileIcon className="h-5 w-5" />
+                    <UserProfileIcon className="h-6 w-6" />
                   </AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Меню пользователя</span>
@@ -78,6 +97,16 @@ export default function SiteHeader() {
           </DropdownMenu>
         </div>
       </div>
+       <div className="container pb-4 md:hidden">
+         <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+                type="search"
+                placeholder="Искать продукты..."
+                className="w-full rounded-full pl-10"
+            />
+         </div>
+       </div>
     </header>
   );
 }
