@@ -8,7 +8,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { StarRating } from "@/components/star-rating";
 import { useCart } from "@/hooks/use-cart";
 import { Plus, Minus } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ProductCardProps {
   product: Product;
@@ -17,7 +17,7 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart, updateQuantity, getCartItem } = useCart();
   const cartItem = getCartItem(product.id);
-  const [inputValue, setInputValue] = useState<string | number>('');
+  const [inputValue, setInputValue] = useState<string>('');
 
   const getPrecision = (step: number) => {
     const stepStr = step.toString();
@@ -27,6 +27,15 @@ export function ProductCard({ product }: ProductCardProps) {
     return 0;
   };
   const precision = getPrecision(product.step_quantity);
+
+  useEffect(() => {
+    if (cartItem) {
+      setInputValue(cartItem.quantity.toFixed(precision));
+    } else {
+      setInputValue('');
+    }
+  }, [cartItem, precision]);
+
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity < 0) return;
@@ -41,23 +50,35 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-     if (value.includes('.') && value.split('.')[1].length > precision) {
-      return;
+    let value = e.target.value;
+    
+    // Allow only numbers and one separator (dot or comma)
+    value = value.replace(/[^0-9.,]/g, '').replace(',', '.');
+    
+    // Ensure only one dot
+    const parts = value.split('.');
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts.slice(1).join('');
     }
+
+    if (value.includes('.') && parts[1]?.length > precision) {
+      value = parseFloat(value).toFixed(precision);
+    }
+
     setInputValue(value);
   };
 
   const handleInputBlur = () => {
-    let quantity = parseFloat(inputValue.toString().replace(',', '.'));
+    let quantity = parseFloat(inputValue);
     if (!isNaN(quantity)) {
       handleQuantityChange(quantity);
     } else {
       if (cartItem) {
-        updateQuantity(product.id, cartItem.quantity);
+        setInputValue(cartItem.quantity.toFixed(precision));
+      } else {
+        setInputValue('');
       }
     }
-    setInputValue(''); // Reset local state
   };
   
   const incrementQuantity = () => {
@@ -116,10 +137,10 @@ export function ProductCard({ product }: ProductCardProps) {
               <Minus className="h-4 w-4" />
             </Button>
             <Input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 min="0"
-                step={product.step_quantity}
-                value={inputValue !== '' ? inputValue : displayedQuantity}
+                value={inputValue}
                 onChange={handleInputChange}
                 onBlur={handleInputBlur}
                 className="w-16 text-center font-bold"
