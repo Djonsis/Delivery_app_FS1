@@ -4,8 +4,10 @@ import { useState, useMemo } from "react";
 import { products, categories } from "@/lib/products";
 import { ProductCard } from "@/components/product-card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, ArrowUpDown, SlidersHorizontal } from "lucide-react";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 export default function ProductCatalog() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,20 +46,36 @@ export default function ProductCatalog() {
         </div>
       </div>
 
-      <Tabs
-        value={selectedCategory}
-        onValueChange={setSelectedCategory}
-        className="mt-8"
-      >
-        <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:grid-flow-col">
-          <TabsTrigger value="Все">Все</TabsTrigger>
-          {categories.map((category) => (
-            <TabsTrigger key={category} value={category}>
-              {category}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <div className="mt-8 flex items-center gap-2">
+        <Button variant="outline" size="icon" className="shrink-0">
+          <ArrowUpDown className="h-4 w-4" />
+        </Button>
+        <Button variant="outline" size="icon" className="shrink-0">
+          <SlidersHorizontal className="h-4 w-4" />
+        </Button>
+        <ScrollArea className="w-full whitespace-nowrap">
+          <div className="flex w-max space-x-2">
+            <Button
+              variant={selectedCategory === 'Все' ? 'default' : 'outline'}
+              className={cn("rounded-full", selectedCategory === 'Все' && "bg-primary text-primary-foreground")}
+              onClick={() => setSelectedCategory('Все')}
+            >
+              Все
+            </Button>
+            {categories.map((category) => (
+               <Button
+                key={category}
+                variant={selectedCategory === category ? 'default' : 'outline'}
+                className={cn("rounded-full", selectedCategory === category && "bg-primary text-primary-foreground")}
+                onClick={() => setSelectedCategory(category)}
+              >
+                {category}
+              </Button>
+            ))}
+          </div>
+          <ScrollBar orientation="horizontal" className="h-2" />
+        </ScrollArea>
+      </div>
 
       <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
         {filteredProducts.map((product) => (
