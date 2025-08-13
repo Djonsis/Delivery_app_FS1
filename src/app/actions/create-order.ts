@@ -11,7 +11,7 @@ interface CreateOrderPayload {
 }
 
 export async function createOrder(payload: CreateOrderPayload) {
-    if (!payload.customer || !payload.items || payload.payload.items.length === 0) {
+    if (!payload.customer || !payload.items || payload.items.length === 0) {
         throw new Error("Необходимы данные о клиенте и товарах в заказе.");
     }
 
