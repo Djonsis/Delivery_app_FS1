@@ -14,35 +14,35 @@ const orders = [
     customer: "Liam Johnson",
     date: "2023-07-15",
     total: 250.00,
-    status: "Fulfilled",
+    status: "Выполнен",
   },
   {
     id: "ORD002",
     customer: "Olivia Smith",
     date: "2023-07-16",
     total: 150.75,
-    status: "Pending",
+    status: "В ожидании",
   },
   {
     id: "ORD003",
     customer: "Noah Williams",
     date: "2023-07-17",
     total: 350.50,
-    status: "Fulfilled",
+    status: "Выполнен",
   },
   {
     id: "ORD004",
     customer: "Emma Brown",
     date: "2023-07-18",
     total: 450.00,
-    status: "Cancelled",
+    status: "Отменен",
   },
     {
     id: "ORD005",
     customer: "Ava Jones",
     date: "2023-07-19",
     total: 550.00,
-    status: "Pending",
+    status: "В ожидании",
   },
 ];
 
@@ -53,11 +53,11 @@ export default function OrdersPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Order</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Заказ</TableHead>
+              <TableHead>Клиент</TableHead>
+              <TableHead>Дата</TableHead>
+              <TableHead>Сумма</TableHead>
+              <TableHead>Статус</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -66,11 +66,11 @@ export default function OrdersPage() {
                 <TableCell className="font-medium">{order.id}</TableCell>
                 <TableCell>{order.customer}</TableCell>
                 <TableCell>{order.date}</TableCell>
-                <TableCell>${order.total.toFixed(2)}</TableCell>
+                <TableCell>{order.total.toFixed(2)} ₽</TableCell>
                 <TableCell>
                   <Badge variant={
-                    order.status === 'Fulfilled' ? 'default' : 
-                    order.status === 'Pending' ? 'secondary' : 'destructive'
+                    order.status === 'Выполнен' ? 'default' : 
+                    order.status === 'В ожидании' ? 'secondary' : 'destructive'
                   }>
                     {order.status}
                   </Badge>
