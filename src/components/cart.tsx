@@ -8,14 +8,38 @@ import { SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { Minus, Plus, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { createOrder } from "@/app/actions/create-order";
+import { useState, useTransition } from "react";
 
 export function Cart() {
-  const { cartItems, removeFromCart, updateQuantity, cartTotal, itemCount } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, cartTotal, itemCount, clearCart } = useCart();
+  const [isPending, startTransition] = useTransition();
 
   const handleCheckout = () => {
-    toast({
-      title: "Оформление заказа",
-      description: "Ваш заказ был размещен и ожидает подтверждения.",
+    if (cartItems.length === 0) return;
+
+    startTransition(async () => {
+        try {
+            await createOrder({
+                // Temporarily hardcoding customer name. We'll replace this with real user data later.
+                customer: "Иван Петров",
+                items: cartItems,
+                total: cartTotal,
+            });
+
+            toast({
+              title: "Заказ принят!",
+              description: "Точную итоговую стоимость мы пришлем после сборки заказа.",
+            });
+            clearCart();
+        } catch (error) {
+            console.error("Failed to create order:", error);
+            toast({
+                title: "Ошибка",
+                description: "Не удалось оформить заказ. Пожалуйста, попробуйте еще раз.",
+                variant: "destructive",
+            });
+        }
     });
   };
 
@@ -108,8 +132,8 @@ export function Cart() {
                 <span>Итого</span>
                 <span>{Math.round(cartTotal)} ₽</span>
               </div>
-              <Button size="lg" onClick={handleCheckout}>
-                Оформить заказ
+              <Button size="lg" onClick={handleCheckout} disabled={isPending}>
+                {isPending ? "Оформление..." : "Оформить заказ"}
               </Button>
             </div>
           </SheetFooter>

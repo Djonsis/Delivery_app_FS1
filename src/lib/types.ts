@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 export type WeightCategory = 'light' | 'middle' | 'heavy' | 'none';
 
 export interface Product {
@@ -53,9 +55,10 @@ export type CancellationReason = (typeof CANCELLATION_REASONS)[number];
 export interface Order {
   id: string;
   customer: string;
-  date: string;
+  date: any; // Using `any` to accommodate both string and Timestamp
   total: number;
   status: OrderStatus;
   cancellationReason?: CancellationReason;
   items: CartItem[];
+  lastUpdated?: Timestamp;
 }
