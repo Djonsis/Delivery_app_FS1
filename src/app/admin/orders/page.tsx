@@ -21,14 +21,14 @@ const orders = [
     customer: "Olivia Smith",
     date: "2023-07-16",
     total: 150.75,
-    status: "В ожидании",
+    status: "Новый заказ",
   },
   {
     id: "ORD003",
     customer: "Noah Williams",
     date: "2023-07-17",
     total: 350.50,
-    status: "Выполнен",
+    status: "Собирается",
   },
   {
     id: "ORD004",
@@ -36,13 +36,21 @@ const orders = [
     date: "2023-07-18",
     total: 450.00,
     status: "Отменен",
+    reason: "отмена клиентом"
   },
     {
     id: "ORD005",
     customer: "Ava Jones",
     date: "2023-07-19",
     total: 550.00,
-    status: "В ожидании",
+    status: "Ожидает курьера",
+  },
+  {
+    id: "ORD006",
+    customer: "James Wilson",
+    date: "2023-07-20",
+    total: 120.00,
+    status: "Передан в доставку",
   },
 ];
 
@@ -70,7 +78,7 @@ export default function OrdersPage() {
                 <TableCell>
                   <Badge variant={
                     order.status === 'Выполнен' ? 'default' : 
-                    order.status === 'В ожидании' ? 'secondary' : 'destructive'
+                    order.status === 'Отменен' ? 'destructive' : 'secondary'
                   }>
                     {order.status}
                   </Badge>
