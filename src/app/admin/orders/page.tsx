@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
@@ -47,6 +48,13 @@ export default function OrdersPage() {
   }, []);
   
   const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
+    const originalStatus = orders.find(o => o.id === orderId)?.status;
+    
+    // Optimistically update UI
+    setOrders(prevOrders => 
+      prevOrders.map(o => o.id === orderId ? { ...o, status: newStatus } : o)
+    );
+
     startTransition(async () => {
       try {
         await updateOrderStatus(orderId, newStatus);
@@ -55,6 +63,12 @@ export default function OrdersPage() {
           description: `Статус заказа #${orderId.substring(0,6)} изменен на "${newStatus}".`,
         });
       } catch (error) {
+        // Revert UI on error
+        if (originalStatus) {
+            setOrders(prevOrders => 
+              prevOrders.map(o => o.id === orderId ? { ...o, status: originalStatus } : o)
+            );
+        }
         toast({
           title: "Ошибка",
           description: "Не удалось обновить статус заказа.",
@@ -90,21 +104,22 @@ export default function OrdersPage() {
               <TableCell>{order.total.toFixed(2)} ₽</TableCell>
               <TableCell>
                 <Select
-                  key={order.id}
                   value={order.status}
                   onValueChange={(newStatus: OrderStatus) => handleStatusChange(order.id, newStatus)}
                   disabled={isPending}
                 >
                   <SelectTrigger className="w-[180px]">
-                     <Badge 
-                        variant={
-                            order.status === 'Выполнен' ? 'default' : 
-                            order.status === 'Отменен' ? 'destructive' : 'secondary'
-                        }
-                        className="mr-2"
-                     >
-                        {order.status}
-                    </Badge>
+                     <SelectValue>
+                         <Badge 
+                            variant={
+                                order.status === 'Выполнен' ? 'default' : 
+                                order.status === 'Отменен' ? 'destructive' : 'secondary'
+                            }
+                            className="mr-2"
+                         >
+                            {order.status}
+                        </Badge>
+                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {ORDER_STATUSES.map((status) => (
@@ -119,7 +134,7 @@ export default function OrdersPage() {
           ))}
         </TableBody>
       </Table>
-       {orders.length === 0 && (
+       {orders.length === 0 && !loading && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Пока нет ни одного заказа.</p>
           </div>
