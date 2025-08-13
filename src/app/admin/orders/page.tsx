@@ -21,12 +21,13 @@ import {
 } from "@/components/ui/select";
 import { Order, OrderStatus, ORDER_STATUSES } from "@/lib/types";
 import { updateOrderStatus } from "./_actions/update-order-status";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   useEffect(() => {
     const q = query(collection(db, "orders"), orderBy("date", "desc"));
@@ -85,10 +86,11 @@ export default function OrdersPage() {
             <TableRow key={order.id}>
               <TableCell className="font-medium">#{order.id.substring(0, 6)}</TableCell>
               <TableCell>{order.customer}</TableCell>
-              <TableCell>{new Date(order.date).toLocaleDateString("ru-RU")}</TableCell>
+              <TableCell>{order.date?.toDate().toLocaleDateString("ru-RU")}</TableCell>
               <TableCell>{order.total.toFixed(2)} ₽</TableCell>
               <TableCell>
                 <Select
+                  key={order.id}
                   value={order.status}
                   onValueChange={(newStatus: OrderStatus) => handleStatusChange(order.id, newStatus)}
                   disabled={isPending}
