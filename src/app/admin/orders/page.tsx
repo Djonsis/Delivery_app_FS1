@@ -1,3 +1,8 @@
+"use client";
+
+import { useEffect, useState, useTransition } from "react";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import {
   Table,
   TableBody,
@@ -5,88 +10,118 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-
-const orders = [
-  {
-    id: "ORD001",
-    customer: "Liam Johnson",
-    date: "2023-07-15",
-    total: 250.00,
-    status: "Выполнен",
-  },
-  {
-    id: "ORD002",
-    customer: "Olivia Smith",
-    date: "2023-07-16",
-    total: 150.75,
-    status: "Новый заказ",
-  },
-  {
-    id: "ORD003",
-    customer: "Noah Williams",
-    date: "2023-07-17",
-    total: 350.50,
-    status: "Собирается",
-  },
-  {
-    id: "ORD004",
-    customer: "Emma Brown",
-    date: "2023-07-18",
-    total: 450.00,
-    status: "Отменен",
-    reason: "отмена клиентом"
-  },
-    {
-    id: "ORD005",
-    customer: "Ava Jones",
-    date: "2023-07-19",
-    total: 550.00,
-    status: "Ожидает курьера",
-  },
-  {
-    id: "ORD006",
-    customer: "James Wilson",
-    date: "2023-07-20",
-    total: 120.00,
-    status: "Передан в доставку",
-  },
-];
-
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Order, OrderStatus, ORDER_STATUSES } from "@/lib/types";
+import { updateOrderStatus } from "./_actions/update-order-status";
+import { toast } from "@/hooks/use-toast";
 
 export default function OrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    const q = query(collection(db, "orders"), orderBy("date", "desc"));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const ordersData: Order[] = [];
+      querySnapshot.forEach((doc) => {
+        ordersData.push({ id: doc.id, ...doc.data() } as Order);
+      });
+      setOrders(ordersData);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching orders: ", error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+  
+  const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
+    startTransition(async () => {
+      try {
+        await updateOrderStatus(orderId, newStatus);
+        toast({
+          title: "Статус обновлен",
+          description: `Статус заказа #${orderId.substring(0,6)} изменен на "${newStatus}".`,
+        });
+      } catch (error) {
+        toast({
+          title: "Ошибка",
+          description: "Не удалось обновить статус заказа.",
+          variant: "destructive",
+        });
+        console.error(error);
+      }
+    });
+  };
+
+  if (loading) {
+    return <div>Загрузка заказов...</div>;
+  }
+
   return (
     <div className="border rounded-lg p-2">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Заказ</TableHead>
-              <TableHead>Клиент</TableHead>
-              <TableHead>Дата</TableHead>
-              <TableHead>Сумма</TableHead>
-              <TableHead>Статус</TableHead>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Заказ</TableHead>
+            <TableHead>Клиент</TableHead>
+            <TableHead>Дата</TableHead>
+            <TableHead>Сумма</TableHead>
+            <TableHead>Статус</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {orders.map((order) => (
+            <TableRow key={order.id}>
+              <TableCell className="font-medium">#{order.id.substring(0, 6)}</TableCell>
+              <TableCell>{order.customer}</TableCell>
+              <TableCell>{new Date(order.date).toLocaleDateString("ru-RU")}</TableCell>
+              <TableCell>{order.total.toFixed(2)} ₽</TableCell>
+              <TableCell>
+                <Select
+                  value={order.status}
+                  onValueChange={(newStatus: OrderStatus) => handleStatusChange(order.id, newStatus)}
+                  disabled={isPending}
+                >
+                  <SelectTrigger className="w-[180px]">
+                     <Badge 
+                        variant={
+                            order.status === 'Выполнен' ? 'default' : 
+                            order.status === 'Отменен' ? 'destructive' : 'secondary'
+                        }
+                        className="mr-2"
+                     >
+                        {order.status}
+                    </Badge>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ORDER_STATUSES.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="font-medium">{order.id}</TableCell>
-                <TableCell>{order.customer}</TableCell>
-                <TableCell>{order.date}</TableCell>
-                <TableCell>{order.total.toFixed(2)} ₽</TableCell>
-                <TableCell>
-                  <Badge variant={
-                    order.status === 'Выполнен' ? 'default' : 
-                    order.status === 'Отменен' ? 'destructive' : 'secondary'
-                  }>
-                    {order.status}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+          ))}
+        </TableBody>
+      </Table>
+       {orders.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Пока нет ни одного заказа.</p>
+          </div>
+        )}
     </div>
-  )
+  );
 }
