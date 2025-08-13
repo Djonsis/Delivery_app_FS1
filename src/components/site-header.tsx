@@ -88,8 +88,12 @@ export default function SiteHeader() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Мой аккаунт</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Профиль</DropdownMenuItem>
-              <DropdownMenuItem>Заказы</DropdownMenuItem>
+              <Link href="/profile">
+                <DropdownMenuItem>Профиль</DropdownMenuItem>
+              </Link>
+              <Link href="/admin/orders">
+                <DropdownMenuItem>Заказы</DropdownMenuItem>
+              </Link>
               <DropdownMenuItem>Настройки</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Выйти</DropdownMenuItem>
