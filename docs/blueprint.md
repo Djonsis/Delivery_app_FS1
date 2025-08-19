@@ -1,27 +1,69 @@
-# **App Name**: FastBasket
+# Технический блюпринт: Система логирования
 
-## Core Features:
+Этот документ описывает финальную, реализованную архитектуру системы логирования в приложении.
 
-- Product Catalog: Display product catalog with categories and search functionality.
-- Shopping Cart: Allow users to add products to a cart, view the cart contents, and adjust quantities.
-- Checkout Initiation: Enable users to initiate the checkout process, see the pre-edited order total, but without immediate payment processing.
-- Data Management: Store and manage product data, user carts, and order information in Firestore.
-- User Authentication: Handle user authentication using Firebase Authentication.
-- Order Processing: Utilize Cloud Functions to manage order processing, including adjustments and payment link generation (SBP payments only).
-- Notifications: Notify users about order updates and payment links via Firebase Cloud Messaging.
-- Admin Order Modification: Enable the admin to modify order details (items, quantity, price) before payment.
-- Source Tracking: Capture the user's entry source (QR code, UTM, direct) and include it in the order data.
-- Offline Access: Make the product catalog accessible offline after the first visit, updating data when online.
+## 1. Ключевые цели
 
-## Style Guidelines:
+- **Безопасность**: Обеспечить, чтобы клиентский код не имел доступа к серверным модулям (таким как `fs`).
+- **Информативность**: Собирать подробные логи как на клиенте, так и на сервере для быстрой отладки.
+- **Управляемость**: Предоставить администратору удобный интерфейс для просмотра и управления логами.
 
-- Use pastel tones in a blue gradient palette for a soft, friendly, and professional look.
-- Maintain a unified color palette for all UI elements.
-- Avoid excessively bright or neon colors to ensure a professional and calming aesthetic.
-- Font: 'Inter', a sans-serif font that provides a clean, modern look, suitable for both headings and body text, ensuring readability and consistency across the app.
-- Consistent use of TailwindCSS and Shadcn/ui components for a uniform and responsive design.
-- Simple, recognizable icons for navigation and product categories to enhance usability.
-- Subtle animations and transitions to improve user experience, such as loading indicators and cart updates.
-- Vertical product card layout with image, price, name, weight/quantity, rating, and 'Add to Cart' button or quantity adjuster.
-- Product card background should use pastel tones in a blue gradient.
-- Image corners should be rounded.
+## 2. Реализованная архитектура
+
+Система разделена на два независимых модуля для обеспечения безопасности и изоляции окружений.
+
+### 2.1. Универсальный логгер (Client & Server Safe)
+
+- **Расположение**: `src/lib/logger.ts`
+- **Назначение**: Используется в любом компоненте или файле, который может выполняться на клиенте (React-компоненты, хуки, контексты).
+- **Функционал**:
+    - Выводит логи только в **консоль** (браузера или сервера).
+    - Не имеет зависимостей от Node.js API (`fs`, `path`).
+    - Поддерживает уровни: `debug`, `info`, `warn`, `error`.
+    - Поддерживает категории (`logger.withCategory('CATEGORY')`).
+    - Поддерживает замеры производительности (`time`, `timeEnd`).
+
+### 2.2. Серверный логгер (Server-Only)
+
+- **Расположение**: `src/lib/server-logger.ts`
+- **Назначение**: Используется **строго** в коде, который гарантированно выполняется только на сервере (Server Actions, Route Handlers, код в `lib/firebase-admin.ts`).
+- **Функционал**:
+    - Дублирует все возможности универсального логгера.
+    - Дополнительно записывает каждый лог в файл `public/debug.log`.
+    - Использует Node.js API (`fs`, `path`) для работы с файловой системой.
+    - Может форматировать вывод в текст или JSON (настраивается через `LOG_FORMAT` в `.env`).
+
+### 2.3. Серверные действия для управления логами
+
+- **Расположение**: `src/lib/actions/log.actions.ts`
+- **Назначение**: Предоставляют API для взаимодействия с файлом логов из админ-панели.
+- **Экшены**:
+    - `getLogsAction()`: Читает содержимое и размер файла `debug.log`.
+    - `clearLogsAction()`: Полностью очищает файл `debug.log`.
+
+### 2.4. Интерфейс администратора
+
+- **Расположение**: `src/app/admin/logs/page.tsx`
+- **Назначение**: UI для управления логами.
+- **Функционал**:
+    - Отображение логов из `debug.log`.
+    - Обновление, очистка (с подтверждением), фильтрация.
+    - Отображение размера файла.
+    - Опция автоматической очистки при превышении лимита в 5 МБ.
+
+## 3. Правила использования
+
+1.  **В клиентском коде** (любой `.tsx` или `.ts` файл в `src/components`, `src/app`, `src/hooks`, `src/contexts`):
+    ```typescript
+    import { logger } from '@/lib/logger';
+    const componentLogger = logger.withCategory('MY_COMPONENT');
+    ```
+
+2.  **В серверном коде** (`src/app/actions`, `src/lib/firebase-admin.ts`):
+    ```typescript
+    import { serverLogger } from '@/lib/server-logger';
+    const actionLogger = serverLogger.withCategory('MY_ACTION');
+    ```
+
+---
+**Заключение:** Текущая реализация полностью соответствует поставленным целям, является безопасной и эффективной, обеспечивая четкое разделение между клиентской и серверной логикой логирования.
