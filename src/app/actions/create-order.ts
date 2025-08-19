@@ -24,7 +24,7 @@ export async function createOrder(payload: CreateOrderPayload) {
             customer: payload.customer,
             items: payload.items.map(item => ({
                 ...item,
-                product: JSON.parse(JSON.stringify(item.product)),
+                product: JSON.parse(JSON.stringify(item.product)), // Ensure product object is correctly serialized for Firestore
             })),
             total: payload.total,
             status: "Новый заказ",
