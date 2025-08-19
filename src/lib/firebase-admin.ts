@@ -2,7 +2,7 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
 const privateKey = process.env.FIREBASE_PRIVATE_KEY
-  ? JSON.parse(`"${process.env.FIREBASE_PRIVATE_KEY}"`)
+  ? JSON.parse(process.env.FIREBASE_PRIVATE_KEY)
   : undefined;
 
 
