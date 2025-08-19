@@ -1,36 +1,41 @@
 "use server";
 
-import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebase-admin";
 import { OrderStatus } from "@/lib/types";
-import { revalidatePath } from "next/cache";
+import { logger } from "@/lib/logger";
+
+const orderStatusLogger = logger.withCategory("ORDER_STATUS_ACTION");
+
 
 export async function updateOrderStatus(orderId: string, newStatus: OrderStatus) {
-  if (!orderId || !newStatus) {
-    throw new Error("Необходим ID заказа и новый статус.");
-  }
+    orderStatusLogger.info(`Updating status for order ${orderId} to "${newStatus}"`);
+    if (!orderId || !newStatus) {
+        orderStatusLogger.warn("Update status failed due to missing arguments.", { orderId, newStatus });
+        throw new Error("Необходим ID заказа и новый статус.");
+    }
 
-  try {
-    const orderRef = doc(db, "orders", orderId);
-    
-    await updateDoc(orderRef, {
-      status: newStatus,
-      lastUpdated: serverTimestamp(),
-    });
+    try {
+        const orderRef = adminDb.collection("orders").doc(orderId);
+        
+        const updatePayload = {
+            status: newStatus,
+            lastUpdated: new Date(),
+        };
+        
+        await orderRef.update(updatePayload);
+        
+        orderStatusLogger.info(`Successfully updated status for order ${orderId}.`, { newStatus });
 
-    // TODO: Add logic to send notification to Telegram bot here
-    // For example:
-    // if (newStatus === "Новый заказ") {
-    //   await sendTelegramNotification(`Новый заказ #${orderId}!`);
-    // }
+        // TODO: Add logic to send notification to Telegram bot here
+        // For example:
+        // if (newStatus === "Новый заказ") {
+        //   await sendTelegramNotification(`Новый заказ #${orderId}!`);
+        // }
+        
+        return { success: true, message: `Статус заказа #${orderId} обновлен.` };
 
-    revalidatePath("/admin/orders");
-    
-    return { success: true, message: `Статус заказа #${orderId} обновлен.` };
-
-  } catch (error) {
-    console.error("Ошибка при обновлении статуса заказа: ", error);
-    // You might want to throw a more specific error or return a detailed error object
-    throw new Error("Не удалось обновить статус заказа в базе данных.");
-  }
+    } catch (error) {
+        orderStatusLogger.error(`Failed to update status for order ${orderId}`, error as Error);
+        throw new Error("Не удалось обновить статус заказа в базе данных.");
+    }
 }

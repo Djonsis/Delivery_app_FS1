@@ -1,8 +1,10 @@
 "use server";
 
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebase-admin";
 import { CartItem } from "@/lib/types";
+import { logger } from "@/lib/logger";
+
+const orderLogger = logger.withCategory("ORDER_ACTION");
 
 interface CreateOrderPayload {
     customer: string;
@@ -11,7 +13,9 @@ interface CreateOrderPayload {
 }
 
 export async function createOrder(payload: CreateOrderPayload) {
+    orderLogger.info("Attempting to create a new order...", { customer: payload.customer, itemCount: payload.items.length });
     if (!payload.customer || !payload.items || payload.items.length === 0) {
+        orderLogger.warn("Order creation failed due to missing data.", { customer: payload.customer, items: payload.items });
         throw new Error("Необходимы данные о клиенте и товарах в заказе.");
     }
 
@@ -20,20 +24,23 @@ export async function createOrder(payload: CreateOrderPayload) {
             customer: payload.customer,
             items: payload.items.map(item => ({
                 ...item,
-                 // Ensure product is a plain object
                 product: JSON.parse(JSON.stringify(item.product)),
             })),
             total: payload.total,
             status: "Новый заказ",
-            date: serverTimestamp(),
-            lastUpdated: serverTimestamp(),
+            date: new Date(),
+            lastUpdated: new Date(),
         };
 
-        const docRef = await addDoc(collection(db, "orders"), orderData);
+        orderLogger.debug("Prepared order data for Firestore.", { total: orderData.total });
+
+        const docRef = await adminDb.collection("orders").add(orderData);
+        
+        orderLogger.info(`Successfully created new order.`, { orderId: docRef.id });
         
         return { success: true, orderId: docRef.id };
     } catch (error) {
-        console.error("Ошибка при создании заказа: ", error);
+        orderLogger.error("Error creating order in Firestore", error as Error);
         throw new Error("Не удалось сохранить заказ в базе данных.");
     }
 }
