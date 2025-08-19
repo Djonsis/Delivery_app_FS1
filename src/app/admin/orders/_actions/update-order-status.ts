@@ -2,9 +2,9 @@
 
 import { adminDb } from "@/lib/firebase-admin";
 import { OrderStatus } from "@/lib/types";
-import { logger } from "@/lib/logger";
+import { serverLogger } from "@/lib/server-logger";
 
-const orderStatusLogger = logger.withCategory("ORDER_STATUS_ACTION");
+const orderStatusLogger = serverLogger.withCategory("ORDER_STATUS_ACTION");
 
 
 export async function updateOrderStatus(orderId: string, newStatus: OrderStatus) {

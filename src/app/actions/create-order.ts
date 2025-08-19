@@ -2,9 +2,9 @@
 
 import { adminDb } from "@/lib/firebase-admin";
 import { CartItem } from "@/lib/types";
-import { logger } from "@/lib/logger";
+import { serverLogger } from "@/lib/server-logger";
 
-const orderLogger = logger.withCategory("ORDER_ACTION");
+const orderLogger = serverLogger.withCategory("ORDER_ACTION");
 
 interface CreateOrderPayload {
     customer: string;
