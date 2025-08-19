@@ -111,10 +111,10 @@ export default function ProductPage() {
       <main className="flex-1 py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6">
-            <Link href="/">
+            <Link href="/catalog">
               <Button variant="ghost" className="text-sm text-muted-foreground hover:text-foreground">
                 <ChevronLeft className="h-4 w-4 mr-1" />
-                Главная
+                Каталог
               </Button>
             </Link>
           </div>
