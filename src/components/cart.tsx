@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Image from "next/image";
@@ -101,9 +102,9 @@ export function Cart() {
                             const newQuantity = parseFloat((quantity - product.step_quantity).toFixed(precision));
                             cartComponentLogger.debug(`Decrementing quantity for ${product.name}`, { from: quantity, to: newQuantity });
                             if (newQuantity > 0 && newQuantity < product.min_order_quantity) {
-                                updateQuantity(product.id, 0);
+                                updateQuantity(product, 0);
                             } else {
-                                updateQuantity(product.id, newQuantity)
+                                updateQuantity(product, newQuantity)
                             }
                           }}
                         >
@@ -119,7 +120,7 @@ export function Cart() {
                           onClick={() => {
                             const newQuantity = parseFloat((quantity + product.step_quantity).toFixed(precision));
                             cartComponentLogger.debug(`Incrementing quantity for ${product.name}`, { from: quantity, to: newQuantity });
-                            updateQuantity(product.id, newQuantity)
+                            updateQuantity(product, newQuantity)
                           }}
                         >
                           <Plus className="h-4 w-4" />

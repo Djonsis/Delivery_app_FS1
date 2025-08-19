@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { createContext, useReducer, ReactNode } from "react";
@@ -14,7 +15,7 @@ interface CartState {
 type CartAction =
   | { type: 'ADD_TO_CART'; payload: Product }
   | { type: 'REMOVE_FROM_CART'; payload: string }
-  | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number } }
+  | { type: 'UPDATE_QUANTITY'; payload: { product: Product, quantity: number } }
   | { type: 'CLEAR_CART' };
 
 
@@ -52,35 +53,28 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       };
     }
     case 'UPDATE_QUANTITY': {
-        const { id, quantity } = action.payload;
+        const { product, quantity } = action.payload;
+        const productId = product.id;
+
         if (quantity <= 0) {
             return {
                 ...state,
-                cartItems: state.cartItems.filter(item => item.product.id !== id),
+                cartItems: state.cartItems.filter(item => item.product.id !== productId),
             };
         } else {
-             const existingProduct = state.cartItems.find(item => item.product.id === id)?.product;
-            if (!existingProduct && state.cartItems.every(item => item.product.id !== id)) {
-                return state;
-            }
+            const isItemInCart = state.cartItems.some(item => item.product.id === productId);
 
-            // Add to cart if it's not there yet
-            if (!state.cartItems.some(item => item.product.id === id)) {
-                 const productToAdd = state.cartItems.find(item => item.product.id === id)?.product; // This is a bit of a guess, need the product object
-                 if(productToAdd) {
-                    return {
-                        ...state,
-                        cartItems: [...state.cartItems, { product: productToAdd, quantity }],
-                    };
-                 } else {
-                    return state;
-                 }
+            if (isItemInCart) {
+                return {
+                    ...state,
+                    cartItems: state.cartItems.map(item =>
+                        item.product.id === productId ? { ...item, quantity } : item
+                    ),
+                };
             } else {
                  return {
                     ...state,
-                    cartItems: state.cartItems.map(item =>
-                        item.product.id === id ? { ...item, quantity } : item
-                    ),
+                    cartItems: [...state.cartItems, { product, quantity }],
                 };
             }
         }
@@ -100,7 +94,7 @@ export const CartContext = createContext<{
   cartItems: CartItem[];
   addToCart: (product: Product) => void;
   removeFromCart: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  updateQuantity: (product: Product, quantity: number) => void;
   clearCart: () => void;
   getCartItem: (id: string) => CartItem | undefined;
   itemCount: number;
@@ -127,9 +121,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     cartLogger.info(`Removing product from cart: ${id}`);
     dispatch({ type: 'REMOVE_FROM_CART', payload: id });
   }
-  const updateQuantity = (id: string, quantity: number) => {
-    cartLogger.info(`Updating quantity for product: ${id}`, { newQuantity: quantity });
-    dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
+  const updateQuantity = (product: Product, quantity: number) => {
+    cartLogger.info(`Updating quantity for product: ${product.id}`, { newQuantity: quantity });
+    dispatch({ type: 'UPDATE_QUANTITY', payload: { product, quantity } });
   }
   const clearCart = () => {
     cartLogger.info("Clearing cart.");

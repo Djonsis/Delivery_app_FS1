@@ -1,11 +1,10 @@
 
+
 "use client";
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { notFound, useParams } from 'next/navigation';
-import { products } from '@/lib/products';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -14,25 +13,58 @@ import SiteHeader from '@/components/site-header';
 import ProductCarousel from './_components/product-carousel';
 import { useCart } from '@/hooks/use-cart';
 import { logger } from '@/lib/logger';
+import { useEffect, useState } from 'react';
+import { getProductById, getProductsByCategory } from '@/lib/products.service';
+import type { Product } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const productPageLogger = logger.withCategory("PRODUCT_PAGE");
 
 export default function ProductPage() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
-  const product = products.find((p) => p.id === id);
+  
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const { addToCart, updateQuantity, getCartItem } = useCart();
-  const router = useRouter();
+
+  useEffect(() => {
+    if (id) {
+      const fetchProductData = async () => {
+        setLoading(true);
+        productPageLogger.debug(`Fetching data for product ID: ${id}`);
+        try {
+          const fetchedProduct = await getProductById(id);
+          if (fetchedProduct) {
+            setProduct(fetchedProduct);
+            const related = await getProductsByCategory(fetchedProduct.category, 5);
+            setRelatedProducts(related.filter(p => p.id !== fetchedProduct.id));
+          } else {
+            notFound();
+          }
+        } catch (error) {
+          productPageLogger.error("Failed to fetch product data.", error as Error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchProductData();
+    }
+  }, [id]);
+
+  const cartItem = product ? getCartItem(product.id) : undefined;
+  
+  if (loading) {
+    return <ProductPageSkeleton />;
+  }
 
   if (!product) {
-    productPageLogger.error("Product not found", { id });
+    productPageLogger.error("Product not found after loading", { id });
     notFound();
   }
-  
-  const cartItem = getCartItem(product.id);
 
-  const relatedProducts = products.filter(p => p.category === product.category && p.id !== product.id).slice(0, 5);
-  
   const getPrecision = (step: number) => {
     const stepStr = step.toString();
     if (stepStr.includes('.')) {
@@ -47,9 +79,9 @@ export default function ProductPage() {
     const newQuantity = parseFloat((currentQuantity + product.step_quantity).toFixed(precision));
     productPageLogger.debug(`Incrementing quantity for ${product.name}`, { from: currentQuantity, to: newQuantity });
     if (currentQuantity === 0) {
-      updateQuantity(product.id, product.min_order_quantity);
+      updateQuantity(product, product.min_order_quantity);
     } else {
-      updateQuantity(product.id, newQuantity);
+      updateQuantity(product, newQuantity);
     }
   };
   
@@ -58,9 +90,9 @@ export default function ProductPage() {
       const newQuantity = parseFloat((cartItem.quantity - product.step_quantity).toFixed(precision));
       productPageLogger.debug(`Decrementing quantity for ${product.name}`, { from: cartItem.quantity, to: newQuantity });
       if (newQuantity >= product.min_order_quantity) {
-        updateQuantity(product.id, newQuantity);
+        updateQuantity(product, newQuantity);
       } else {
-        updateQuantity(product.id, 0);
+        updateQuantity(product, 0);
       }
     }
   };
@@ -210,4 +242,33 @@ export default function ProductPage() {
   );
 }
 
-    
+function ProductPageSkeleton() {
+  return (
+     <div className="flex min-h-screen w-full flex-col bg-background">
+      <SiteHeader />
+       <main className="flex-1 py-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-6">
+                <Skeleton className="h-8 w-24" />
+            </div>
+             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
+                 <div>
+                    <Skeleton className="aspect-square w-full rounded-xl" />
+                 </div>
+                 <div className="space-y-6">
+                    <Skeleton className="h-10 w-3/4" />
+                    <Skeleton className="h-6 w-1/2" />
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-12 w-1/3" />
+                    <Skeleton className="h-12 w-full" />
+                     <div className="mt-8 space-y-4">
+                        <Skeleton className="h-32 w-full" />
+                        <Skeleton className="h-24 w-full" />
+                    </div>
+                 </div>
+             </div>
+         </div>
+       </main>
+     </div>
+  )
+}

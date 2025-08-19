@@ -1,9 +1,10 @@
 
+
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from 'next/navigation'
-import { products as allProducts, categories } from "@/lib/products";
+import { getProducts, getCategories } from "@/lib/products.service";
 import { ProductCard } from "@/components/product-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Product } from "@/lib/types";
+import { Skeleton } from "./ui/skeleton";
 
 
 type SortOption = "popularity" | "price_desc" | "price_asc" | "rating_desc" | "discount_desc";
@@ -29,10 +31,35 @@ export default function ProductCatalog() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || 'Все';
   
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [sortOption, setSortOption] = useState<SortOption>("popularity");
   const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({});
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [fetchedProducts, fetchedCategories] = await Promise.all([
+          getProducts(),
+          getCategories()
+        ]);
+        setAllProducts(fetchedProducts);
+        setCategories(fetchedCategories);
+      } catch (error) {
+        console.error("Failed to fetch products or categories", error);
+        // Optionally, show a toast or an error message to the user
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
 
   useEffect(() => {
     setSelectedCategory(initialCategory);
@@ -90,7 +117,7 @@ export default function ProductCatalog() {
       });
     
     return sortProducts(filtered, sortOption);
-  }, [searchTerm, selectedCategory, sortOption, priceRange]);
+  }, [searchTerm, selectedCategory, sortOption, priceRange, allProducts]);
 
   return (
     <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
@@ -192,18 +219,42 @@ export default function ProductCatalog() {
           <ScrollBar orientation="horizontal" className="h-2" />
         </ScrollArea>
       </div>
-
-      <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredAndSortedProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
-      {filteredAndSortedProducts.length === 0 && (
-        <div className="col-span-full mt-16 flex flex-col items-center justify-center">
-            <p className="text-lg text-muted-foreground">Продукты не найдены.</p>
-            <p className="text-sm text-muted-foreground">Попробуйте изменить поиск или фильтры.</p>
+      
+      {loading ? (
+        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+             <CardSkeleton key={i}/>
+          ))}
         </div>
+      ) : (
+        <>
+        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredAndSortedProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+            ))}
+        </div>
+        {filteredAndSortedProducts.length === 0 && (
+            <div className="col-span-full mt-16 flex flex-col items-center justify-center">
+                <p className="text-lg text-muted-foreground">Продукты не найдены.</p>
+                <p className="text-sm text-muted-foreground">Попробуйте изменить поиск или фильтры.</p>
+            </div>
+        )}
+        </>
       )}
     </div>
   );
+}
+
+
+function CardSkeleton() {
+    return (
+        <div className="flex flex-col space-y-3">
+            <Skeleton className="aspect-[4/3] w-full rounded-xl" />
+            <div className="space-y-2">
+                <Skeleton className="h-4 w-[150px]" />
+                <Skeleton className="h-4 w-[100px]" />
+            </div>
+            <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+    )
 }

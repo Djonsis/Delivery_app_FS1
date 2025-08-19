@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Image from "next/image";
@@ -37,9 +38,9 @@ export function ProductCard({ product }: ProductCardProps) {
 
     if (roundedQuantity > 0 && roundedQuantity < product.min_order_quantity) {
       productCardLogger.debug(`Quantity ${roundedQuantity} is below min order ${product.min_order_quantity}. Setting to 0.`, { productId: product.id });
-      updateQuantity(product.id, 0);
+      updateQuantity(product, 0);
     } else {
-      updateQuantity(product.id, roundedQuantity);
+      updateQuantity(product, roundedQuantity);
     }
   };
   
@@ -61,7 +62,7 @@ export function ProductCard({ product }: ProductCardProps) {
       if (newQuantity >= product.min_order_quantity) {
         handleQuantityChange(newQuantity);
       } else {
-        updateQuantity(product.id, 0);
+        updateQuantity(product, 0);
       }
     }
   };
