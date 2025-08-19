@@ -25,7 +25,10 @@ const configuredLevel = LOG_LEVELS[config.level] ?? LOG_LEVELS.debug;
 const performanceTimers = new Map<string, number>();
 
 // --- Helper Functions ---
+const isServer = typeof window === 'undefined';
+
 const ensureLogFileExists = () => {
+    if (!isServer) return;
     const dir = path.dirname(config.logFilePath);
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
@@ -44,7 +47,7 @@ const formatLogEntry = (level: LogLevel, category: string, message: string, data
     const upperCaseLevel = level.toUpperCase();
     const dataString = data ? `\n${formatObject(data)}` : '';
 
-    if (config.format === 'json') {
+    if (config.format === 'json' && isServer) {
         const logObject = {
             timestamp,
             level: upperCaseLevel,
@@ -59,6 +62,7 @@ const formatLogEntry = (level: LogLevel, category: string, message: string, data
 };
 
 const writeLog = (entry: string) => {
+    if (!isServer) return;
     ensureLogFileExists();
     // Use fs.appendFileSync for synchronous writing to avoid race conditions
     fs.appendFileSync(config.logFilePath, entry + '\n', 'utf8');
@@ -81,8 +85,30 @@ class Logger {
         if (LOG_LEVELS[level] < configuredLevel) return;
 
         const entry = formatLogEntry(level, this.category, message, data);
-        console.log(entry); // Always log to console
-        writeLog(entry);
+        
+        if(isServer) {
+            console.log(entry); // Always log to console on server
+            writeLog(entry);
+        } else {
+             // On the client, use console methods with better browser support
+            const dataToLog = data ? data : '';
+            const logMessage = `[${level.toUpperCase()}] [${this.category}] ${message}`;
+            switch(level) {
+                case 'error':
+                    console.error(logMessage, dataToLog);
+                    break;
+                case 'warn':
+                    console.warn(logMessage, dataToLog);
+                    break;
+                case 'info':
+                    console.info(logMessage, dataToLog);
+                    break;
+                case 'debug':
+                default:
+                    console.debug(logMessage, dataToLog);
+                    break;
+            }
+        }
     }
 
     public debug(message: string, data?: any) {

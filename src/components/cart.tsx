@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -10,22 +11,33 @@ import { Minus, Plus, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { createOrder } from "@/app/actions/create-order";
 import { useState, useTransition } from "react";
+import { logger } from "@/lib/logger";
+
+const cartComponentLogger = logger.withCategory("CART_COMPONENT");
 
 export function Cart() {
   const { cartItems, removeFromCart, updateQuantity, cartTotal, itemCount, clearCart } = useCart();
   const [isPending, startTransition] = useTransition();
 
   const handleCheckout = () => {
-    if (cartItems.length === 0) return;
+    cartComponentLogger.info("Checkout process started.", { itemCount, cartTotal });
+    if (cartItems.length === 0) {
+      cartComponentLogger.warn("Checkout attempted with an empty cart.");
+      return;
+    }
+
+    const orderPayload = {
+      // Temporarily hardcoding customer name. We'll replace this with real user data later.
+      customer: "Иван Петров",
+      items: cartItems,
+      total: cartTotal,
+    };
+    cartComponentLogger.debug("Order payload prepared.", { payload: orderPayload });
 
     startTransition(async () => {
         try {
-            await createOrder({
-                // Temporarily hardcoding customer name. We'll replace this with real user data later.
-                customer: "Иван Петров",
-                items: cartItems,
-                total: cartTotal,
-            });
+            const result = await createOrder(orderPayload);
+            cartComponentLogger.info("Order successfully created.", { orderId: result.orderId });
 
             toast({
               title: "Заказ принят!",
@@ -33,7 +45,7 @@ export function Cart() {
             });
             clearCart();
         } catch (error) {
-            console.error("Failed to create order:", error);
+            cartComponentLogger.error("Failed to create order during checkout.", error as Error);
             toast({
                 title: "Ошибка",
                 description: "Не удалось оформить заказ. Пожалуйста, попробуйте еще раз.",
@@ -87,6 +99,7 @@ export function Cart() {
                           className="h-7 w-7"
                           onClick={() => {
                             const newQuantity = parseFloat((quantity - product.step_quantity).toFixed(precision));
+                            cartComponentLogger.debug(`Decrementing quantity for ${product.name}`, { from: quantity, to: newQuantity });
                             if (newQuantity > 0 && newQuantity < product.min_order_quantity) {
                                 updateQuantity(product.id, 0);
                             } else {
@@ -105,6 +118,7 @@ export function Cart() {
                           className="h-7 w-7"
                           onClick={() => {
                             const newQuantity = parseFloat((quantity + product.step_quantity).toFixed(precision));
+                            cartComponentLogger.debug(`Incrementing quantity for ${product.name}`, { from: quantity, to: newQuantity });
                             updateQuantity(product.id, newQuantity)
                           }}
                         >
@@ -116,7 +130,10 @@ export function Cart() {
                       variant="ghost"
                       size="icon"
                       className="text-muted-foreground"
-                      onClick={() => removeFromCart(product.id)}
+                      onClick={() => {
+                        cartComponentLogger.info(`Removing product from cart via X button: ${product.name}`, { productId: product.id });
+                        removeFromCart(product.id)
+                      }}
                     >
                       <X className="h-4 w-4" />
                     </Button>

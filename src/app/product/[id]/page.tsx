@@ -13,6 +13,9 @@ import { Star, MessageCircle, Plus, Minus, ChevronLeft } from 'lucide-react';
 import SiteHeader from '@/components/site-header';
 import ProductCarousel from './_components/product-carousel';
 import { useCart } from '@/hooks/use-cart';
+import { logger } from '@/lib/logger';
+
+const productPageLogger = logger.withCategory("PRODUCT_PAGE");
 
 export default function ProductPage() {
   const params = useParams();
@@ -22,6 +25,7 @@ export default function ProductPage() {
   const router = useRouter();
 
   if (!product) {
+    productPageLogger.error("Product not found", { id });
     notFound();
   }
   
@@ -41,6 +45,7 @@ export default function ProductPage() {
   const incrementQuantity = () => {
     const currentQuantity = cartItem ? cartItem.quantity : 0;
     const newQuantity = parseFloat((currentQuantity + product.step_quantity).toFixed(precision));
+    productPageLogger.debug(`Incrementing quantity for ${product.name}`, { from: currentQuantity, to: newQuantity });
     if (currentQuantity === 0) {
       updateQuantity(product.id, product.min_order_quantity);
     } else {
@@ -51,6 +56,7 @@ export default function ProductPage() {
   const decrementQuantity = () => {
     if (cartItem) {
       const newQuantity = parseFloat((cartItem.quantity - product.step_quantity).toFixed(precision));
+      productPageLogger.debug(`Decrementing quantity for ${product.name}`, { from: cartItem.quantity, to: newQuantity });
       if (newQuantity >= product.min_order_quantity) {
         updateQuantity(product.id, newQuantity);
       } else {
@@ -58,6 +64,11 @@ export default function ProductPage() {
       }
     }
   };
+
+  const handleAddToCart = () => {
+    productPageLogger.info(`Adding ${product.name} to cart from product page`, { product });
+    addToCart(product);
+  }
 
   const displayedQuantity = cartItem?.quantity ? (cartItem.quantity.toFixed(precision)) : '0';
 
@@ -117,7 +128,7 @@ export default function ProductPage() {
                     </Button>
                   </div>
                 ) : (
-                   <Button size="lg" className="w-full" onClick={() => addToCart(product)}>
+                   <Button size="lg" className="w-full" onClick={handleAddToCart}>
                     Добавить в корзину
                   </Button>
                 )}

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -7,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCart } from "@/hooks/use-cart";
 import { Plus, Minus, Star } from "lucide-react";
+import { logger } from "@/lib/logger";
+
+const productCardLogger = logger.withCategory("PRODUCT_CARD");
 
 interface ProductCardProps {
   product: Product;
@@ -26,11 +30,13 @@ export function ProductCard({ product }: ProductCardProps) {
   const precision = getPrecision(product.step_quantity);
 
   const handleQuantityChange = (newQuantity: number) => {
+    productCardLogger.debug(`Handling quantity change for ${product.name}`, { newQuantity });
     if (newQuantity < 0) return;
     
     let roundedQuantity = parseFloat(newQuantity.toFixed(precision));
 
     if (roundedQuantity > 0 && roundedQuantity < product.min_order_quantity) {
+      productCardLogger.debug(`Quantity ${roundedQuantity} is below min order ${product.min_order_quantity}. Setting to 0.`, { productId: product.id });
       updateQuantity(product.id, 0);
     } else {
       updateQuantity(product.id, roundedQuantity);
@@ -40,6 +46,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const incrementQuantity = () => {
     const currentQuantity = cartItem ? cartItem.quantity : 0;
     const newQuantity = parseFloat((currentQuantity + product.step_quantity).toFixed(precision));
+    productCardLogger.debug(`Incrementing quantity for ${product.name}`, { from: currentQuantity, to: newQuantity });
     if (currentQuantity === 0) {
       handleQuantityChange(product.min_order_quantity);
     } else {
@@ -50,6 +57,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const decrementQuantity = () => {
     if (cartItem) {
       const newQuantity = parseFloat((cartItem.quantity - product.step_quantity).toFixed(precision));
+       productCardLogger.debug(`Decrementing quantity for ${product.name}`, { from: cartItem.quantity, to: newQuantity });
       if (newQuantity >= product.min_order_quantity) {
         handleQuantityChange(newQuantity);
       } else {
@@ -59,6 +67,11 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   const displayedQuantity = cartItem?.quantity ? (cartItem.quantity.toFixed(precision)) : '0';
+
+  const handleAddToCart = () => {
+    productCardLogger.info(`Adding ${product.name} to cart.`, { product });
+    addToCart(product);
+  }
 
   return (
     <Card className="flex h-full flex-col overflow-hidden rounded-xl shadow-sm transition-shadow hover:shadow-lg">
@@ -104,7 +117,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </Button>
           </div>
         ) : (
-           <Button className="w-full" onClick={() => addToCart(product)}>
+           <Button className="w-full" onClick={handleAddToCart}>
             В корзину
           </Button>
         )}

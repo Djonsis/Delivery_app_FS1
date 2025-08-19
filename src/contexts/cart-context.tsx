@@ -1,7 +1,11 @@
+
 "use client";
 
 import { createContext, useReducer, ReactNode } from "react";
 import type { Product, CartItem } from "@/lib/types";
+import { logger } from "@/lib/logger";
+
+const cartLogger = logger.withCategory("CART_CONTEXT");
 
 interface CartState {
   cartItems: CartItem[];
@@ -23,6 +27,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case 'ADD_TO_CART': {
       const product = action.payload;
       const existingItem = state.cartItems.find(item => item.product.id === product.id);
+      
       if (existingItem) {
         return {
           ...state,
@@ -32,16 +37,18 @@ function cartReducer(state: CartState, action: CartAction): CartState {
               : item
           ),
         };
+      } else {
+        return {
+          ...state,
+          cartItems: [...state.cartItems, { product, quantity: product.min_order_quantity }],
+        };
       }
-      return {
-        ...state,
-        cartItems: [...state.cartItems, { product, quantity: product.min_order_quantity }],
-      };
     }
     case 'REMOVE_FROM_CART': {
+      const productId = action.payload;
       return {
         ...state,
-        cartItems: state.cartItems.filter(item => item.product.id !== action.payload),
+        cartItems: state.cartItems.filter(item => item.product.id !== productId),
       };
     }
     case 'UPDATE_QUANTITY': {
@@ -51,27 +58,32 @@ function cartReducer(state: CartState, action: CartAction): CartState {
                 ...state,
                 cartItems: state.cartItems.filter(item => item.product.id !== id),
             };
-        }
-         const existingProduct = state.cartItems.find(item => item.product.id === id)?.product;
-        if (!existingProduct) {
-             // This case should ideally not happen if called from a valid context
-            return state;
-        }
+        } else {
+             const existingProduct = state.cartItems.find(item => item.product.id === id)?.product;
+            if (!existingProduct && state.cartItems.every(item => item.product.id !== id)) {
+                return state;
+            }
 
-        // Add to cart if it's not there yet
-        if (!state.cartItems.some(item => item.product.id === id)) {
-            return {
-                ...state,
-                cartItems: [...state.cartItems, { product: existingProduct, quantity }],
-            };
+            // Add to cart if it's not there yet
+            if (!state.cartItems.some(item => item.product.id === id)) {
+                 const productToAdd = state.cartItems.find(item => item.product.id === id)?.product; // This is a bit of a guess, need the product object
+                 if(productToAdd) {
+                    return {
+                        ...state,
+                        cartItems: [...state.cartItems, { product: productToAdd, quantity }],
+                    };
+                 } else {
+                    return state;
+                 }
+            } else {
+                 return {
+                    ...state,
+                    cartItems: state.cartItems.map(item =>
+                        item.product.id === id ? { ...item, quantity } : item
+                    ),
+                };
+            }
         }
-
-        return {
-            ...state,
-            cartItems: state.cartItems.map(item =>
-                item.product.id === id ? { ...item, quantity } : item
-            ),
-        };
     }
     case 'CLEAR_CART': {
         return {
@@ -107,10 +119,22 @@ export const CartContext = createContext<{
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
-  const addToCart = (product: Product) => dispatch({ type: 'ADD_TO_CART', payload: product });
-  const removeFromCart = (id: string) => dispatch({ type: 'REMOVE_FROM_CART', payload: id });
-  const updateQuantity = (id: string, quantity: number) => dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
-  const clearCart = () => dispatch({ type: 'CLEAR_CART' });
+  const addToCart = (product: Product) => {
+    cartLogger.info(`Adding product to cart: ${product.name}`, { productId: product.id });
+    dispatch({ type: 'ADD_TO_CART', payload: product });
+  }
+  const removeFromCart = (id: string) => {
+    cartLogger.info(`Removing product from cart: ${id}`);
+    dispatch({ type: 'REMOVE_FROM_CART', payload: id });
+  }
+  const updateQuantity = (id: string, quantity: number) => {
+    cartLogger.info(`Updating quantity for product: ${id}`, { newQuantity: quantity });
+    dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
+  }
+  const clearCart = () => {
+    cartLogger.info("Clearing cart.");
+    dispatch({ type: 'CLEAR_CART' });
+  }
   
   const getCartItem = (id: string) => state.cartItems.find(item => item.product.id === id);
 
