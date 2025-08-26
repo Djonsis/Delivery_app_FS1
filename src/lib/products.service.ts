@@ -6,9 +6,6 @@ import { serverLogger } from "./server-logger";
 
 const productsServiceLogger = serverLogger.withCategory("PRODUCTS_SERVICE");
 
-// Helper function to simulate async fetching
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
 const getBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_VERCEL_URL) {
     return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
@@ -20,7 +17,7 @@ const getBaseUrl = () => {
 export async function getProducts(): Promise<Product[]> {
     productsServiceLogger.info("Fetching all products from API.");
     try {
-        const res = await fetch(`${getBaseUrl()}/api/products`);
+        const res = await fetch(`${getBaseUrl()}/api/products`, { cache: 'no-store' });
         if (!res.ok) {
             throw new Error(`Failed to fetch products: ${res.statusText}`);
         }
@@ -35,15 +32,11 @@ export async function getProducts(): Promise<Product[]> {
 
 export async function getProductById(id: string): Promise<Product | null> {
     productsServiceLogger.info(`Fetching product by ID: ${id}`);
+     // На данном этапе мы получаем все товары и фильтруем.
+     // В будущем это будет заменено на прямой запрос к /api/products/[id]
     try {
-        const res = await fetch(`${getBaseUrl()}/api/products/${id}`);
-        if (!res.ok) {
-             if (res.status === 404) {
-                return null;
-            }
-            throw new Error(`Failed to fetch product ${id}: ${res.statusText}`);
-        }
-        const product = await res.json();
+       const allProducts = await getProducts();
+       const product = allProducts.find(p => p.id === id) || null;
         if (product) {
             productsServiceLogger.debug(`Product found for ID: ${id}`);
         } else {
@@ -58,8 +51,6 @@ export async function getProductById(id: string): Promise<Product | null> {
 
 export async function getProductsByCategory(category: string, limitCount: number = 5): Promise<Product[]> {
     productsServiceLogger.info(`Fetching products by category: ${category}`, { limit: limitCount });
-    // This will be replaced by an API call that supports category filtering.
-    // For now, we fetch all and filter, which is inefficient.
     try {
         const products = await getProducts();
         const filteredProducts = products.filter(p => p.category === category).slice(0, limitCount);
@@ -74,7 +65,7 @@ export async function getProductsByCategory(category: string, limitCount: number
 export async function getCategories(): Promise<string[]> {
     productsServiceLogger.info("Fetching all categories from API.");
     try {
-        const res = await fetch(`${getBaseUrl()}/api/products/categories`);
+        const res = await fetch(`${getBaseUrl()}/api/products/categories`, { cache: 'no-store' });
         if (!res.ok) {
             throw new Error(`Failed to fetch categories: ${res.statusText}`);
         }
