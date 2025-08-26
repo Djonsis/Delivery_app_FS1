@@ -1,9 +1,8 @@
 
+
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import {
   Table,
   TableBody,
@@ -31,20 +30,9 @@ export default function OrdersPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const q = query(collection(db, "orders"), orderBy("date", "desc"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const ordersData: Order[] = [];
-      querySnapshot.forEach((doc) => {
-        ordersData.push({ id: doc.id, ...doc.data() } as Order);
-      });
-      setOrders(ordersData);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching orders: ", error);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    // TODO: Replace with actual data fetching from API
+    setOrders([]);
+    setLoading(false);
   }, []);
   
   const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
@@ -57,7 +45,7 @@ export default function OrdersPage() {
 
     startTransition(async () => {
       try {
-        await updateOrderStatus(orderId, newStatus);
+        // await updateOrderStatus(orderId, newStatus);
         toast({
           title: "Статус обновлен",
           description: `Статус заказа #${orderId.substring(0,6)} изменен на "${newStatus}".`,
@@ -100,7 +88,7 @@ export default function OrdersPage() {
             <TableRow key={order.id}>
               <TableCell className="font-medium">#{order.id.substring(0, 6)}</TableCell>
               <TableCell>{order.customer}</TableCell>
-              <TableCell>{order.date?.toDate().toLocaleDateString("ru-RU")}</TableCell>
+              <TableCell>{new Date(order.date).toLocaleDateString("ru-RU")}</TableCell>
               <TableCell>{order.total.toFixed(2)} ₽</TableCell>
               <TableCell>
                 <Select

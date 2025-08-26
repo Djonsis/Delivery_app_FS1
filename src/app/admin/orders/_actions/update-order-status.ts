@@ -1,6 +1,5 @@
 "use server";
 
-import { adminDb } from "@/lib/firebase-admin";
 import { OrderStatus } from "@/lib/types";
 import { serverLogger } from "@/lib/server-logger";
 
@@ -15,16 +14,16 @@ export async function updateOrderStatus(orderId: string, newStatus: OrderStatus)
     }
 
     try {
-        const orderRef = adminDb.collection("orders").doc(orderId);
+        // const orderRef = adminDb.collection("orders").doc(orderId);
         
-        const updatePayload = {
-            status: newStatus,
-            lastUpdated: new Date(),
-        };
+        // const updatePayload = {
+        //     status: newStatus,
+        //     lastUpdated: new Date(),
+        // };
         
-        await orderRef.update(updatePayload);
+        // await orderRef.update(updatePayload);
         
-        orderStatusLogger.info(`Successfully updated status for order ${orderId}.`, { newStatus });
+        // orderStatusLogger.info(`Successfully updated status for order ${orderId}.`, { newStatus });
 
         // TODO: Add logic to send notification to Telegram bot here
         // For example:

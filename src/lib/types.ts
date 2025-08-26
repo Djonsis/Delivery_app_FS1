@@ -1,4 +1,3 @@
-import { Timestamp } from "firebase/firestore";
 
 export type WeightCategory = 'light' | 'middle' | 'heavy' | 'none';
 
@@ -60,5 +59,5 @@ export interface Order {
   status: OrderStatus;
   cancellationReason?: CancellationReason;
   items: CartItem[];
-  lastUpdated?: Timestamp;
+  lastUpdated?: any;
 }

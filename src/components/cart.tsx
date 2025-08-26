@@ -10,7 +10,6 @@ import { SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { Minus, Plus, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { createOrder } from "@/app/actions/create-order";
 import { useState, useTransition } from "react";
 import { logger } from "@/lib/logger";
 
@@ -37,8 +36,8 @@ export function Cart() {
 
     startTransition(async () => {
         try {
-            const result = await createOrder(orderPayload);
-            cartComponentLogger.info("Order successfully created.", { orderId: result.orderId });
+            // const result = await createOrder(orderPayload);
+            // cartComponentLogger.info("Order successfully created.", { orderId: result.orderId });
 
             toast({
               title: "Заказ принят!",
