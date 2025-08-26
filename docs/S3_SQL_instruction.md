@@ -3,21 +3,22 @@
 > **Версия:** 1.0.0
 > **Дата:** 2024-08-26
 
-Этот документ содержит пошаговые инструкции для настройки базы данных PostgreSQL и S3-совместимого объектного хранилища, необходимых для запуска этого проекта.
+Этот документ содержит пошаговые инструкции для настройки базы данных **Google Cloud SQL for PostgreSQL** и объектного хранилища **Google Cloud Storage (GCS)**, необходимых для запуска этого проекта. Выбор продуктов Google Cloud обусловлен текущей интеграцией проекта с экосистемой Firebase.
 
 ---
 
-## 1. Настройка базы данных PostgreSQL
+## 1. Настройка базы данных Google Cloud SQL for PostgreSQL
 
-### Шаг 1: Создание базы данных
+### Шаг 1: Создание инстанса и базы данных
 
-1.  Убедитесь, что у вас есть доступ к инстансу PostgreSQL (версия 12+).
-2.  Создайте новую базу данных. Рекомендуемое имя: `appdb`.
-3.  Создайте пользователя с правами на эту базу данных.
+1.  В консоли Google Cloud Platform перейдите в раздел **Cloud SQL**.
+2.  Создайте новый инстанс, выбрав **PostgreSQL** (версия 12+).
+3.  Внутри инстанса создайте новую базу данных. Рекомендуемое имя: `appdb`.
+4.  Создайте пользователя с правами на эту базу данных.
 
 ### Шаг 2: Применение схемы
 
-Выполните следующий SQL-скрипт в вашей новой базе данных. Этот скрипт создаст все необходимые таблицы и расширения.
+Подключитесь к созданной базе данных с помощью Cloud Shell или любого другого SQL-клиента и выполните следующий скрипт. Этот скрипт создаст все необходимые таблицы и расширения.
 
 ```sql
 -- Включаем расширение для генерации UUID, если его еще нет
@@ -46,7 +47,7 @@ CREATE TABLE IF NOT EXISTS user_roles (
   PRIMARY KEY (user_id, role_id)
 );
 
--- Таблица для хранения метаданных о медиафайлах в S3
+-- Таблица для хранения метаданных о медиафайлах в Cloud Storage
 CREATE TABLE IF NOT EXISTS media (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   owner_id UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -86,15 +87,10 @@ CREATE TABLE IF NOT EXISTS product_media (
 
 В вашем файле `.env` укажите данные для подключения к базе данных.
 
-**Для Payload CMS (используется в `apps/cms`):**
 ```env
-DATABASE_URI="postgres://<USER>:<PASSWORD>@<HOST>:<PORT>/<DB_NAME>"
-```
-
-**Для прямого подключения из Next.js (используется в `apps/web`):**
-```env
-PG_HOST="<HOST>"
-PG_PORT="<PORT>"
+# Переменные для подключения к Google Cloud SQL
+PG_HOST="<INSTANCE_CONNECTION_NAME>" # Например, my-project:us-central1:my-instance
+PG_PORT="5432"
 PG_USER="<USER>"
 PG_PASSWORD="<PASSWORD>"
 PG_DATABASE="<DB_NAME>"
@@ -102,38 +98,36 @@ PG_DATABASE="<DB_NAME>"
 
 ---
 
-## 2. Настройка S3-совместимого хранилища
+## 2. Настройка Google Cloud Storage (GCS)
 
 ### Шаг 1: Создание бакета
 
-1.  Создайте новый бакет в вашем S3-провайдере (например, Google Cloud Storage, AWS S3, Yandex Object Storage).
-2.  **Важно:** Сделайте бакет публично доступным для чтения. Это необходимо, чтобы изображения товаров отображались на витрине.
-    *   В Google Cloud Storage это делается путем назначения роли `Storage Object Viewer` для `allUsers`.
+1.  В консоли Google Cloud Platform перейдите в раздел **Cloud Storage**.
+2.  Создайте новый бакет.
+3.  **Важно:** Сделайте бакет публично доступным для чтения. Это делается путем назначения роли `Storage Object Viewer` для участника `allUsers` на вкладке "Разрешения".
 
 ### Шаг 2: Настройка CORS
 
 Для того чтобы браузер мог напрямую загружать файлы в бакет, необходимо настроить CORS (Cross-Origin Resource Sharing).
 
-Примените следующую JSON-конфигурацию к вашему бакету:
+Примените следующую JSON-конфигурацию к вашему бакету (это можно сделать через gcloud CLI):
 ```json
 [
   {
-    "AllowedOrigins": [
+    "origin": [
       "http://localhost:9002",
       "https://your-production-domain.com"
     ],
-    "AllowedMethods": [
+    "method": [
       "PUT",
       "GET",
       "HEAD"
     ],
-    "AllowedHeaders": [
-      "*"
-    ],
-    "ExposeHeaders": [
+    "responseHeader": [
+      "Content-Type",
       "ETag"
     ],
-    "MaxAgeSeconds": 3600
+    "maxAgeSeconds": 3600
   }
 ]
 ```
@@ -141,11 +135,17 @@ PG_DATABASE="<DB_NAME>"
 
 ### Шаг 3: Настройка переменных окружения
 
-В вашем файле `.env` укажите данные для доступа к S3-хранилищу:
+В вашем файле `.env` укажите данные для доступа к GCS. Для аутентификации на сервере рекомендуется использовать сервисный аккаунт, настроенный для вашей среды выполнения (например, в Firebase App Hosting).
+
 ```env
-S3_ENDPOINT_URL="<ENDPOINT_URL>" # например, https://storage.googleapis.com
+# Имя вашего бакета в Google Cloud Storage
 S3_BUCKET_NAME="<YOUR_BUCKET_NAME>"
-S3_REGION="auto" # или ваш регион, например, us-east-1
+
+# Для S3-совместимого API эндпоинт Google Cloud Storage
+S3_ENDPOINT_URL="https://storage.googleapis.com"
+S3_REGION="auto"
+
+# Ключи доступа (рекомендуется для локальной разработки, в проде использовать сервисный аккаунт)
 S3_ACCESS_KEY_ID="<YOUR_ACCESS_KEY>"
 S3_SECRET_ACCESS_KEY="<YOUR_SECRET_KEY>"
 ```
