@@ -1,6 +1,4 @@
 
-"use server";
-
 import * as dotenv from 'dotenv';
 import { serverLogger } from './server-logger';
 
@@ -41,4 +39,3 @@ export const appConfig = {
 };
 
 configLogger.info('Application configuration loaded successfully.');
-
