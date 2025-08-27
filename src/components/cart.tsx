@@ -10,8 +10,10 @@ import { SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { Minus, Plus, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { logger } from "@/lib/logger";
+import { createOrderAction } from "@/app/actions/order.actions";
+import { CartItem } from "@/lib/types";
 
 const cartComponentLogger = logger.withCategory("CART_COMPONENT");
 
@@ -23,32 +25,46 @@ export function Cart() {
     cartComponentLogger.info("Checkout process started.", { itemCount, cartTotal });
     if (cartItems.length === 0) {
       cartComponentLogger.warn("Checkout attempted with an empty cart.");
+      toast({
+        title: "Ваша корзина пуста",
+        description: "Добавьте товары, чтобы оформить заказ.",
+        variant: "destructive",
+      });
       return;
     }
 
     const orderPayload = {
       // Temporarily hardcoding customer name. We'll replace this with real user data later.
-      customer: "Иван Петров",
-      items: cartItems,
-      total: cartTotal,
+      customerName: "Иван Петров",
+      items: cartItems.map((item: CartItem) => ({
+        productId: item.product.id,
+        quantity: item.quantity,
+        unitPrice: item.product.price,
+      })),
+      totalAmount: cartTotal,
     };
     cartComponentLogger.debug("Order payload prepared.", { payload: orderPayload });
 
     startTransition(async () => {
         try {
-            // const result = await createOrder(orderPayload);
-            // cartComponentLogger.info("Order successfully created.", { orderId: result.orderId });
+            const result = await createOrderAction(orderPayload);
+
+            if (!result.success) {
+                throw new Error(result.message);
+            }
+
+            cartComponentLogger.info("Order successfully created.", { orderId: result.orderId });
 
             toast({
               title: "Заказ принят!",
-              description: "Точную итоговую стоимость мы пришлем после сборки заказа.",
+              description: `Ваш заказ #${result.orderId?.substring(0,6)} успешно оформлен.`,
             });
             clearCart();
         } catch (error) {
             cartComponentLogger.error("Failed to create order during checkout.", error as Error);
             toast({
                 title: "Ошибка",
-                description: "Не удалось оформить заказ. Пожалуйста, попробуйте еще раз.",
+                description: (error as Error).message || "Не удалось оформить заказ. Пожалуйста, попробуйте еще раз.",
                 variant: "destructive",
             });
         }

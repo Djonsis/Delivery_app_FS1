@@ -42,6 +42,12 @@ export interface Product {
   };
 }
 
+export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
+
 export interface Category {
   id: string;
   name: string;
@@ -91,6 +97,17 @@ export interface OrderItem {
   quantity: number;
   unit_price: number;
 }
+
+export interface CreateOrderPayload {
+    customerName: string;
+    items: {
+        productId: string;
+        quantity: number;
+        unitPrice: number;
+    }[];
+    totalAmount: number;
+}
+
 
 // Status types
 export interface DbStatus {
