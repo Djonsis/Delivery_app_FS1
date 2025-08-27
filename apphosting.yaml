@@ -5,15 +5,34 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
-  env:
-    # Environment variables are not required for Unix socket connection
-    # as it's handled by the App Hosting environment itself.
-    # The application code is now aware of the environment.
-    - variable: SOME_OTHER_VAR
-      value: some_other_value
 
 # This specifies that this backend needs access to Cloud SQL
 cloudsql:
   # The instance connection name can be found on the Cloud SQL instance overview page.
   instances:
     - fastbasket:europe-west10:delivery
+
+# Use secret environment variables to securely pass credentials to the application
+secretEnvironmentVariables:
+  - key: PG_HOST
+    secret: DB_HOST
+  - key: PG_PORT
+    secret: DB_PORT
+  - key: PG_USER
+    secret: DB_USER
+  - key: PG_PASSWORD
+    secret: DB_PASS
+  - key: PG_DATABASE
+    secret: DB_NAME
+  - key: S3_BUCKET_NAME
+    secret: S3_BUCKET_NAME
+  - key: S3_ENDPOINT_URL
+    secret: S3_ENDPOINT_URL
+  - key: S3_REGION
+    secret: S3_REGION
+  - key: S3_ACCESS_KEY_ID
+    secret: S3_ACCESS_KEY_ID
+  - key: S3_SECRET_ACCESS_KEY
+    secret: S3_SECRET_ACCESS_KEY
+  - key: NEXT_PUBLIC_S3_PUBLIC_URL
+    secret: NEXT_PUBLIC_S3_PUBLIC_URL

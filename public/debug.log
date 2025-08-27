@@ -671,3 +671,73 @@ Promise {
      stack:
       'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
      name: 'error' } }
+[2025-08-27T20:36:51.990Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T20:36:52.076Z] [INFO] [DATABASE] DB Connection check: Is Google Cloud? false
+[2025-08-27T20:36:52.129Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:36:52.430Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'error' } }
+[2025-08-27T20:36:52.433Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'error' } }
+[2025-08-27T20:37:16.390Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:37:16.473Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'error' } }
+[2025-08-27T20:37:16.481Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'error' } }
+[2025-08-27T20:37:59.141Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:37:59.221Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'error' } }
+[2025-08-27T20:37:59.230Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'error' } }
+[2025-08-27T20:38:27.897Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:38:28.011Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'error' } }
+[2025-08-27T20:38:28.012Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'error' } }
+[2025-08-27T20:39:05.591Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T20:39:05.653Z] [INFO] [DATABASE] DB Connection check: Is Google Cloud? false
+[2025-08-27T20:39:05.712Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:39:05.936Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error' } }
+[2025-08-27T20:39:05.937Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error' } }
+[2025-08-27T20:39:06.178Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.

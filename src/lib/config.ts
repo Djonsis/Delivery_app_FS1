@@ -1,13 +1,8 @@
 
 // Ensure this module is server-only
-
-import * as dotenv from 'dotenv';
+import 'dotenv/config'
 import { logger } from './logger';
 
-// Load environment variables once centrally
-if (process.env.NODE_ENV !== 'production') {
-    dotenv.config({ path: '.env' });
-}
 
 const configLogger = logger.withCategory('CONFIG');
 

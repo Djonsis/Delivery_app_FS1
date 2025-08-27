@@ -1,4 +1,5 @@
 
+import 'dotenv/config'
 import { Pool } from 'pg';
 import { serverConfig } from '../src/lib/config';
 
