@@ -61,7 +61,7 @@ export const query = async (text: string, params?: any[]) => {
     }
 };
 
-export const getClient = () => {
+export const getClient = async () => {
     dbLogger.info('Acquiring a client from the pool.');
     return pool.connect();
 };
