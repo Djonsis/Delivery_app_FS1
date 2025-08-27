@@ -13,7 +13,8 @@ export interface Product {
   updated_at: string;
   deleted_at: string | null;
   category: string | null; // Can be null
-  imageUrl: string | null; // Can be null
+  image_url: string | null; // Mapped to imageUrl
+  imageUrl: string; // Ensure this is always a string for components
   rating: number; // Not in DB yet, will be mocked
   reviews: number; // Not in DB yet, will be mocked
   weight?: string; // Not in DB yet

@@ -69,14 +69,14 @@ export default async function ProductsPage() {
               <TableRow key={product.id}>
                 <TableCell className="hidden sm:table-cell">
                   <Image
-                    alt={product.name}
+                    alt={product.title}
                     className="aspect-square rounded-md object-cover"
                     height="64"
-                    src={product.imageUrl || "https://placehold.co/64x64.png"}
+                    src={product.imageUrl}
                     width="64"
                   />
                 </TableCell>
-                <TableCell className="font-medium">{product.name}</TableCell>
+                <TableCell className="font-medium">{product.title}</TableCell>
                 <TableCell>
                   <Badge variant="outline">Активен</Badge>
                 </TableCell>

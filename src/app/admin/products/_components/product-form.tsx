@@ -31,7 +31,7 @@ const productFormSchema = z.object({
   price: z.coerce.number().min(0, "Цена должна быть положительным числом."),
   category: z.string().optional(),
   tags: z.string().optional(),
-  imageUrl: z.string().optional(),
+  image_url: z.string().optional(),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -75,18 +75,18 @@ export default function ProductForm({ product }: ProductFormProps) {
     resolver: zodResolver(productFormSchema),
     defaultValues: product ? {
       title: product.title,
-      description: product.description,
+      description: product.description || "",
       price: product.price,
-      category: product.category,
+      category: product.category || "",
       tags: product.tags?.join(", "),
-      imageUrl: product.imageUrl,
+      image_url: product.image_url || "",
     } : {
       title: "",
       description: "",
       price: 0,
       category: "",
       tags: "",
-      imageUrl: "",
+      image_url: "",
     },
   });
 
@@ -101,7 +101,7 @@ export default function ProductForm({ product }: ProductFormProps) {
   const onSubmit = (values: ProductFormValues) => {
     startTransition(async () => {
       try {
-        let imageUrl = product?.imageUrl; // Start with existing image url if any
+        let imageUrl = product?.image_url; // Start with existing image url if any
 
         if (selectedFile) {
           setIsUploading(true);

@@ -54,6 +54,7 @@ export async function createProductAction(values: unknown) {
     
     revalidatePath("/admin/products");
     revalidatePath("/catalog");
+    revalidatePath("/api/products/categories");
 
   } catch (error) {
     productActionLogger.error("Failed to create product in DB", error as Error, { queryData: { title, finalDescription, price, finalCategory, tagsForDb, finalImageUrl } });

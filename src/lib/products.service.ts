@@ -4,16 +4,19 @@
 import type { Product } from "./types";
 import { logger } from "./logger";
 import { query } from "./db";
+import { publicConfig } from "./public-config";
 
 const productsServiceLogger = logger.withCategory("PRODUCTS_SERVICE");
 
 // Helper to map DB product to frontend Product type
 function mapDbProductToProduct(dbProduct: any): Product {
+    const title = dbProduct.title || 'Безымянный товар';
     const p: Product = {
         ...dbProduct,
-        name: dbProduct.title, // Map title from DB to name for frontend
+        name: title, // Map title from DB to name for frontend
         // Use image_url from db, or fallback to placeholder
-        imageUrl: dbProduct.image_url || `https://placehold.co/600x400.png?text=${encodeURIComponent(dbProduct.title)}`,
+        imageUrl: dbProduct.image_url || `https://placehold.co/600x400.png?text=${encodeURIComponent(title)}`,
+        image_url: dbProduct.image_url,
         rating: 4.5, // Mock data for fields not in DB yet
         reviews: Math.floor(Math.random() * 100),
         weight_category: 'middle',
