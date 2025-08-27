@@ -1,6 +1,3 @@
-
-"use server";
-
 import { S3Client } from "@aws-sdk/client-s3";
 import { appConfig } from "./config";
 

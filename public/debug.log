@@ -183,3 +183,6 @@
 [2025-08-27T19:25:56.120Z] [INFO] [CONFIG] Application configuration loaded successfully.
 [2025-08-27T19:25:56.165Z] [INFO] [DATABASE] DB Connection check: Is Cloud SQL? true
 { pgHost: 'fastbasket:europe-west10:delivery' }
+[2025-08-27T19:26:17.341Z] [INFO] [CONFIG] Application configuration loaded successfully.
+[2025-08-27T19:26:17.414Z] [INFO] [DATABASE] DB Connection check: Is Cloud SQL? true
+{ pgHost: 'fastbasket:europe-west10:delivery' }
