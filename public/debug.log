@@ -509,3 +509,79 @@ Promise {
      stack:
       'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:301:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:366:26)\n    at async Promise.all (index 1)',
      name: 'Error' } }
+[2025-08-27T20:20:26.986Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T20:20:27.138Z] [INFO] [DATABASE] DB Connection check: Is Cloud SQL? true
+{ pgHost: 'fastbasket:europe-west10:delivery' }
+[2025-08-27T20:20:27.297Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:20:27.379Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:301:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:366:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:933:24)',
+     name: 'Error' } }
+[2025-08-27T20:20:27.386Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:301:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:366:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:933:24)',
+     name: 'Error' } }
+[2025-08-27T20:22:20.690Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:22:20.730Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:301:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:366:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:933:24)',
+     name: 'Error' } }
+[2025-08-27T20:22:20.734Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:301:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:366:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:933:24)',
+     name: 'Error' } }
+[2025-08-27T20:22:49.212Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T20:22:49.267Z] [INFO] [DATABASE] DB Connection check: Is Google Cloud? false
+{ pgHost: 'fastbasket:europe-west10:delivery' }
+[2025-08-27T20:22:49.322Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:22:49.392Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:301:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:366:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:933:24)',
+     name: 'Error' } }
+[2025-08-27T20:22:49.393Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:301:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:366:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:933:24)',
+     name: 'Error' } }
+[2025-08-27T20:23:23.375Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T20:23:23.458Z] [INFO] [DATABASE] DB Connection check: Is Google Cloud? false
+{ pgHost: 'fastbasket:europe-west10:delivery', instanceConnectionName: undefined }
+[2025-08-27T20:23:23.512Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:23:23.581Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:303:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:368:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:935:24)',
+     name: 'Error' } }
+[2025-08-27T20:23:23.585Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:303:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:368:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:935:24)',
+     name: 'Error' } }
+[2025-08-27T20:24:01.295Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T20:24:01.389Z] [INFO] [DATABASE] DB Connection check: Is Google Cloud? false
+[2025-08-27T20:24:01.461Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:24:01.534Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'Error' } }
+[2025-08-27T20:24:01.536Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'Error' } }

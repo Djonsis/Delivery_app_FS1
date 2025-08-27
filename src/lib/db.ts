@@ -8,10 +8,11 @@ const dbLogger = logger.withCategory("DATABASE");
 
 const { host, port, user, password, database } = serverConfig.db;
 
-// Check if the host is a Cloud SQL connection name (e.g., "project:region:instance")
-const isCloudSql = host.includes(':');
+// Check if running in a Google Cloud environment (like App Hosting or Cloud Run)
+const isGoogleCloud = !!process.env.K_SERVICE;
+const instanceConnectionName = "fastbasket:europe-west10:delivery";
 
-dbLogger.info(`DB Connection check: Is Cloud SQL? ${isCloudSql}`, { pgHost: host });
+dbLogger.info(`DB Connection check: Is Google Cloud? ${isGoogleCloud}`);
 
 // This configuration is robust for both local development and App Hosting.
 const poolConfig = {
@@ -20,11 +21,11 @@ const poolConfig = {
     database,
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000, // Increased timeout for Cloud SQL
-    // If it's a Cloud SQL instance, connect via the Unix socket provided by App Hosting.
-    // Otherwise, use the standard host/port for local or direct connections.
-    host: isCloudSql ? path.join('/cloudsql', host) : host,
-    port: isCloudSql ? undefined : port,
+    connectionTimeoutMillis: 10000,
+    // If it's a Cloud SQL instance running in a Google Cloud environment, connect via the Unix socket.
+    // Otherwise, use the standard host/port for local connections (e.g., via Cloud SQL Proxy).
+    host: isGoogleCloud ? path.join('/cloudsql', instanceConnectionName) : host,
+    port: isGoogleCloud ? undefined : port,
 };
 
 const pool = new Pool(poolConfig);

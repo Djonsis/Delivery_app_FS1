@@ -5,9 +5,15 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+  env:
+    # Environment variables are not required for Unix socket connection
+    # as it's handled by the App Hosting environment itself.
+    # The application code is now aware of the environment.
+    - variable: SOME_OTHER_VAR
+      value: some_other_value
 
-# Указываем, что этому бэкенду нужен доступ к Cloud SQL
+# This specifies that this backend needs access to Cloud SQL
 cloudsql:
-  # Замените на полный connection name вашего инстанса
+  # The instance connection name can be found on the Cloud SQL instance overview page.
   instances:
-    - delivery
+    - fastbasket:europe-west10:delivery

@@ -1,31 +1,22 @@
 
 import { Pool } from 'pg';
-import * as dotenv from 'dotenv';
-import path from 'path';
-
-// Load environment variables from .env file
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+import { serverConfig } from '../src/lib/config';
 
 console.log('--- Database Connection Test ---');
 console.log('Attempting to connect with the following configuration:');
-console.log(`Host (PG_HOST): ${process.env.PG_HOST}`);
-console.log(`Port (PG_PORT): ${process.env.PG_PORT}`);
-console.log(`User (PG_USER): ${process.env.PG_USER}`);
-console.log(`Database (PG_DATABASE): ${process.env.PG_DATABASE}`);
+console.log(`Host (PG_HOST): ${serverConfig.db.host}`);
+console.log(`Port (PG_PORT): ${serverConfig.db.port}`);
+console.log(`User (PG_USER): ${serverConfig.db.user}`);
+console.log(`Database (PG_DATABASE): ${serverConfig.db.database}`);
 console.log('Password (PG_PASSWORD): [HIDDEN]');
 console.log('---------------------------------');
 
-const isCloudSql = process.env.PG_HOST?.includes(':') || process.env.PG_HOST?.startsWith('/cloudsql/');
-console.log(`Detected Cloud SQL environment: ${isCloudSql}`);
-
 const pool = new Pool({
-    // The pg library automatically handles Unix socket paths for Cloud SQL
-    // when the host starts with '/cloudsql/'. The configuration in db.ts is sufficient.
-    host: process.env.PG_HOST,
-    port: process.env.PG_PORT ? parseInt(process.env.PG_PORT, 10) : 5432,
-    user: process.env.PG_USER,
-    password: process.env.PG_PASSWORD,
-    database: process.env.PG_DATABASE,
+    ...serverConfig.db,
+    // When testing locally, we connect directly via TCP, so we use the standard host and port.
+    // The db.ts file has special logic for Unix sockets in the App Hosting environment.
+    host: serverConfig.db.host,
+    port: serverConfig.db.port,
     connectionTimeoutMillis: 10000,
 });
 
@@ -51,9 +42,9 @@ async function testConnection() {
         }
         console.log('\n--- Troubleshooting ---');
         console.log('1. Check if the .env file has the correct credentials.');
-        console.log('2. If running locally and connecting to Cloud SQL, ensure the Cloud SQL Auth Proxy is running.');
-        console.log('3. If running in App Hosting, check that the service account has the "Cloud SQL Client" role and apphosting.yaml is configured.');
-        console.log('4. Verify that the instance connection name in PG_HOST is correct.');
+        console.log('2. If running locally and connecting to Cloud SQL, ensure the Cloud SQL Auth Proxy is running and pointing to the correct instance.');
+        console.log('3. If running in App Hosting, check that the service account has the "Cloud SQL Client" role and apphosting.yaml is configured correctly.');
+        console.log('4. Verify that the instance connection name in PG_HOST is correct for your environment.');
 
     } finally {
         if (client) {
