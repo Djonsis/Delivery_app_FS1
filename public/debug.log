@@ -380,3 +380,12 @@ Promise {
   [Symbol(kResourceStore)]: undefined,
   [Symbol(kResourceStore)]: undefined }
 [2025-08-27T19:27:56.771Z] [INFO] [STORAGE_ACTION] Successfully connected to S3 storage.
+[2025-08-27T19:29:26.087Z] [INFO] [CONFIG] Application configuration loaded successfully.
+[2025-08-27T19:29:26.257Z] [INFO] [DATABASE] DB Connection check: Is Cloud SQL? true
+{ pgHost: 'fastbasket:europe-west10:delivery' }
+[2025-08-27T19:29:28.660Z] [INFO] [DB_ACTION] Successfully fetched DB status.
+{ totalCount: 0, idleCount: 0, waitingCount: 0 }
+[2025-08-27T19:29:29.034Z] [INFO] [STORAGE_ACTION] Successfully connected to S3 storage.
+[2025-08-27T19:29:56.521Z] [INFO] [DB_ACTION] Successfully fetched DB status.
+{ totalCount: 0, idleCount: 0, waitingCount: 0 }
+[2025-08-27T19:29:56.836Z] [INFO] [STORAGE_ACTION] Successfully connected to S3 storage.

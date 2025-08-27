@@ -24,14 +24,16 @@ export interface DbStatus {
 
 export async function getDbStatusAction(): Promise<DbStatus> {
     const { host, port, user, database } = appConfig.db;
-    const config = { host, port, user, database };
     
     try {
         // Attempt a connection to verify
         const status = await getPoolStatus();
         dbActionLogger.info("Successfully fetched DB status.", status);
         return {
-            ...config,
+            host,
+            port,
+            user,
+            database,
             totalCount: status.totalCount,
             idleCount: status.idleCount,
             waitingCount: status.waitingCount,
@@ -41,7 +43,10 @@ export async function getDbStatusAction(): Promise<DbStatus> {
         dbActionLogger.error("Failed to get DB status", error as Error);
         const status = await getPoolStatus();
         return {
-            ...config,
+            host,
+            port,
+            user,
+            database,
             totalCount: status.totalCount,
             idleCount: status.idleCount,
             waitingCount: status.waitingCount,
