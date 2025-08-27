@@ -1,6 +1,6 @@
 
 import * as dotenv from 'dotenv';
-import { serverLogger } from './server-logger';
+import { logger } from './logger';
 
 // Загружаем переменные окружения из файла .env в корне проекта
 // Это нужно сделать один раз в центральном месте
@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== 'production') {
     dotenv.config({ path: '.env' });
 }
 
-const configLogger = serverLogger.withCategory('CONFIG');
+const configLogger = logger.withCategory('CONFIG');
 
 function getEnvVar(key: string, required: boolean = true): string {
     const value = process.env[key];

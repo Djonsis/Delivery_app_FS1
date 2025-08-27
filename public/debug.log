@@ -389,3 +389,26 @@ Promise {
 [2025-08-27T19:29:56.521Z] [INFO] [DB_ACTION] Successfully fetched DB status.
 { totalCount: 0, idleCount: 0, waitingCount: 0 }
 [2025-08-27T19:29:56.836Z] [INFO] [STORAGE_ACTION] Successfully connected to S3 storage.
+[2025-08-27T19:30:43.563Z] [INFO] [CONFIG] Application configuration loaded successfully.
+[2025-08-27T19:30:43.628Z] [INFO] [DATABASE] DB Connection check: Is Cloud SQL? true
+{ pgHost: 'fastbasket:europe-west10:delivery' }
+[2025-08-27T19:30:45.795Z] [INFO] [DB_ACTION] Successfully fetched DB status.
+{ totalCount: 0, idleCount: 0, waitingCount: 0 }
+[2025-08-27T19:30:46.142Z] [INFO] [STORAGE_ACTION] Successfully connected to S3 storage.
+[2025-08-27T19:31:08.171Z] [INFO] [DB_ACTION] Successfully fetched DB status.
+{ totalCount: 0, idleCount: 0, waitingCount: 0 }
+[2025-08-27T19:31:08.539Z] [INFO] [STORAGE_ACTION] Successfully connected to S3 storage.
+[2025-08-27T19:31:08.698Z] [INFO] [DB_ACTION] Successfully fetched DB status.
+{ totalCount: 0, idleCount: 0, waitingCount: 0 }
+[2025-08-27T19:31:09.030Z] [INFO] [STORAGE_ACTION] Successfully connected to S3 storage.
+[2025-08-27T19:32:18.308Z] [INFO] [PRODUCTS_SERVICE] Fetching all products from DB.
+[2025-08-27T19:32:18.363Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__69af5577._.js:275:18)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__23b8e327._.js:357:26)\n    at async ProductsPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__23b8e327._.js:1023:22)' } }
+[2025-08-27T19:32:18.366Z] [ERROR] [PRODUCTS_SERVICE] Error fetching products from DB
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__69af5577._.js:275:18)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__23b8e327._.js:357:26)\n    at async ProductsPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__23b8e327._.js:1023:22)' } }

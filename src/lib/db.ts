@@ -3,10 +3,10 @@
 
 import { Pool } from 'pg';
 import path from 'path';
-import { serverLogger } from './server-logger';
+import { logger } from './logger'; // ИЗМЕНЕНО: Использование универсального логгера
 import { appConfig } from './config';
 
-const dbLogger = serverLogger.withCategory("DATABASE");
+const dbLogger = logger.withCategory("DATABASE"); // ИЗМЕНЕНО: Использование универсального логгера
 
 const { host, port, user, password, database } = appConfig.db;
 

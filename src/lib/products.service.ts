@@ -2,10 +2,10 @@
 "use server";
 
 import type { Product } from "./types";
-import { serverLogger } from "./server-logger";
+import { logger } from "./logger";
 import { query } from "./db";
 
-const productsServiceLogger = serverLogger.withCategory("PRODUCTS_SERVICE");
+const productsServiceLogger = logger.withCategory("PRODUCTS_SERVICE");
 
 // Helper to map DB product to frontend Product type
 function mapDbProductToProduct(dbProduct: any): Product {
