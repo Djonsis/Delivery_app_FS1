@@ -113,7 +113,7 @@ export async function getProducts(filters?: ProductFilter): Promise<Product[]> {
         productsServiceLogger.debug(`Fetched ${rows.length} products.`);
         return rows.map(mapDbProductToProduct);
     } catch (error) {
-        productsServiceLogger.error("Error fetching products from DB", error as Error);
+        productsServiceLogger.error("Error fetching products from DB", error);
         throw new Error("Could not fetch products.");
     }
 }

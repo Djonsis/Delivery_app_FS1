@@ -1,4 +1,3 @@
-
 // Универсальный логгер, безопасный для клиента и сервера.
 // "use client" директива здесь не нужна, так как логика адаптируется.
 
@@ -106,15 +105,24 @@ class Logger {
         this.log('warn', message, data);
     }
 
-    public error(message: string, error: Error | any) {
-        const errorData = {
-            error: {
-                message: error instanceof Error ? error.message : 'An unknown error occurred.',
-                stack: error instanceof Error ? error.stack : undefined,
-                ...(!(error instanceof Error) && { rawError: error }),
-            },
-        };
-        this.log('error', message, errorData);
+    public error(message: string, error: any) {
+        let errorData: any;
+
+        if (error instanceof Error) {
+            errorData = {
+                message: error.message,
+                stack: error.stack,
+                name: error.name,
+            };
+        } else if (typeof error === 'object' && error !== null) {
+            // If it's an object but not an Error, try to serialize it
+            errorData = JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+        } else {
+             // For primitives or other types
+            errorData = { rawError: error };
+        }
+        
+        this.log('error', message, { error: errorData });
     }
     
     public time(label: string) {

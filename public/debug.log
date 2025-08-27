@@ -427,3 +427,18 @@ Promise {
    { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
      stack:
       'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__aa20563d._.js:292:18)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__aa20563d._.js:367:26)\n    at async ProductsPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__aa20563d._.js:1018:22)' } }
+[2025-08-27T20:12:37.516Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T20:12:37.664Z] [INFO] [DATABASE] DB Connection check: Is Cloud SQL? true
+{ pgHost: 'fastbasket:europe-west10:delivery' }
+[2025-08-27T20:12:37.734Z] [INFO] [PRODUCTS_SERVICE] Fetching products from DB with filters.
+{ filters: undefined }
+[2025-08-27T20:12:37.767Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__235cc152._.js:292:18)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__235cc152._.js:664:26)\n    at async ProductsPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__235cc152._.js:1329:22)' } }
+[2025-08-27T20:12:37.768Z] [ERROR] [PRODUCTS_SERVICE] Error fetching products from DB
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__235cc152._.js:292:18)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__235cc152._.js:664:26)\n    at async ProductsPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__235cc152._.js:1329:22)' } }
