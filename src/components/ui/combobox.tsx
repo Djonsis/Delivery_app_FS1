@@ -39,10 +39,19 @@ export function Combobox({
   const [inputValue, setInputValue] = React.useState(value || "");
 
   const handleSelect = (currentValue: string) => {
-    const newValue = currentValue === value ? "" : currentValue;
-    onChange(newValue);
-    setInputValue(newValue);
+    // When an item is selected, call onChange with its value
+    onChange(currentValue);
+    setInputValue(currentValue); // also update the internal input value
     setOpen(false);
+  }
+
+  // When the popover closes, if the input value doesn't match the selected value,
+  // reset it to the currently selected value.
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+       setInputValue(value || "");
+    }
+    setOpen(isOpen);
   }
 
   const filteredOptions = options.filter(option => 
@@ -52,7 +61,7 @@ export function Combobox({
   const showCreateNew = inputValue && !options.some(option => option.label.toLowerCase() === inputValue.toLowerCase());
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -61,7 +70,7 @@ export function Combobox({
           className="w-full justify-between font-normal"
         >
           {value
-            ? options.find((option) => option.value === value)?.label
+            ? options.find((option) => option.value === value)?.label || value
             : placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
