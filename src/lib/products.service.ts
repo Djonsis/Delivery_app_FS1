@@ -1,7 +1,7 @@
 
 "use server";
 
-import type { Product, ProductData } from "./types";
+import type { Product, ProductData, ProductFilter } from "./types";
 import { logger } from "./logger";
 import { query } from "./db";
 import { getCategoryById } from "./categories.service";
@@ -23,10 +23,11 @@ function mapDbProductToProduct(dbProduct: any): Product {
         ...dbProduct,
         name: title,
         imageUrl: dbProduct.image_url || `https://placehold.co/600x400.png?text=${encodeURIComponent(title)}`,
-        rating: dbProduct.rating ?? 4.5,
-        reviews: dbProduct.reviews ?? Math.floor(Math.random() * 100),
-        min_order_quantity: dbProduct.min_order_quantity ?? 1,
-        step_quantity: dbProduct.step_quantity ?? 1,
+        rating: parseFloat(dbProduct.rating) ?? 4.5,
+        reviews: parseInt(dbProduct.reviews) ?? Math.floor(Math.random() * 100),
+        min_order_quantity: parseFloat(dbProduct.min_order_quantity) ?? 1,
+        step_quantity: parseFloat(dbProduct.step_quantity) ?? 1,
+        price: parseFloat(dbProduct.price),
         weight_category: 'middle', // This can be calculated based on weight later
     };
 }
@@ -55,16 +56,60 @@ async function generateSkuForCategory(categoryId: string): Promise<string> {
 }
 
 
-export async function getProducts(): Promise<Product[]> {
-    productsServiceLogger.info("Fetching all products from DB.");
+export async function getProducts(filters?: ProductFilter): Promise<Product[]> {
+    productsServiceLogger.info("Fetching products from DB with filters.", { filters });
+    
+    let baseQuery = `
+        SELECT p.*, c.name as category 
+        FROM products p 
+        LEFT JOIN categories c ON p.category_id = c.id 
+    `;
+    const whereClauses: string[] = ['p.deleted_at IS NULL'];
+    const queryParams: any[] = [];
+
+    if (filters?.query) {
+        queryParams.push(`%${filters.query}%`);
+        whereClauses.push(`(p.title ILIKE $${queryParams.length} OR p.description ILIKE $${queryParams.length})`);
+    }
+
+    if (filters?.category && filters.category !== 'Все') {
+        queryParams.push(filters.category);
+        whereClauses.push(`c.name = $${queryParams.length}`);
+    }
+
+    if(filters?.minPrice !== undefined) {
+        queryParams.push(filters.minPrice);
+        whereClauses.push(`p.price >= $${queryParams.length}`);
+    }
+
+    if(filters?.maxPrice !== undefined) {
+        queryParams.push(filters.maxPrice);
+        whereClauses.push(`p.price <= $${queryParams.length}`);
+    }
+
+    if (whereClauses.length > 0) {
+        baseQuery += ` WHERE ${whereClauses.join(' AND ')}`;
+    }
+
+    let orderByClause = ' ORDER BY p.created_at DESC';
+    switch (filters?.sort) {
+        case 'price_asc':
+            orderByClause = ' ORDER BY p.price ASC';
+            break;
+        case 'price_desc':
+            orderByClause = ' ORDER BY p.price DESC';
+            break;
+        case 'rating_desc':
+            orderByClause = ' ORDER BY p.rating DESC';
+            break;
+        case 'popularity':
+             orderByClause = ' ORDER BY p.reviews DESC';
+            break;
+    }
+    baseQuery += orderByClause;
+
     try {
-        const { rows } = await query(`
-            SELECT p.*, c.name as category 
-            FROM products p 
-            LEFT JOIN categories c ON p.category_id = c.id 
-            WHERE p.deleted_at IS NULL 
-            ORDER BY p.created_at DESC
-        `);
+        const { rows } = await query(baseQuery, queryParams);
         productsServiceLogger.debug(`Fetched ${rows.length} products.`);
         return rows.map(mapDbProductToProduct);
     } catch (error) {

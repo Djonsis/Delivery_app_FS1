@@ -131,3 +131,14 @@ export interface StorageStatus {
     connected: boolean;
     error?: string;
 }
+
+// Product Filtering and Sorting
+export type SortOption = "popularity" | "price_desc" | "price_asc" | "rating_desc" | "discount_desc";
+
+export interface ProductFilter {
+    query?: string;
+    category?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    sort?: SortOption;
+}

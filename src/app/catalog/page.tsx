@@ -5,15 +5,23 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { getProducts, getCategories } from "@/lib/products.service";
+import { ProductFilter, SortOption } from "@/lib/types";
 
 interface CatalogPageProps {
     searchParams: { [key: string]: string | string[] | undefined }
 }
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
-  // Fetch data on the server
+  const filters: ProductFilter = {
+      category: searchParams.category as string,
+      query: searchParams.query as string,
+      sort: searchParams.sort as SortOption,
+      minPrice: searchParams.minPrice ? Number(searchParams.minPrice) : undefined,
+      maxPrice: searchParams.maxPrice ? Number(searchParams.maxPrice) : undefined,
+  }
+
   const [products, categories] = await Promise.all([
-    getProducts(),
+    getProducts(filters),
     getCategories()
   ]);
 
@@ -30,9 +38,8 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             </Link>
         </div>
         <ProductCatalog 
-          initialProducts={products}
-          initialCategories={categories}
-          searchParams={searchParams}
+          products={products}
+          categories={categories}
         />
       </main>
     </div>

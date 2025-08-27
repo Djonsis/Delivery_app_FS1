@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useTransition } from "react";
 import { ProductCard } from "@/components/product-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,38 +17,63 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Product } from "@/lib/types";
-import { Skeleton } from "./ui/skeleton";
+import type { Product, SortOption } from "@/lib/types";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
-
-type SortOption = "popularity" | "price_desc" | "price_asc" | "rating_desc" | "discount_desc";
 
 interface ProductCatalogProps {
-  initialProducts: Product[];
-  initialCategories: string[];
-  searchParams: { [key: string]: string | string[] | undefined };
+  products: Product[];
+  categories: string[];
 }
 
-export default function ProductCatalog({ initialProducts, initialCategories, searchParams }: ProductCatalogProps) {
-  const initialCategory = searchParams.category as string || 'Все';
+export default function ProductCatalog({ products, categories }: ProductCatalogProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const [isPending, startTransition] = useTransition();
+
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('query') || '');
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'Все');
+  const [sortOption, setSortOption] = useState<SortOption>((searchParams.get('sort') as SortOption) || "popularity");
+  const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({
+      min: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
+      max: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined
+  });
   
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-  const [sortOption, setSortOption] = useState<SortOption>("popularity");
-  const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({});
-  
-  // No more client-side loading state
-  const allProducts = initialProducts;
-  const categories = initialCategories;
+  const createQueryString = (params: Record<string, string | number | undefined>) => {
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(params)) {
+        if (value === undefined || value === null || value === '' || (typeof value === 'number' && isNaN(value))) {
+            newSearchParams.delete(key);
+        } else {
+            newSearchParams.set(key, String(value));
+        }
+    }
+    return newSearchParams.toString();
+  };
+
+  const handleFilterChange = () => {
+    startTransition(() => {
+        router.push(`${pathname}?${createQueryString({
+            query: searchTerm,
+            category: selectedCategory === 'Все' ? undefined : selectedCategory,
+            sort: sortOption,
+            minPrice: priceRange.min,
+            maxPrice: priceRange.max,
+        })}`, { scroll: false });
+    });
+  }
 
   useEffect(() => {
-    setSelectedCategory(initialCategory);
-  }, [initialCategory]);
-
-  const handlePriceChange = (field: 'min' | 'max', value: string) => {
-    const numValue = value ? parseFloat(value) : undefined;
-    setPriceRange(prev => ({...prev, [field]: numValue }));
-  }
+    const handler = setTimeout(() => {
+        handleFilterChange();
+    }, 300); // Debounce input
+    return () => clearTimeout(handler);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, selectedCategory, sortOption, priceRange]);
+  
+  const isPriceFilterActive = priceRange.min !== undefined || priceRange.max !== undefined;
 
   const handleResetFilters = () => {
     setSearchTerm('');
@@ -56,48 +81,6 @@ export default function ProductCatalog({ initialProducts, initialCategories, sea
     setSortOption('popularity');
     setPriceRange({});
   }
-
-  const isPriceFilterActive = priceRange.min !== undefined || priceRange.max !== undefined;
-
-
-  const sortProducts = (products: Product[], option: SortOption): Product[] => {
-    switch (option) {
-      case "price_desc":
-        return [...products].sort((a, b) => b.price - a.price);
-      case "price_asc":
-        return [...products].sort((a, b) => a.price - b.price);
-      case "rating_desc":
-         return [...products].sort((a, b) => b.rating - a.rating);
-      case "popularity":
-        return [...products].sort((a, b) => b.reviews - a.reviews);
-      // NOTE: Discount sorting is not implemented yet as product data does not contain discount info.
-      case "discount_desc":
-      default:
-        return products;
-    }
-  };
-
-
-  const filteredAndSortedProducts = useMemo(() => {
-    const filtered = allProducts
-      .filter((product) =>
-        selectedCategory === "Все" ? true : product.category === selectedCategory
-      )
-      .filter((product) =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-       .filter(product => {
-        if (priceRange.min !== undefined && product.price < priceRange.min) {
-          return false;
-        }
-        if (priceRange.max !== undefined && product.price > priceRange.max) {
-          return false;
-        }
-        return true;
-      });
-    
-    return sortProducts(filtered, sortOption);
-  }, [searchTerm, selectedCategory, sortOption, priceRange, allProducts]);
 
   return (
     <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
@@ -157,7 +140,7 @@ export default function ProductCatalog({ initialProducts, initialCategories, sea
                     type="number" 
                     placeholder="от" 
                     value={priceRange.min ?? ''} 
-                    onChange={(e) => handlePriceChange('min', e.target.value)}
+                    onChange={(e) => setPriceRange(prev => ({...prev, min: e.target.value ? Number(e.target.value) : undefined}))}
                     className="h-9"
                     />
                     <span className="text-muted-foreground">-</span>
@@ -165,7 +148,7 @@ export default function ProductCatalog({ initialProducts, initialCategories, sea
                     type="number" 
                     placeholder="до"
                     value={priceRange.max ?? ''} 
-                    onChange={(e) => handlePriceChange('max', e.target.value)}
+                    onChange={(e) => setPriceRange(prev => ({...prev, max: e.target.value ? Number(e.target.value) : undefined}))}
                     className="h-9"
                     />
                 </div>
@@ -201,11 +184,11 @@ export default function ProductCatalog({ initialProducts, initialCategories, sea
       </div>
       
         <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredAndSortedProducts.map((product) => (
+            {products.map((product) => (
             <ProductCard key={product.id} product={product} />
             ))}
         </div>
-        {filteredAndSortedProducts.length === 0 && (
+        {products.length === 0 && !isPending && (
             <div className="col-span-full mt-16 flex flex-col items-center justify-center">
                 <p className="text-lg text-muted-foreground">Продукты не найдены.</p>
                 <p className="text-sm text-muted-foreground">Попробуйте изменить поиск или фильтры.</p>
@@ -213,18 +196,4 @@ export default function ProductCatalog({ initialProducts, initialCategories, sea
         )}
     </div>
   );
-}
-
-
-function CardSkeleton() {
-    return (
-        <div className="flex flex-col space-y-3">
-            <Skeleton className="aspect-[4/3] w-full rounded-xl" />
-            <div className="space-y-2">
-                <Skeleton className="h-4 w-[150px]" />
-                <Skeleton className="h-4 w-[100px]" />
-            </div>
-            <Skeleton className="h-10 w-full rounded-md" />
-        </div>
-    )
 }
