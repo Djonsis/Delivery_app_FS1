@@ -39,3 +39,13 @@
    { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
      stack:
       'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__e60baba5._.js:251:26)\n    at async ProductsPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__e60baba5._.js:900:22)' } }
+[2025-08-27T10:30:42.050Z] [INFO] [PRODUCTS_SERVICE] Fetching all products from DB.
+[2025-08-27T10:30:42.052Z] [DEBUG] [DATABASE] Executing query
+{ text: 'SELECT * FROM products WHERE deleted_at IS NULL ORDER BY created_at DESC',
+  params: undefined }
+[2025-08-27T10:30:42.054Z] [DEBUG] [DATABASE] Executed query in 3ms
+[2025-08-27T10:30:42.085Z] [ERROR] [PRODUCTS_SERVICE] Error fetching products from DB
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__e60baba5._.js:251:26)\n    at async ProductsPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__e60baba5._.js:900:22)' } }
