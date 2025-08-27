@@ -1,3 +1,4 @@
+
 # Инструкция по настройке PostgreSQL и S3
 
 > **Версия:** 1.0.0
@@ -89,6 +90,9 @@ CREATE TABLE IF NOT EXISTS products (
   weight TEXT NULL,
   brand TEXT NULL,
   manufacturer TEXT NULL,
+  min_order_quantity NUMERIC(10, 3) DEFAULT 1.0,
+  step_quantity NUMERIC(10, 3) DEFAULT 1.0,
+  nutrition JSONB NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   deleted_at TIMESTAMPTZ

@@ -1,7 +1,11 @@
+
 import CategoryGrid from "@/components/category-grid";
 import SiteHeader from "@/components/site-header";
+import { getAllCategories } from "@/lib/categories.service";
 
-export default function Home() {
+export default async function Home() {
+  const categories = await getAllCategories();
+
   return (
     <div className="relative flex min-h-screen w-full flex-col">
       <SiteHeader />
@@ -17,7 +21,7 @@ export default function Home() {
                 </p>
                 </div>
             </div>
-            <CategoryGrid />
+            <CategoryGrid categories={categories} />
         </div>
       </main>
     </div>

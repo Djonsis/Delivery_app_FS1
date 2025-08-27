@@ -23,11 +23,11 @@ function mapDbProductToProduct(dbProduct: any): Product {
         ...dbProduct,
         name: title,
         imageUrl: dbProduct.image_url || `https://placehold.co/600x400.png?text=${encodeURIComponent(title)}`,
-        rating: 4.5,
-        reviews: Math.floor(Math.random() * 100),
-        weight_category: 'middle',
-        min_order_quantity: 1,
-        step_quantity: 1,
+        rating: dbProduct.rating ?? 4.5,
+        reviews: dbProduct.reviews ?? Math.floor(Math.random() * 100),
+        min_order_quantity: dbProduct.min_order_quantity ?? 1,
+        step_quantity: dbProduct.step_quantity ?? 1,
+        weight_category: 'middle', // This can be calculated based on weight later
     };
 }
 
@@ -157,7 +157,7 @@ export async function updateProduct(id: string, data: ProductData): Promise<void
     const finalDescription = description || null;
     const finalCategoryId = categoryId || null;
     const tagsArray = tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
-    const tagsForDb = toPostga_prefixresArray(tagsArray);
+    const tagsForDb = toPostgresArray(tagsArray);
     const finalImageUrl = imageUrl || null;
 
     productsServiceLogger.info(`Updating product in DB: ${id}`, { data });
@@ -192,4 +192,24 @@ export async function deleteProduct(id: string): Promise<void> {
         productsServiceLogger.error(`Failed to delete product ${id} from DB`, error as Error);
         throw new Error(`Database error. Could not delete product ${id}.`);
     }
+}
+
+
+export async function getCategories(): Promise<string[]> {
+  productsServiceLogger.info("Fetching distinct category names from DB.");
+  try {
+    const { rows } = await query(
+      `SELECT DISTINCT c.name 
+       FROM categories c
+       INNER JOIN products p ON c.id = p.category_id
+       WHERE p.deleted_at IS NULL
+       ORDER BY c.name ASC`
+    );
+    const categoryNames = rows.map(row => row.name);
+    productsServiceLogger.debug(`Found ${categoryNames.length} distinct categories with active products.`);
+    return categoryNames;
+  } catch (error) {
+    productsServiceLogger.error("Error fetching distinct category names from DB", error as Error);
+    throw new Error("Could not fetch category names.");
+  }
 }
