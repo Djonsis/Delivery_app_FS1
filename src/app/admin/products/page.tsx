@@ -34,15 +34,15 @@ export default async function ProductsPage() {
       <CardHeader>
         <div className="flex justify-between items-center">
             <div>
-                <CardTitle>Products</CardTitle>
+                <CardTitle>Товары</CardTitle>
                 <CardDescription>
-                    Manage your products and view their sales performance.
+                    Управляйте вашими товарами и просматривайте их наличие.
                 </CardDescription>
             </div>
             <Link href="/admin/products/new">
                 <Button>
                     <PlusCircle className="h-4 w-4 mr-2" />
-                    Add Product
+                    Добавить товар
                 </Button>
             </Link>
         </div>
@@ -52,14 +52,14 @@ export default async function ProductsPage() {
           <TableHeader>
             <TableRow>
               <TableHead className="hidden w-[100px] sm:table-cell">
-                <span className="sr-only">Image</span>
+                <span className="sr-only">Изображение</span>
               </TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead className="hidden md:table-cell">Created at</TableHead>
+              <TableHead>Название</TableHead>
+              <TableHead>Статус</TableHead>
+              <TableHead>Цена</TableHead>
+              <TableHead className="hidden md:table-cell">Дата создания</TableHead>
               <TableHead>
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">Действия</span>
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -78,7 +78,7 @@ export default async function ProductsPage() {
                 </TableCell>
                 <TableCell className="font-medium">{product.name}</TableCell>
                 <TableCell>
-                  <Badge variant="outline">Active</Badge>
+                  <Badge variant="outline">Активен</Badge>
                 </TableCell>
                 <TableCell>{product.price} {product.currency}</TableCell>
                 <TableCell className="hidden md:table-cell">
@@ -89,15 +89,15 @@ export default async function ProductsPage() {
                     <DropdownMenuTrigger asChild>
                       <Button aria-haspopup="true" size="icon" variant="ghost">
                         <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Toggle menu</span>
+                        <span className="sr-only">Открыть меню</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuLabel>Действия</DropdownMenuLabel>
                        <Link href={`/admin/products/${product.id}/edit`}>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <DropdownMenuItem>Редактировать</DropdownMenuItem>
                       </Link>
-                      <DropdownMenuItem>Delete</DropdownMenuItem>
+                      <DropdownMenuItem>Удалить</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -107,7 +107,7 @@ export default async function ProductsPage() {
         </Table>
          {products.length === 0 && (
             <div className="text-center py-12">
-                <p className="text-muted-foreground">No products found.</p>
+                <p className="text-muted-foreground">Товары не найдены.</p>
             </div>
          )}
       </CardContent>

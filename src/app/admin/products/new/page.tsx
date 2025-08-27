@@ -11,9 +11,9 @@ export default function NewProductPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Create New Product</CardTitle>
+        <CardTitle>Создать новый товар</CardTitle>
         <CardDescription>
-          Fill out the form below to add a new product to your store.
+          Заполните форму ниже, чтобы добавить новый товар в ваш магазин.
         </CardDescription>
       </CardHeader>
       <CardContent>

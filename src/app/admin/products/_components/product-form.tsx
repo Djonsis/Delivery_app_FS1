@@ -23,9 +23,9 @@ import { useRouter } from "next/navigation";
 
 
 const productFormSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters long."),
+  title: z.string().min(3, "Название должно содержать не менее 3 символов."),
   description: z.string().optional(),
-  price: z.coerce.number().min(0, "Price must be a positive number."),
+  price: z.coerce.number().min(0, "Цена должна быть положительным числом."),
   category: z.string().optional(),
   tags: z.string().optional(),
 });
@@ -57,16 +57,16 @@ export default function ProductForm({ product }: ProductFormProps) {
       try {
         if (product) {
           // await updateProductAction(product.id, values);
-          toast({ title: "Success", description: "Product updated successfully." });
+          toast({ title: "Успешно", description: "Товар успешно обновлен." });
         } else {
           await createProductAction(values);
-          toast({ title: "Success", description: "Product created successfully." });
+          toast({ title: "Успешно", description: "Товар успешно создан." });
         }
         router.push("/admin/products");
 
       } catch (error) {
         toast({
-          title: "Error",
+          title: "Ошибка",
           description: (error as Error).message,
           variant: "destructive",
         });
@@ -82,9 +82,9 @@ export default function ProductForm({ product }: ProductFormProps) {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title</FormLabel>
+              <FormLabel>Название</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Fresh Organic Tomatoes" {...field} />
+                <Input placeholder="например, Свежие органические помидоры" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -95,10 +95,10 @@ export default function ProductForm({ product }: ProductFormProps) {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>Описание</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Describe the product..."
+                  placeholder="Опишите товар..."
                   className="resize-none"
                   {...field}
                 />
@@ -114,7 +114,7 @@ export default function ProductForm({ product }: ProductFormProps) {
             name="price"
             render={({ field }) => (
                 <FormItem>
-                <FormLabel>Price (in RUB)</FormLabel>
+                <FormLabel>Цена (в руб.)</FormLabel>
                 <FormControl>
                     <Input type="number" step="0.01" placeholder="99.99" {...field} />
                 </FormControl>
@@ -127,9 +127,9 @@ export default function ProductForm({ product }: ProductFormProps) {
             name="category"
             render={({ field }) => (
                 <FormItem>
-                <FormLabel>Category</FormLabel>
+                <FormLabel>Категория</FormLabel>
                 <FormControl>
-                    <Input placeholder="e.g. Vegetables" {...field} />
+                    <Input placeholder="например, Овощи" {...field} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
@@ -141,12 +141,12 @@ export default function ProductForm({ product }: ProductFormProps) {
           name="tags"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tags</FormLabel>
+              <FormLabel>Теги</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. organic, fresh, summer" {...field} />
+                <Input placeholder="например, органика, свежий, летний" {...field} />
               </FormControl>
               <FormDescription>
-                Comma-separated values.
+                Значения, разделенные запятыми.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -154,7 +154,7 @@ export default function ProductForm({ product }: ProductFormProps) {
         />
         
         <Button type="submit" disabled={isPending}>
-          {isPending ? (product ? "Updating..." : "Creating...") : (product ? "Update Product" : "Create Product")}
+          {isPending ? (product ? "Обновление..." : "Создание...") : (product ? "Обновить товар" : "Создать товар")}
         </Button>
       </form>
     </Form>

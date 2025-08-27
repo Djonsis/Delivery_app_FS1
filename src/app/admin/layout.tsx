@@ -49,33 +49,33 @@ export default function AdminLayout({
             <SidebarMenu>
               <SidebarMenuItem>
                  <Link href="/admin">
-                  <SidebarMenuButton tooltip="Dashboard">
+                  <SidebarMenuButton tooltip="Главная">
                     <LayoutDashboard />
-                    Dashboard
+                    Главная
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
                <SidebarMenuItem>
                 <Link href="/admin/products">
-                  <SidebarMenuButton tooltip="Products">
+                  <SidebarMenuButton tooltip="Товары">
                     <Package />
-                    Products
+                    Товары
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <Link href="/admin/orders">
-                  <SidebarMenuButton tooltip="Orders">
+                  <SidebarMenuButton tooltip="Заказы">
                     <ListOrdered />
-                    Orders
+                    Заказы
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <Link href="/admin/logs">
-                  <SidebarMenuButton tooltip="Logs">
+                  <SidebarMenuButton tooltip="Логи">
                     <FileText />
-                    Logs
+                    Логи
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
@@ -84,9 +84,9 @@ export default function AdminLayout({
           <SidebarFooter>
              <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Settings">
+                <SidebarMenuButton tooltip="Настройки">
                   <Settings />
-                  Settings
+                  Настройки
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -96,7 +96,7 @@ export default function AdminLayout({
           <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
               <div className="flex items-center gap-2">
                  <SidebarTrigger className="md:hidden" />
-                 <h1 className="text-xl font-semibold">Dashboard</h1>
+                 <h1 className="text-xl font-semibold">Админ-панель</h1>
               </div>
 
             <DropdownMenu>
