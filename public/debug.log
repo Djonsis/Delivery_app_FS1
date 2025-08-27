@@ -49,3 +49,75 @@
    { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
      stack:
       'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__e60baba5._.js:251:26)\n    at async ProductsPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__e60baba5._.js:900:22)' } }
+[2025-08-27T11:39:07.614Z] [INFO] [PRODUCTS_SERVICE] Fetching all products from DB.
+[2025-08-27T11:39:07.616Z] [DEBUG] [DATABASE] Executing query
+{ text: 'SELECT * FROM products WHERE deleted_at IS NULL ORDER BY created_at DESC',
+  params: undefined }
+[2025-08-27T11:39:07.624Z] [DEBUG] [DATABASE] Executed query in 8ms
+[2025-08-27T11:39:07.646Z] [ERROR] [PRODUCTS_SERVICE] Error fetching products from DB
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__e60baba5._.js:251:26)\n    at async ProductsPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__e60baba5._.js:900:22)' } }
+[2025-08-27T11:39:23.669Z] [INFO] [API_CATEGORIES] Received request for product categories (from DB via service).
+[2025-08-27T11:39:23.670Z] [INFO] [PRODUCTS_SERVICE] Fetching all categories from DB.
+[2025-08-27T11:39:23.671Z] [DEBUG] [DATABASE] Executing query
+{ text:
+   'SELECT DISTINCT category FROM products WHERE deleted_at IS NULL AND category IS NOT NULL',
+  params: undefined }
+[2025-08-27T11:39:23.673Z] [DEBUG] [DATABASE] Executed query in 2ms
+[2025-08-27T11:39:23.675Z] [ERROR] [PRODUCTS_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async getCategories (/home/user/studio/.next/server/chunks/[root-of-the-server]__450353c6._.js:358:26)\n    at async GET (/home/user/studio/.next/server/chunks/[root-of-the-server]__450353c6._.js:402:28)\n    at async AppRouteRouteModule.do (/home/user/studio/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:26:34112)\n    at async AppRouteRouteModule.handle (/home/user/studio/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:26:41338)\n    at async doRender (/home/user/studio/node_modules/next/dist/server/base-server.js:1518:42)\n    at async DevServer.renderToResponseWithComponentsImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:1920:28)\n    at async DevServer.renderPageComponent (/home/user/studio/node_modules/next/dist/server/base-server.js:2408:24)\n    at async DevServer.renderToResponseImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:2445:32)\n    at async DevServer.pipeImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:1008:25)\n    at async NextNodeServer.handleCatchallRenderRequest (/home/user/studio/node_modules/next/dist/server/next-server.js:305:17)\n    at async DevServer.handleRequestImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:900:17)\n    at async /home/user/studio/node_modules/next/dist/server/dev/next-dev-server.js:371:20\n    at async Span.traceAsyncFn (/home/user/studio/node_modules/next/dist/trace/trace.js:157:20)\n    at async DevServer.handleRequest (/home/user/studio/node_modules/next/dist/server/dev/next-dev-server.js:368:24)\n    at async invokeRender (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:237:21)\n    at async handleRequest (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:428:24)\n    at async requestHandlerImpl (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:452:13)\n    at async Server.requestListener (/home/user/studio/node_modules/next/dist/server/lib/start-server.js:158:13)' } }
+[2025-08-27T11:39:23.679Z] [INFO] [API_CATEGORIES] Returning 0 categories from database.
+[2025-08-27T11:39:23.931Z] [INFO] [API_CATEGORIES] Received request for product categories (from DB via service).
+[2025-08-27T11:39:23.934Z] [INFO] [PRODUCTS_SERVICE] Fetching all categories from DB.
+[2025-08-27T11:39:23.934Z] [DEBUG] [DATABASE] Executing query
+{ text:
+   'SELECT DISTINCT category FROM products WHERE deleted_at IS NULL AND category IS NOT NULL',
+  params: undefined }
+[2025-08-27T11:39:23.936Z] [DEBUG] [DATABASE] Executed query in 2ms
+[2025-08-27T11:39:23.938Z] [ERROR] [PRODUCTS_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async getCategories (/home/user/studio/.next/server/chunks/[root-of-the-server]__450353c6._.js:358:26)\n    at async GET (/home/user/studio/.next/server/chunks/[root-of-the-server]__450353c6._.js:402:28)\n    at async AppRouteRouteModule.do (/home/user/studio/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:26:34112)\n    at async AppRouteRouteModule.handle (/home/user/studio/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:26:41338)\n    at async doRender (/home/user/studio/node_modules/next/dist/server/base-server.js:1518:42)\n    at async DevServer.renderToResponseWithComponentsImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:1920:28)\n    at async DevServer.renderPageComponent (/home/user/studio/node_modules/next/dist/server/base-server.js:2408:24)\n    at async DevServer.renderToResponseImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:2445:32)\n    at async DevServer.pipeImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:1008:25)\n    at async NextNodeServer.handleCatchallRenderRequest (/home/user/studio/node_modules/next/dist/server/next-server.js:305:17)\n    at async DevServer.handleRequestImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:900:17)\n    at async /home/user/studio/node_modules/next/dist/server/dev/next-dev-server.js:371:20\n    at async Span.traceAsyncFn (/home/user/studio/node_modules/next/dist/trace/trace.js:157:20)\n    at async DevServer.handleRequest (/home/user/studio/node_modules/next/dist/server/dev/next-dev-server.js:368:24)\n    at async invokeRender (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:237:21)\n    at async handleRequest (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:428:24)\n    at async requestHandlerImpl (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:452:13)\n    at async Server.requestListener (/home/user/studio/node_modules/next/dist/server/lib/start-server.js:158:13)' } }
+[2025-08-27T11:39:23.941Z] [INFO] [API_CATEGORIES] Returning 0 categories from database.
+[2025-08-27T11:44:30.855Z] [INFO] [PRODUCTS_SERVICE] Fetching all products from DB.
+[2025-08-27T11:44:30.856Z] [DEBUG] [DATABASE] Executing query
+{ text: 'SELECT * FROM products WHERE deleted_at IS NULL ORDER BY created_at DESC',
+  params: undefined }
+[2025-08-27T11:44:30.858Z] [DEBUG] [DATABASE] Executed query in 2ms
+[2025-08-27T11:44:30.870Z] [ERROR] [PRODUCTS_SERVICE] Error fetching products from DB
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__e60baba5._.js:251:26)\n    at async ProductsPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__e60baba5._.js:900:22)' } }
+[2025-08-27T11:44:33.867Z] [INFO] [API_CATEGORIES] Received request for product categories (from DB via service).
+[2025-08-27T11:44:33.868Z] [INFO] [PRODUCTS_SERVICE] Fetching all categories from DB.
+[2025-08-27T11:44:33.869Z] [DEBUG] [DATABASE] Executing query
+{ text:
+   'SELECT DISTINCT category FROM products WHERE deleted_at IS NULL AND category IS NOT NULL',
+  params: undefined }
+[2025-08-27T11:44:33.872Z] [DEBUG] [DATABASE] Executed query in 4ms
+[2025-08-27T11:44:33.874Z] [ERROR] [PRODUCTS_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async getCategories (/home/user/studio/.next/server/chunks/[root-of-the-server]__450353c6._.js:358:26)\n    at async GET (/home/user/studio/.next/server/chunks/[root-of-the-server]__450353c6._.js:402:28)\n    at async AppRouteRouteModule.do (/home/user/studio/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:26:34112)\n    at async AppRouteRouteModule.handle (/home/user/studio/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:26:41338)\n    at async doRender (/home/user/studio/node_modules/next/dist/server/base-server.js:1518:42)\n    at async DevServer.renderToResponseWithComponentsImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:1920:28)\n    at async DevServer.renderPageComponent (/home/user/studio/node_modules/next/dist/server/base-server.js:2408:24)\n    at async DevServer.renderToResponseImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:2445:32)\n    at async DevServer.pipeImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:1008:25)\n    at async NextNodeServer.handleCatchallRenderRequest (/home/user/studio/node_modules/next/dist/server/next-server.js:305:17)\n    at async DevServer.handleRequestImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:900:17)\n    at async /home/user/studio/node_modules/next/dist/server/dev/next-dev-server.js:371:20\n    at async Span.traceAsyncFn (/home/user/studio/node_modules/next/dist/trace/trace.js:157:20)\n    at async DevServer.handleRequest (/home/user/studio/node_modules/next/dist/server/dev/next-dev-server.js:368:24)\n    at async invokeRender (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:237:21)\n    at async handleRequest (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:428:24)\n    at async requestHandlerImpl (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:452:13)\n    at async Server.requestListener (/home/user/studio/node_modules/next/dist/server/lib/start-server.js:158:13)' } }
+[2025-08-27T11:44:33.875Z] [INFO] [API_CATEGORIES] Returning 0 categories from database.
+[2025-08-27T11:44:34.245Z] [INFO] [API_CATEGORIES] Received request for product categories (from DB via service).
+[2025-08-27T11:44:34.246Z] [INFO] [PRODUCTS_SERVICE] Fetching all categories from DB.
+[2025-08-27T11:44:34.246Z] [DEBUG] [DATABASE] Executing query
+{ text:
+   'SELECT DISTINCT category FROM products WHERE deleted_at IS NULL AND category IS NOT NULL',
+  params: undefined }
+[2025-08-27T11:44:34.247Z] [DEBUG] [DATABASE] Executed query in 1ms
+[2025-08-27T11:44:34.250Z] [ERROR] [PRODUCTS_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async getCategories (/home/user/studio/.next/server/chunks/[root-of-the-server]__450353c6._.js:358:26)\n    at async GET (/home/user/studio/.next/server/chunks/[root-of-the-server]__450353c6._.js:402:28)\n    at async AppRouteRouteModule.do (/home/user/studio/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:26:34112)\n    at async AppRouteRouteModule.handle (/home/user/studio/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:26:41338)\n    at async doRender (/home/user/studio/node_modules/next/dist/server/base-server.js:1518:42)\n    at async DevServer.renderToResponseWithComponentsImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:1920:28)\n    at async DevServer.renderPageComponent (/home/user/studio/node_modules/next/dist/server/base-server.js:2408:24)\n    at async DevServer.renderToResponseImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:2445:32)\n    at async DevServer.pipeImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:1008:25)\n    at async NextNodeServer.handleCatchallRenderRequest (/home/user/studio/node_modules/next/dist/server/next-server.js:305:17)\n    at async DevServer.handleRequestImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:900:17)\n    at async /home/user/studio/node_modules/next/dist/server/dev/next-dev-server.js:371:20\n    at async Span.traceAsyncFn (/home/user/studio/node_modules/next/dist/trace/trace.js:157:20)\n    at async DevServer.handleRequest (/home/user/studio/node_modules/next/dist/server/dev/next-dev-server.js:368:24)\n    at async invokeRender (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:237:21)\n    at async handleRequest (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:428:24)\n    at async requestHandlerImpl (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:452:13)\n    at async Server.requestListener (/home/user/studio/node_modules/next/dist/server/lib/start-server.js:158:13)' } }
+[2025-08-27T11:44:34.251Z] [INFO] [API_CATEGORIES] Returning 0 categories from database.
