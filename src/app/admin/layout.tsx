@@ -27,7 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ListOrdered, LayoutDashboard, Settings, FileText } from "lucide-react";
+import { ListOrdered, LayoutDashboard, Settings, FileText, Package } from "lucide-react";
 
 
 export default function AdminLayout({
@@ -52,6 +52,14 @@ export default function AdminLayout({
                   <SidebarMenuButton tooltip="Dashboard">
                     <LayoutDashboard />
                     Dashboard
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+               <SidebarMenuItem>
+                <Link href="/admin/products">
+                  <SidebarMenuButton tooltip="Products">
+                    <Package />
+                    Products
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>

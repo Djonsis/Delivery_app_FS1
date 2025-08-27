@@ -3,26 +3,31 @@ export type WeightCategory = 'light' | 'middle' | 'heavy' | 'none';
 
 export interface Product {
   id: string;
-  name: string;
-  category: string;
-  price: number;
-  imageUrl: string;
-  rating: number;
-  reviews: number;
+  name: string; // Will be mapped to 'title' from DB
+  title: string;
   description: string;
-  weight?: string;
-  weight_category: WeightCategory; // "light", "middle", "heavy", or "none" for non-weighted
-  min_order_quantity: number;
-  step_quantity: number;
-  // New fields for product detail page
+  price: number;
+  currency: string;
+  tags: string[] | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  category: string; // Will need to ensure this is populated
+  imageUrl: string; // Not in DB yet, will be mocked
+  rating: number; // Not in DB yet, will be mocked
+  reviews: number; // Not in DB yet, will be mocked
+  weight?: string; // Not in DB yet
+  weight_category: WeightCategory; // Not in DB yet
+  min_order_quantity: number; // Not in DB yet
+  step_quantity: number; // Not in DB yet
   nutrition?: {
     calories: number;
     protein: number;
     fat: number;
     carbs: number;
   };
-  brand?: string;
-  manufacturer?: string;
+  brand?: string; // Not in DB yet
+  manufacturer?: string; // Not in DB yet
 }
 
 export interface CartItem {

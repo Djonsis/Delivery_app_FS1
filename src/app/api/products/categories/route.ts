@@ -1,16 +1,15 @@
 
 import { NextResponse } from 'next/server';
 import { serverLogger } from '@/lib/server-logger';
-import { query } from '@/lib/db';
+import { getCategories } from '@/lib/products.service';
 
 const apiLogger = serverLogger.withCategory("API_CATEGORIES");
 
 export async function GET(request: Request) {
   try {
-    apiLogger.info("Received request for product categories (from DB).");
+    apiLogger.info("Received request for product categories (from DB via service).");
     
-    const { rows } = await query('SELECT DISTINCT category FROM products WHERE deleted_at IS NULL AND category IS NOT NULL');
-    const categories = rows.map(r => r.category);
+    const categories = await getCategories();
 
     apiLogger.info(`Returning ${categories.length} categories from database.`);
     return NextResponse.json(categories);

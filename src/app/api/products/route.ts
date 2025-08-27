@@ -3,15 +3,15 @@ import { NextResponse } from 'next/server';
 import { serverLogger } from '@/lib/server-logger';
 import { query } from '@/lib/db';
 import type { Product } from '@/lib/types';
+import { getProducts } from '@/lib/products.service';
 
 const apiLogger = serverLogger.withCategory("API_PRODUCTS");
 
 export async function GET(request: Request) {
   try {
-    apiLogger.info("Received request for all products (from DB).");
+    apiLogger.info("Received request for all products (from DB via service).");
     
-    // Выполняем реальный запрос к базе данных
-    const { rows: products } = await query('SELECT * FROM products WHERE deleted_at IS NULL');
+    const products = await getProducts();
 
     apiLogger.info(`Returning ${products.length} products from database.`);
     return NextResponse.json(products);
