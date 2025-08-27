@@ -60,6 +60,18 @@ CREATE TABLE IF NOT EXISTS media (
   deleted_at TIMESTAMPTZ
 );
 
+-- Таблица категорий
+CREATE TABLE IF NOT EXISTS categories (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL UNIQUE,
+  slug TEXT NOT NULL UNIQUE,
+  sku_prefix VARCHAR(10) NOT NULL UNIQUE,
+  description TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+
 -- Основная таблица товаров
 CREATE TABLE IF NOT EXISTS products (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -68,7 +80,7 @@ CREATE TABLE IF NOT EXISTS products (
   description TEXT,
   price NUMERIC(12, 2) NOT NULL DEFAULT 0,
   currency TEXT NOT NULL DEFAULT 'RUB',
-  category TEXT NULL,
+  category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
   tags TEXT[] NULL, -- Поле для SEO-тегов
   image_url TEXT NULL, -- Поле для основной картинки товара
   rating REAL DEFAULT 4.5,
@@ -99,8 +111,7 @@ CREATE TABLE IF NOT EXISTS order_items (
     order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
     product_id UUID NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
     quantity NUMERIC(10, 3) NOT NULL,
-    unit_price NUMERIC(12, 2) NOT NULL,
-    PRIMARY KEY (order_id, product_id)
+    unit_price NUMERIC(12, 2) NOT NULL
 );
 
 

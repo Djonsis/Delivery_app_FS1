@@ -16,19 +16,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Product } from "@/lib/types";
+import { Product, Category } from "@/lib/types";
 import { useTransition, useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { createProductAction, updateProductAction } from "../_actions/product.actions";
 import { useRouter } from "next/navigation";
 import { Combobox } from "@/components/ui/combobox";
 import { uploadImageAction } from "@/lib/actions/storage.actions";
+import { getAllCategories } from "@/lib/categories.service";
 
 const productFormSchema = z.object({
   title: z.string().min(3, "Название должно содержать не менее 3 символов."),
   description: z.string().optional(),
   price: z.coerce.number().min(0, "Цена должна быть положительным числом."),
-  category: z.string().optional(),
+  categoryId: z.string({ required_error: "Необходимо выбрать категорию." }).uuid("Необходимо выбрать категорию."),
   tags: z.string().optional(),
   imageUrl: z.string().optional(),
 });
@@ -43,7 +44,7 @@ export default function ProductForm({ product }: ProductFormProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const router = useRouter();
-  const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -51,12 +52,8 @@ export default function ProductForm({ product }: ProductFormProps) {
    useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await fetch('/api/products/categories');
-        if (!res.ok) {
-          throw new Error('Failed to fetch categories');
-        }
-        const categoryNames: string[] = await res.json();
-        setCategories(categoryNames.map(name => ({ value: name, label: name })));
+        const fetchedCategories = await getAllCategories();
+        setCategories(fetchedCategories);
       } catch (error) {
         console.error(error);
         toast({
@@ -76,14 +73,13 @@ export default function ProductForm({ product }: ProductFormProps) {
       title: product.title,
       description: product.description || "",
       price: product.price,
-      category: product.category || "",
+      categoryId: product.category_id || undefined,
       tags: product.tags?.join(", "),
       imageUrl: product.image_url || "",
     } : {
       title: "",
       description: "",
       price: 0,
-      category: "",
       tags: "",
       imageUrl: "",
     },
@@ -141,6 +137,7 @@ export default function ProductForm({ product }: ProductFormProps) {
   };
 
   const isSubmitDisabled = isPending || isUploading;
+  const categoryOptions = categories.map(c => ({ value: c.id, label: c.name }));
 
   return (
     <Form {...form}>
@@ -204,21 +201,22 @@ export default function ProductForm({ product }: ProductFormProps) {
             />
             <FormField
               control={form.control}
-              name="category"
+              name="categoryId"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Категория</FormLabel>
                   <FormControl>
                      <Combobox
-                        options={categories}
+                        options={categoryOptions}
                         value={field.value}
                         onChange={field.onChange}
-                        placeholder="Выберите или создайте категорию..."
+                        placeholder="Выберите категорию..."
                         emptyMessage="Категории не найдены."
+                        allowCreation={false}
                     />
                   </FormControl>
                    <FormDescription>
-                    Выберите существующую или введите новую.
+                    Выберите существующую категорию.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

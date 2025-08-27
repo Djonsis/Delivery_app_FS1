@@ -1,4 +1,3 @@
-
 export type WeightCategory = 'light' | 'middle' | 'heavy' | 'none';
 
 // This represents the raw data for creating/updating a product
@@ -6,7 +5,7 @@ export interface ProductData {
   title: string;
   description?: string;
   price: number;
-  category?: string;
+  categoryId?: string;
   tags?: string;
   imageUrl?: string;
 }
@@ -22,7 +21,8 @@ export interface Product {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-  category: string | null; // Can be null
+  category: string | null; // This is the category NAME joined from the categories table
+  category_id: string | null; // The foreign key
   image_url: string | null; // Mapped to imageUrl
   imageUrl: string; // Ensure this is always a string for components
   rating: number;
@@ -41,10 +41,16 @@ export interface Product {
   };
 }
 
-export interface CartItem {
-  product: Product;
-  quantity: number;
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  sku_prefix: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
 }
+
 
 export const ORDER_STATUSES = [
   "Новый заказ",

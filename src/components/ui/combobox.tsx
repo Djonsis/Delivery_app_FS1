@@ -26,6 +26,7 @@ interface ComboboxProps {
   onChange: (value: string) => void;
   placeholder?: string;
   emptyMessage?: string;
+  allowCreation?: boolean;
 }
 
 export function Combobox({
@@ -33,32 +34,40 @@ export function Combobox({
   value,
   onChange,
   placeholder = "Select an option...",
-  emptyMessage = "No options found."
+  emptyMessage = "No options found.",
+  allowCreation = true
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
-  const [inputValue, setInputValue] = React.useState(value || "");
+  const [inputValue, setInputValue] = React.useState(value ? options.find(o => o.value === value)?.label : "");
 
-  const handleSelect = (currentValue: string) => {
-    // When an item is selected, call onChange with its value
-    onChange(currentValue);
-    setInputValue(currentValue); // also update the internal input value
+  React.useEffect(() => {
+    const selectedOption = options.find(o => o.value === value);
+    setInputValue(selectedOption ? selectedOption.label : "");
+  }, [value, options]);
+
+  const handleSelect = (currentValue: string, isCreation = false) => {
+    if (isCreation) {
+      onChange(currentValue); // Pass the new label for creation
+      setInputValue(currentValue);
+    } else {
+      const selectedOption = options.find(o => o.value === currentValue);
+      onChange(selectedOption ? selectedOption.value : "");
+      setInputValue(selectedOption ? selectedOption.label : "");
+    }
     setOpen(false);
   }
 
-  // When the popover closes, if the input value doesn't match the selected value,
-  // reset it to the currently selected value.
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
-       setInputValue(value || "");
+       const selectedOption = options.find(o => o.value === value);
+       setInputValue(selectedOption ? selectedOption.label : "");
     }
     setOpen(isOpen);
   }
 
-  const filteredOptions = options.filter(option => 
-    option.label.toLowerCase().includes(inputValue.toLowerCase())
-  );
+  const currentLabel = options.find((option) => option.value === value)?.label || placeholder;
 
-  const showCreateNew = inputValue && !options.some(option => option.label.toLowerCase() === inputValue.toLowerCase());
+  const showCreateNew = allowCreation && inputValue && !options.some(option => option.label.toLowerCase() === inputValue.toLowerCase());
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -69,9 +78,7 @@ export function Combobox({
           aria-expanded={open}
           className="w-full justify-between font-normal"
         >
-          {value
-            ? options.find((option) => option.value === value)?.label || value
-            : placeholder}
+          <span className="truncate">{currentLabel}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -87,10 +94,10 @@ export function Combobox({
                 {!showCreateNew && emptyMessage}
             </CommandEmpty>
             <CommandGroup>
-              {filteredOptions.map((option) => (
+              {options.map((option) => (
                 <CommandItem
                   key={option.value}
-                  value={option.value}
+                  value={option.label} // Compare with label for filtering
                   onSelect={() => handleSelect(option.value)}
                 >
                   <Check
@@ -106,7 +113,7 @@ export function Combobox({
                 <CommandItem
                   key={inputValue}
                   value={inputValue}
-                  onSelect={() => handleSelect(inputValue)}
+                  onSelect={() => handleSelect(inputValue, true)}
                 >
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Создать "{inputValue}"

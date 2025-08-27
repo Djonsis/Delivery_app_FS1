@@ -16,7 +16,7 @@ const productSchema = z.object({
   title: z.string().min(3, "Название должно быть не менее 3 символов."),
   description: z.string().optional(),
   price: z.coerce.number().min(0, "Цена должна быть положительным числом."),
-  category: z.string().optional(),
+  categoryId: z.string().uuid("Необходимо выбрать категорию.").optional(),
   tags: z.string().optional(),
   imageUrl: z.string().optional(),
 });
@@ -37,7 +37,6 @@ export async function createProductAction(values: unknown) {
     
     revalidatePath("/admin/products");
     revalidatePath("/catalog");
-    revalidatePath("/api/products/categories");
 
     return { success: true, message: "Товар успешно создан." };
   } catch (error) {
@@ -68,7 +67,6 @@ export async function updateProductAction(id: string, values: unknown) {
     revalidatePath(`/admin/products/${id}/edit`);
     revalidatePath(`/product/${id}`);
     revalidatePath("/catalog");
-    revalidatePath("/api/products/categories");
 
     return { success: true, message: "Товар успешно обновлен." };
   } catch (error) {
@@ -90,7 +88,6 @@ export async function deleteProductAction(id: string) {
 
     revalidatePath("/admin/products");
     revalidatePath("/catalog");
-    revalidatePath("/api/products/categories");
 
     return { success: true, message: "Товар успешно удален." };
   } catch (error) {
