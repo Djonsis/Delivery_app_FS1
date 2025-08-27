@@ -1,3 +1,4 @@
+
 // Универсальный логгер, безопасный для клиента и сервера.
 // "use client" директива здесь не нужна, так как логика адаптируется.
 
@@ -54,10 +55,15 @@ const formatLogEntry = (level: LogLevel, category: string, message: string, data
     
     if (config.format === 'json') {
         const logObject = { timestamp, level: upperCaseLevel, category, message, ...data };
-        return JSON.stringify(logObject);
+        try {
+          return JSON.stringify(logObject);
+        } catch (error) {
+          // Fallback for circular references or other serialization errors
+          return JSON.stringify({ timestamp, level: upperCaseLevel, category, message, error: "Failed to serialize log data" });
+        }
     }
     
-    const dataString = data ? `\n${formatObject(data)}` : '';
+    const dataString = data ? ` ${formatObject(data)}` : '';
     return `[${timestamp}] [${upperCaseLevel}] [${category}] ${message}${dataString}`;
 };
 
@@ -76,20 +82,23 @@ class Logger {
     private log(level: LogLevel, message: string, data?: any) {
         if (LOG_LEVELS[level] < configuredLevel) return;
 
-        // Log to console
+        // Use the same formatted entry for both console and file
+        const logEntryForFile = formatLogEntry(level, this.category, message, data);
         const consoleMessage = `[${level.toUpperCase()}] [${this.category}] ${message}`;
-        const dataToLog = data ? data : '';
-        switch(level) {
-            case 'error': console.error(consoleMessage, dataToLog); break;
-            case 'warn': console.warn(consoleMessage, dataToLog); break;
-            case 'info': console.info(consoleMessage, dataToLog); break;
-            default: console.debug(consoleMessage, dataToLog); break;
-        }
 
-        // Log to file if on server
+        // On the server, we log the full formatted entry.
+        // On the client, we use the simpler console message with interactive object.
         if (IS_SERVER) {
-            const fileEntry = formatLogEntry(level, this.category, message, data);
-            writeLogToFile(fileEntry);
+            console.log(logEntryForFile);
+            writeLogToFile(logEntryForFile);
+        } else {
+            const dataToLog = data ? data : '';
+            switch(level) {
+                case 'error': console.error(consoleMessage, dataToLog); break;
+                case 'warn': console.warn(consoleMessage, dataToLog); break;
+                case 'info': console.info(consoleMessage, dataToLog); break;
+                default: console.debug(consoleMessage, dataToLog); break;
+            }
         }
     }
 
@@ -113,12 +122,12 @@ class Logger {
                 message: error.message,
                 stack: error.stack,
                 name: error.name,
+                 // Include other potential properties
+                ...error
             };
         } else if (typeof error === 'object' && error !== null) {
-            // If it's an object but not an Error, try to serialize it
-            errorData = JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+            errorData = error;
         } else {
-             // For primitives or other types
             errorData = { rawError: error };
         }
         

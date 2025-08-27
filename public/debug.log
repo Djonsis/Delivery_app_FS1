@@ -741,3 +741,542 @@ Promise {
       'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
      name: 'error' } }
 [2025-08-27T20:39:06.178Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:39:06.247Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:39:06.337Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error' } }
+[2025-08-27T20:39:06.339Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error' } }
+[2025-08-27T20:39:06.460Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error' } }
+[2025-08-27T20:39:06.461Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error' } }
+[2025-08-27T20:39:45.429Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:39:45.507Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error' } }
+[2025-08-27T20:39:45.508Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error' } }
+[2025-08-27T20:40:35.111Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T20:40:35.157Z] [INFO] [DATABASE] DB Connection check: Is Google Cloud? false
+[2025-08-27T20:40:35.203Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:40:35.379Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:40:35.438Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:40:35.522Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:40:35.554Z] [ERROR] [DATABASE] Error executing query { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:40:35.555Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:40:35.667Z] [ERROR] [DATABASE] Error executing query { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:40:35.669Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:40:35.706Z] [ERROR] [DATABASE] Error executing query { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:40:35.707Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:40:35.709Z] [ERROR] [DATABASE] Error executing query { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:40:35.709Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:41:14.264Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:41:14.355Z] [ERROR] [DATABASE] Error executing query { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:41:14.360Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:41:14.587Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:41:14.685Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:41:14.776Z] [ERROR] [DATABASE] Error executing query { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:41:14.782Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:41:14.812Z] [ERROR] [DATABASE] Error executing query { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:41:14.818Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:41:43.299Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T20:41:43.354Z] [INFO] [DATABASE] DB Connection check: Is Google Cloud? false
+[2025-08-27T20:41:43.404Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:41:43.605Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:41:43.643Z] [ERROR] [DATABASE] Error executing query { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:276:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:341:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:908:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:41:43.645Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:276:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:341:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:908:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:41:43.719Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:41:43.792Z] [ERROR] [DATABASE] Error executing query { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:276:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:341:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:908:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:41:43.797Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:276:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:341:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:908:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:41:43.914Z] [ERROR] [DATABASE] Error executing query { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:276:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:341:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:908:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:41:43.928Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:276:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:341:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:908:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:42:07.133Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T20:42:07.204Z] [INFO] [DATABASE] DB Connection check: Is Google Cloud? false
+[2025-08-27T20:42:07.275Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:42:07.524Z] [ERROR] [DATABASE] Error executing query { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:42:07.526Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:294:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:359:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:926:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }

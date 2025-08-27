@@ -6,7 +6,7 @@ import { serverConfig } from './config';
 
 const dbLogger = logger.withCategory("DATABASE");
 
-const { host, port, user, password, database } = serverConfig.db;
+const { user, password, database } = serverConfig.db;
 
 // Check if running in a Google Cloud environment (like App Hosting or Cloud Run)
 const isGoogleCloud = !!process.env.K_SERVICE;
@@ -24,8 +24,8 @@ const poolConfig = {
     connectionTimeoutMillis: 10000,
     // If it's a Cloud SQL instance running in a Google Cloud environment, connect via the Unix socket.
     // Otherwise, use the standard host/port for local connections (e.g., via Cloud SQL Proxy).
-    host: isGoogleCloud ? path.join('/cloudsql', instanceConnectionName) : host,
-    port: isGoogleCloud ? undefined : port,
+    host: isGoogleCloud ? path.join('/cloudsql', instanceConnectionName) : serverConfig.db.host,
+    port: isGoogleCloud ? undefined : serverConfig.db.port,
 };
 
 const pool = new Pool(poolConfig);

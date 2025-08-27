@@ -1,6 +1,5 @@
-
 // Ensure this module is server-only
-import 'dotenv/config'
+import 'dotenv/config';
 import { logger } from './logger';
 
 
