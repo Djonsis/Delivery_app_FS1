@@ -3,9 +3,9 @@
 
 import { getPoolStatus } from "@/lib/db";
 import { serverConfig } from "@/lib/config";
-import { serverLogger } from "../server-logger";
+import { logger } from "../logger";
 
-const dbActionLogger = serverLogger.withCategory("DB_ACTION");
+const dbActionLogger = logger.withCategory("DB_ACTION");
 
 export interface DbStatus {
     // Connection parameters

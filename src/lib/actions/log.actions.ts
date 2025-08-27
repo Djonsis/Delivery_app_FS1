@@ -1,11 +1,12 @@
+
 "use server";
 
 import fs from 'fs/promises';
 import path from 'path';
 import { revalidatePath } from 'next/cache';
-import { serverLogger } from '../server-logger';
+import { logger } from '../logger';
 
-const logFileLogger = serverLogger.withCategory("LOG_FILE_ACTION");
+const logFileLogger = logger.withCategory("LOG_FILE_ACTION");
 const logFilePath = path.join(process.cwd(), 'public', 'debug.log');
 
 

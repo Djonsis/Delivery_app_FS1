@@ -1,9 +1,10 @@
+
 "use server";
 
 import { OrderStatus } from "@/lib/types";
-import { serverLogger } from "@/lib/server-logger";
+import { logger } from "@/lib/logger";
 
-const orderStatusLogger = serverLogger.withCategory("ORDER_STATUS_ACTION");
+const orderStatusLogger = logger.withCategory("ORDER_STATUS_ACTION");
 
 
 export async function updateOrderStatus(orderId: string, newStatus: OrderStatus) {

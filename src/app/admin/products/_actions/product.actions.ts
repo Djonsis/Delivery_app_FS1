@@ -3,10 +3,10 @@
 
 import { z } from "zod";
 import { query } from "@/lib/db";
-import { serverLogger } from "@/lib/server-logger";
+import { logger } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
 
-const productActionLogger = serverLogger.withCategory("PRODUCT_ACTION");
+const productActionLogger = logger.withCategory("PRODUCT_ACTION");
 
 const productSchema = z.object({
   title: z.string().min(3),
