@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS products (
   description TEXT,
   price NUMERIC(12, 2) NOT NULL DEFAULT 0,
   currency TEXT NOT NULL DEFAULT 'USD',
+  category TEXT NULL,
   tags TEXT[] NULL, -- Поле для SEO-тегов
   image_url TEXT NULL, -- Поле для основной картинки товара
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
