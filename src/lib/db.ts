@@ -10,7 +10,6 @@ const { user, password, database } = serverConfig.db;
 
 // Check if running in a Google Cloud environment (like App Hosting or Cloud Run)
 const isGoogleCloud = !!process.env.K_SERVICE;
-const instanceConnectionName = "fastbasket:europe-west10:delivery";
 
 dbLogger.info(`DB Connection check: Is Google Cloud? ${isGoogleCloud}`);
 
@@ -24,7 +23,7 @@ const poolConfig = {
     connectionTimeoutMillis: 10000,
     // If it's a Cloud SQL instance running in a Google Cloud environment, connect via the Unix socket.
     // Otherwise, use the standard host/port for local connections (e.g., via Cloud SQL Proxy).
-    host: isGoogleCloud ? path.join('/cloudsql', instanceConnectionName) : serverConfig.db.host,
+    host: isGoogleCloud ? path.join('/cloudsql', serverConfig.db.host) : serverConfig.db.host,
     port: isGoogleCloud ? undefined : serverConfig.db.port,
 };
 

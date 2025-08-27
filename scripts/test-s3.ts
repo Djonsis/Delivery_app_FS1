@@ -1,4 +1,3 @@
-
 import 'dotenv/config'
 import { S3Client, HeadBucketCommand } from '@aws-sdk/client-s3';
 import { serverConfig } from '../src/lib/config';
