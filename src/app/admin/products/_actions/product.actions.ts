@@ -14,6 +14,7 @@ const productSchema = z.object({
   price: z.coerce.number().min(0),
   category: z.string().optional(),
   tags: z.string().optional(),
+  imageUrl: z.string().optional(), // Added imageUrl
 });
 
 // Helper function to convert a JS array to a PostgreSQL array literal string
@@ -34,19 +35,20 @@ export async function createProductAction(values: unknown) {
     throw new Error("Invalid form data.");
   }
 
-  const { title, description, price, category, tags } = validatedFields.data;
+  const { title, description, price, category, tags, imageUrl } = validatedFields.data;
   
   // Explicitly handle optional fields: convert empty strings or undefined to null
   const finalDescription = description || null;
   const finalCategory = category || null;
   const tagsArray = tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
   const tagsForDb = tagsArray.length > 0 ? toPostgresArray(tagsArray) : null;
+  const finalImageUrl = imageUrl || null;
 
   try {
-    productActionLogger.info("Creating a new product in DB", { title });
+    productActionLogger.info("Creating a new product in DB", { title, imageUrl: finalImageUrl });
     await query(
-      `INSERT INTO products (title, description, price, currency, category, tags) VALUES ($1, $2, $3, $4, $5, $6)`,
-      [title, finalDescription, price, 'RUB', finalCategory, tagsForDb]
+      `INSERT INTO products (title, description, price, currency, category, tags, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [title, finalDescription, price, 'RUB', finalCategory, tagsForDb, finalImageUrl]
     );
     productActionLogger.info("Successfully created product.", { title });
     
@@ -54,7 +56,7 @@ export async function createProductAction(values: unknown) {
     revalidatePath("/catalog");
 
   } catch (error) {
-    productActionLogger.error("Failed to create product in DB", error as Error, { queryData: { title, finalDescription, price, finalCategory, tagsForDb } });
+    productActionLogger.error("Failed to create product in DB", error as Error, { queryData: { title, finalDescription, price, finalCategory, tagsForDb, finalImageUrl } });
     throw new Error("Database error. Could not create product.");
   }
 }

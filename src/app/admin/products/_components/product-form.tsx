@@ -20,8 +20,10 @@ import { Product } from "@/lib/types";
 import { useTransition, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { createProductAction } from "../_actions/product.actions";
+import { getPresignedUrlAction } from "@/lib/actions/storage.actions";
 import { useRouter } from "next/navigation";
 import { Combobox } from "@/components/ui/combobox";
+import { Upload } from "lucide-react";
 
 
 const productFormSchema = z.object({
@@ -30,6 +32,7 @@ const productFormSchema = z.object({
   price: z.coerce.number().min(0, "Цена должна быть положительным числом."),
   category: z.string().optional(),
   tags: z.string().optional(),
+  imageUrl: z.string().optional(),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -43,6 +46,9 @@ export default function ProductForm({ product }: ProductFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
 
    useEffect(() => {
     async function fetchCategories() {
@@ -74,28 +80,75 @@ export default function ProductForm({ product }: ProductFormProps) {
       price: product.price,
       category: product.category,
       tags: product.tags?.join(", "),
+      imageUrl: product.imageUrl,
     } : {
       title: "",
       description: "",
       price: 0,
       category: "",
       tags: "",
+      imageUrl: "",
     },
   });
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
 
   const onSubmit = (values: ProductFormValues) => {
     startTransition(async () => {
       try {
+        let imageUrl = product?.imageUrl; // Start with existing image url if any
+
+        if (selectedFile) {
+          setIsUploading(true);
+          toast({ title: "Загрузка изображения...", description: "Пожалуйста, подождите." });
+
+          // 1. Get presigned URL from server
+          const presignedUrlResult = await getPresignedUrlAction({
+            filename: selectedFile.name,
+            contentType: selectedFile.type,
+          });
+
+          if (!presignedUrlResult.success || !presignedUrlResult.url || !presignedUrlResult.objectKey) {
+            throw new Error(presignedUrlResult.error || "Не удалось получить URL для загрузки.");
+          }
+
+          // 2. Upload file to GCS/S3
+          const response = await fetch(presignedUrlResult.url, {
+            method: 'PUT',
+            body: selectedFile,
+            headers: { 'Content-Type': selectedFile.type },
+          });
+
+          if (!response.ok) {
+            throw new Error('Ошибка при загрузке файла в хранилище.');
+          }
+
+          // Construct the public URL after successful upload
+          imageUrl = `${process.env.NEXT_PUBLIC_S3_PUBLIC_URL}/${presignedUrlResult.objectKey}`;
+          
+          setIsUploading(false);
+        }
+
+        // Add the image URL to the form values
+        const finalValues = { ...values, imageUrl };
+
         if (product) {
-          // await updateProductAction(product.id, values);
+          // await updateProductAction(product.id, finalValues);
           toast({ title: "Успешно", description: "Товар успешно обновлен." });
         } else {
-          await createProductAction(values);
+          await createProductAction(finalValues);
           toast({ title: "Успешно", description: "Товар успешно создан." });
         }
         router.push("/admin/products");
 
       } catch (error) {
+        setIsUploading(false);
         toast({
           title: "Ошибка",
           description: (error as Error).message,
@@ -104,6 +157,8 @@ export default function ProductForm({ product }: ProductFormProps) {
       }
     });
   };
+
+  const isSubmitDisabled = isPending || isUploading;
 
   return (
     <Form {...form}>
@@ -121,6 +176,7 @@ export default function ProductForm({ product }: ProductFormProps) {
             </FormItem>
           )}
         />
+        
         <FormField
           control={form.control}
           name="description"
@@ -138,6 +194,20 @@ export default function ProductForm({ product }: ProductFormProps) {
             </FormItem>
           )}
         />
+
+         <FormItem>
+            <FormLabel>Изображение</FormLabel>
+             <FormControl>
+                <div className="flex items-center gap-4">
+                    <Input id="picture" type="file" onChange={handleFileChange} className="flex-1" accept="image/*"/>
+                    {selectedFile && <span className="text-sm text-muted-foreground">{selectedFile.name}</span>}
+                </div>
+            </FormControl>
+            <FormDescription>
+                Загрузите изображение для вашего товара.
+            </FormDescription>
+            <FormMessage />
+        </FormItem>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <FormField
@@ -193,8 +263,8 @@ export default function ProductForm({ product }: ProductFormProps) {
           )}
         />
         
-        <Button type="submit" disabled={isPending}>
-          {isPending ? (product ? "Обновление..." : "Создание...") : (product ? "Обновить товар" : "Создать товар")}
+        <Button type="submit" disabled={isSubmitDisabled}>
+          {isPending ? "Сохранение..." : (isUploading ? "Загрузка..." : (product ? "Обновить товар" : "Создать товар"))}
         </Button>
       </form>
     </Form>

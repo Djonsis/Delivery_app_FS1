@@ -12,9 +12,9 @@ function mapDbProductToProduct(dbProduct: any): Product {
     const p: Product = {
         ...dbProduct,
         name: dbProduct.title, // Map title from DB to name for frontend
-        // Mock data for fields not in DB yet
-        imageUrl: `https://placehold.co/600x400.png?text=${encodeURIComponent(dbProduct.title)}`,
-        rating: 4.5,
+        // Use image_url from db, or fallback to placeholder
+        imageUrl: dbProduct.image_url || `https://placehold.co/600x400.png?text=${encodeURIComponent(dbProduct.title)}`,
+        rating: 4.5, // Mock data for fields not in DB yet
         reviews: Math.floor(Math.random() * 100),
         weight_category: 'middle',
         min_order_quantity: 1,

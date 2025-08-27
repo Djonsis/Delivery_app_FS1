@@ -69,12 +69,13 @@ CREATE TABLE IF NOT EXISTS products (
   price NUMERIC(12, 2) NOT NULL DEFAULT 0,
   currency TEXT NOT NULL DEFAULT 'USD',
   tags TEXT[] NULL, -- Поле для SEO-тегов
+  image_url TEXT NULL, -- Поле для основной картинки товара
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   deleted_at TIMESTAMPTZ
 );
 
--- Связующая таблица для товаров и медиафайлов
+-- Связующая таблица для товаров и медиафайлов (для галереи)
 CREATE TABLE IF NOT EXISTS product_media (
   product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
   media_id UUID NOT NULL REFERENCES media(id) ON DELETE CASCADE,
@@ -115,7 +116,7 @@ PG_DATABASE="<DB_NAME>"
 [
   {
     "origin": [
-      "http://localhost:9002",
+      "http://localhost:9003",
       "https://your-production-domain.com"
     ],
     "method": [
@@ -131,7 +132,7 @@ PG_DATABASE="<DB_NAME>"
   }
 ]
 ```
-**Примечание:** Не забудьте заменить `https://your-production-domain.com` на ваш реальный домен.
+**Примечание:** Не забудьте заменить домен разработки и `https://your-production-domain.com` на ваш реальный домен.
 
 ### Шаг 3: Настройка переменных окружения
 
@@ -140,6 +141,9 @@ PG_DATABASE="<DB_NAME>"
 ```env
 # Имя вашего бакета в Google Cloud Storage
 S3_BUCKET_NAME="<YOUR_BUCKET_NAME>"
+
+# Публичный URL для доступа к файлам в бакете (например https://storage.googleapis.com/your-bucket-name)
+NEXT_PUBLIC_S3_PUBLIC_URL="<YOUR_BUCKET_PUBLIC_URL>"
 
 # Для S3-совместимого API эндпоинт Google Cloud Storage
 S3_ENDPOINT_URL="https://storage.googleapis.com"

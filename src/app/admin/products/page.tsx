@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import Image from "next/image";
 
 export default async function ProductsPage() {
   const products = await getProducts();
@@ -67,8 +68,7 @@ export default async function ProductsPage() {
             {products.map((product) => (
               <TableRow key={product.id}>
                 <TableCell className="hidden sm:table-cell">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     alt={product.name}
                     className="aspect-square rounded-md object-cover"
                     height="64"

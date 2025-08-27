@@ -13,7 +13,7 @@ export interface Product {
   updated_at: string;
   deleted_at: string | null;
   category: string; // Will need to ensure this is populated
-  imageUrl: string; // Not in DB yet, will be mocked
+  imageUrl: string; 
   rating: number; // Not in DB yet, will be mocked
   reviews: number; // Not in DB yet, will be mocked
   weight?: string; // Not in DB yet
