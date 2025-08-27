@@ -1,19 +1,18 @@
 
 import { getPoolStatus as getRawPoolStatus } from "@/lib/db";
 import { serverConfig } from "@/lib/config";
-import type { DbStatus } from "./actions/db.actions";
+import type { DbStatus } from "./types";
 
 export async function getDbStatus(): Promise<DbStatus> {
     const { host, port, user, database } = serverConfig.db;
 
-    // The raw pool status doesn't throw, so we can call it safely.
-    // The actual connection test will happen implicitly when a query is made.
     const poolStats = getRawPoolStatus();
 
     // To truly check connectivity, we perform a simple query.
+    // This will catch authentication errors, connection refused, etc.
     try {
         const { query } = await import("@/lib/db");
-        await query('SELECT 1'); // A simple, fast query to check the connection.
+        await query('SELECT 1'); // A simple, fast query to test the connection.
         
         return {
             host,
@@ -24,6 +23,8 @@ export async function getDbStatus(): Promise<DbStatus> {
             connected: true,
         };
     } catch (error) {
+        const err = error as Error & { code?: string };
+        const errorMessage = `Code: ${err.code || 'N/A'} - ${err.message}`;
         return {
             host,
             port,
@@ -31,7 +32,7 @@ export async function getDbStatus(): Promise<DbStatus> {
             database,
             ...poolStats,
             connected: false,
-            error: (error as Error).message,
+            error: errorMessage,
         };
     }
 }
