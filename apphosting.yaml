@@ -5,3 +5,9 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+
+# Указываем, что этому бэкенду нужен доступ к Cloud SQL
+cloudsql:
+  # Замените на полный connection name вашего инстанса
+  instances:
+    - delivery
