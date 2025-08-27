@@ -585,3 +585,59 @@ Promise {
      stack:
       'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
      name: 'Error' } }
+[2025-08-27T20:24:48.307Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T20:24:48.556Z] [INFO] [DATABASE] DB Connection check: Is Google Cloud? false
+[2025-08-27T20:24:48.623Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:24:48.732Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'Error' } }
+[2025-08-27T20:24:48.741Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery',
+     stack:
+      'Error: getaddrinfo ENOTFOUND fastbasket:europe-west10:delivery\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'Error' } }
+[2025-08-27T20:25:20.597Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T20:25:20.658Z] [INFO] [DATABASE] DB Connection check: Is Google Cloud? false
+[2025-08-27T20:25:20.741Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:25:20.819Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'connect ECONNREFUSED 127.0.0.1:5432',
+     stack:
+      'Error: connect ECONNREFUSED 127.0.0.1:5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'Error' } }
+[2025-08-27T20:25:20.821Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'connect ECONNREFUSED 127.0.0.1:5432',
+     stack:
+      'Error: connect ECONNREFUSED 127.0.0.1:5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'Error' } }
+[2025-08-27T20:25:21.452Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:25:21.624Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'connect ECONNREFUSED 127.0.0.1:5432',
+     stack:
+      'Error: connect ECONNREFUSED 127.0.0.1:5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'Error' } }
+[2025-08-27T20:25:21.631Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'connect ECONNREFUSED 127.0.0.1:5432',
+     stack:
+      'Error: connect ECONNREFUSED 127.0.0.1:5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'Error' } }
+[2025-08-27T20:25:21.784Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:25:21.857Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'connect ECONNREFUSED 127.0.0.1:5432',
+     stack:
+      'Error: connect ECONNREFUSED 127.0.0.1:5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'Error' } }
+[2025-08-27T20:25:21.860Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'connect ECONNREFUSED 127.0.0.1:5432',
+     stack:
+      'Error: connect ECONNREFUSED 127.0.0.1:5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:300:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:365:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__def3e161._.js:932:24)',
+     name: 'Error' } }
