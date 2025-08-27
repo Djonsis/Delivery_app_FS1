@@ -1,6 +1,5 @@
 // Ensure this module is server-only
-// The `dotenv/config` import is handled by the entry scripts (e.g., test-db.ts)
-// or by Next.js automatically for the main application.
+import 'dotenv/config'
 import { logger } from './logger';
 
 const configLogger = logger.withCategory('CONFIG');
