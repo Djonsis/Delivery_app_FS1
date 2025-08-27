@@ -4,6 +4,7 @@
 import type { Product, ProductData } from "./types";
 import { logger } from "./logger";
 import { query } from "./db";
+import { getCategoryById } from "./categories.service";
 
 const productsServiceLogger = logger.withCategory("PRODUCTS_SERVICE");
 
@@ -28,6 +29,29 @@ function mapDbProductToProduct(dbProduct: any): Product {
         min_order_quantity: 1,
         step_quantity: 1,
     };
+}
+
+async function generateSkuForCategory(categoryId: string): Promise<string> {
+    const category = await getCategoryById(categoryId);
+    if (!category || !category.sku_prefix) {
+        productsServiceLogger.warn("Cannot generate SKU. Category or SKU prefix not found.", { categoryId });
+        throw new Error("Категория или префикс для артикула не найдены.");
+    }
+    
+    // Count existing products in this category
+    const countResult = await query(
+        'SELECT COUNT(*) FROM products WHERE category_id = $1',
+        [categoryId]
+    );
+    const productCount = parseInt(countResult.rows[0].count, 10);
+    const nextNumber = productCount + 1;
+    
+    // Format number with leading zeros (e.g., 1 -> 001)
+    const paddedNumber = nextNumber.toString().padStart(3, '0');
+    
+    const sku = `${category.sku_prefix}-${paddedNumber}`;
+    productsServiceLogger.info("Generated new SKU", { sku, categoryId });
+    return sku;
 }
 
 
@@ -97,19 +121,31 @@ export async function getProductsByCategory(categoryName: string | null, limitCo
 export async function createProduct(data: ProductData): Promise<void> {
     const { title, description, price, categoryId, tags, imageUrl } = data;
     
+    if (!categoryId) {
+        productsServiceLogger.error("Cannot create product without categoryId", { data });
+        throw new Error("Для создания товара необходимо указать категорию.");
+    }
+
+    const sku = await generateSkuForCategory(categoryId);
+
     const finalDescription = description || null;
     const finalCategoryId = categoryId || null;
     const tagsArray = tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
     const tagsForDb = toPostgresArray(tagsArray);
     const finalImageUrl = imageUrl || null;
 
-    productsServiceLogger.info("Creating a new product in DB", { title });
+    productsServiceLogger.info("Creating a new product in DB", { title, sku });
     try {
         await query(
-            `INSERT INTO products (title, description, price, currency, category_id, tags, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-            [title, finalDescription, price, 'RUB', finalCategoryId, tagsForDb, finalImageUrl]
+            `INSERT INTO products (title, sku, description, price, currency, category_id, tags, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+            [title, sku, finalDescription, price, 'RUB', finalCategoryId, tagsForDb, finalImageUrl]
         );
     } catch (error) {
+        const dbError = error as any;
+        if (dbError.code === '23505' && dbError.constraint === 'products_sku_key') {
+            productsServiceLogger.error("SKU conflict detected on create", { sku, title });
+            throw new Error("Конфликт артикулов. Попробуйте сохранить товар еще раз.");
+        }
         productsServiceLogger.error("Failed to create product in DB", error as Error);
         throw new Error("Database error. Could not create product.");
     }
@@ -121,7 +157,7 @@ export async function updateProduct(id: string, data: ProductData): Promise<void
     const finalDescription = description || null;
     const finalCategoryId = categoryId || null;
     const tagsArray = tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
-    const tagsForDb = toPostgresArray(tagsArray);
+    const tagsForDb = toPostga_prefixresArray(tagsArray);
     const finalImageUrl = imageUrl || null;
 
     productsServiceLogger.info(`Updating product in DB: ${id}`, { data });

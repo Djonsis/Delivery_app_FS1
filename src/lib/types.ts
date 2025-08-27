@@ -12,6 +12,7 @@ export interface ProductData {
 
 export interface Product {
   id: string;
+  sku: string | null;
   name: string; // Will be mapped to 'title' from DB
   title: string;
   description: string | null;

@@ -142,19 +142,32 @@ export default function ProductForm({ product }: ProductFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Название</FormLabel>
-              <FormControl>
-                <Input placeholder="например, Свежие органические помидоры" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+           <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Название</FormLabel>
+                <FormControl>
+                    <Input placeholder="например, Свежие органические помидоры" {...field} />
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+            {product?.sku && (
+                <FormItem>
+                    <FormLabel>Артикул (SKU)</FormLabel>
+                    <FormControl>
+                        <Input readOnly disabled value={product.sku} />
+                    </FormControl>
+                    <FormDescription>
+                        Артикул генерируется автоматически и не может быть изменен.
+                    </FormDescription>
+                </FormItem>
+            )}
+        </div>
         
         <FormField
           control={form.control}

@@ -73,6 +73,7 @@ export function ProductsTable({ products }: ProductsTableProps) {
               <span className="sr-only">Изображение</span>
             </TableHead>
             <TableHead>Название</TableHead>
+            <TableHead>Артикул</TableHead>
             <TableHead>Статус</TableHead>
             <TableHead>Цена</TableHead>
             <TableHead className="hidden md:table-cell">Дата создания</TableHead>
@@ -94,6 +95,9 @@ export function ProductsTable({ products }: ProductsTableProps) {
                 />
               </TableCell>
               <TableCell className="font-medium">{product.title}</TableCell>
+              <TableCell>
+                <Badge variant="secondary">{product.sku || 'N/A'}</Badge>
+              </TableCell>
               <TableCell>
                 <Badge variant="outline">Активен</Badge>
               </TableCell>
