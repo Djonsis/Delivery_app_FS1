@@ -442,3 +442,70 @@ Promise {
    { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
      stack:
       'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__235cc152._.js:292:18)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__235cc152._.js:664:26)\n    at async ProductsPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__235cc152._.js:1329:22)' } }
+[2025-08-27T20:15:03.050Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T20:15:03.116Z] [INFO] [DATABASE] DB Connection check: Is Cloud SQL? true
+{ pgHost: 'fastbasket:europe-west10:delivery' }
+[2025-08-27T20:15:03.715Z] [INFO] [PRODUCTS_SERVICE] Fetching products from DB with filters.
+{ filters:
+   { category: 'Фрукты',
+     query: undefined,
+     sort: undefined,
+     minPrice: undefined,
+     maxPrice: undefined } }
+[2025-08-27T20:15:03.729Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:15:03.802Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:301:18)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:673:26)\n    at async Promise.all (index 0)\n    at async CatalogPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:1330:39)',
+     name: 'Error' } }
+[2025-08-27T20:15:03.810Z] [ERROR] [PRODUCTS_SERVICE] Error fetching products from DB
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:301:18)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:673:26)\n    at async Promise.all (index 0)\n    at async CatalogPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:1330:39)',
+     name: 'Error' } }
+[2025-08-27T20:15:03.866Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:301:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:366:26)\n    at async Promise.all (index 1)',
+     name: 'Error' } }
+[2025-08-27T20:15:03.871Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:301:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:366:26)\n    at async Promise.all (index 1)',
+     name: 'Error' } }
+[2025-08-27T20:15:04.973Z] [INFO] [PRODUCTS_SERVICE] Fetching products from DB with filters.
+{ filters:
+   { category: 'Фрукты',
+     query: undefined,
+     sort: undefined,
+     minPrice: undefined,
+     maxPrice: undefined } }
+[2025-08-27T20:15:04.988Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:15:05.018Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:301:18)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:673:26)\n    at async Promise.all (index 0)\n    at async CatalogPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:1330:39)',
+     name: 'Error' } }
+[2025-08-27T20:15:05.029Z] [ERROR] [PRODUCTS_SERVICE] Error fetching products from DB
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:301:18)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:673:26)\n    at async Promise.all (index 0)\n    at async CatalogPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:1330:39)',
+     name: 'Error' } }
+[2025-08-27T20:15:05.056Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:301:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:366:26)\n    at async Promise.all (index 1)',
+     name: 'Error' } }
+[2025-08-27T20:15:05.059Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:301:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__6dc51414._.js:366:26)\n    at async Promise.all (index 1)',
+     name: 'Error' } }
