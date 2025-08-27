@@ -14,7 +14,7 @@ const productSchema = z.object({
   price: z.coerce.number().min(0),
   category: z.string().optional(),
   tags: z.string().optional(),
-  imageUrl: z.string().optional(), // Added imageUrl
+  imageUrl: z.string().optional(),
 });
 
 // Helper function to convert a JS array to a PostgreSQL array literal string
@@ -23,7 +23,7 @@ function toPostgresArray(arr: string[] | undefined | null): string | null {
         return null; // Return SQL NULL if array is empty or not provided
     }
     // Escape double quotes and backslashes, then wrap each element in double quotes
-    const escapedElements = arr.map(el => `"${el.replace(/\\/g, '\\\\').replace(/"/g, '\"\"')}"`);
+    const escapedElements = arr.map(el => `"${el.replace(/\\/g, '\\\\').replace(/"/g, '""')}"`);
     return `{${escapedElements.join(',')}}`;
 }
 
@@ -41,7 +41,7 @@ export async function createProductAction(values: unknown) {
   const finalDescription = description || null;
   const finalCategory = category || null;
   const tagsArray = tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
-  const tagsForDb = tagsArray.length > 0 ? toPostgresArray(tagsArray) : null;
+  const tagsForDb = toPostgresArray(tagsArray);
   const finalImageUrl = imageUrl || null;
 
   try {

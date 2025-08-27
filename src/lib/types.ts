@@ -5,15 +5,15 @@ export interface Product {
   id: string;
   name: string; // Will be mapped to 'title' from DB
   title: string;
-  description: string;
+  description: string | null;
   price: number;
   currency: string;
   tags: string[] | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-  category: string; // Will need to ensure this is populated
-  imageUrl: string; 
+  category: string | null; // Can be null
+  imageUrl: string | null; // Can be null
   rating: number; // Not in DB yet, will be mocked
   reviews: number; // Not in DB yet, will be mocked
   weight?: string; // Not in DB yet
