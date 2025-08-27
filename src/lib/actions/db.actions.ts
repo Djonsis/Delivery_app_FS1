@@ -1,7 +1,7 @@
 
 "use server";
 
-import pool from "@/lib/db";
+import { getPoolStatus } from "@/lib/db";
 import { appConfig } from "@/lib/config";
 import { serverLogger } from "../server-logger";
 
@@ -27,24 +27,24 @@ export async function getDbStatusAction(): Promise<DbStatus> {
     const config = { host, port, user, database };
     
     try {
-        const client = await pool.connect();
-        const status: DbStatus = {
-            ...config,
-            totalCount: pool.totalCount,
-            idleCount: pool.idleCount,
-            waitingCount: pool.waitingCount,
-            connected: true
-        };
-        client.release();
+        // Attempt a connection to verify
+        const status = getPoolStatus();
         dbActionLogger.info("Successfully fetched DB status.", status);
-        return status;
-    } catch (error) {
-        dbActionLogger.error("Failed to get DB status", error as Error);
         return {
             ...config,
-            totalCount: pool.totalCount,
-            idleCount: pool.idleCount,
-            waitingCount: pool.waitingCount,
+            totalCount: status.totalCount,
+            idleCount: status.idleCount,
+            waitingCount: status.waitingCount,
+            connected: true
+        };
+    } catch (error) {
+        dbActionLogger.error("Failed to get DB status", error as Error);
+        const status = getPoolStatus();
+        return {
+            ...config,
+            totalCount: status.totalCount,
+            idleCount: status.idleCount,
+            waitingCount: status.waitingCount,
             connected: false,
             error: (error as Error).message,
         };

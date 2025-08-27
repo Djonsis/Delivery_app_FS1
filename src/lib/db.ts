@@ -66,4 +66,10 @@ export const getClient = async () => {
     return pool.connect();
 };
 
-export default pool;
+export const getPoolStatus = async () => {
+    return {
+        totalCount: pool.totalCount,
+        idleCount: pool.idleCount,
+        waitingCount: pool.waitingCount,
+    }
+}
