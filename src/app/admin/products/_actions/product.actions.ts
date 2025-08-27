@@ -1,3 +1,4 @@
+
 "use server";
 
 import { z } from "zod";
@@ -15,6 +16,16 @@ const productSchema = z.object({
   tags: z.string().optional(),
 });
 
+// Helper function to convert a JS array to a PostgreSQL array literal string
+function toPostgresArray(arr: string[] | undefined | null): string | null {
+    if (!arr || arr.length === 0) {
+        return null;
+    }
+    // Escape quotes and wrap each element in double quotes
+    const escapedElements = arr.map(el => `"${el.replace(/"/g, '""')}"`);
+    return `{${escapedElements.join(',')}}`;
+}
+
 export async function createProductAction(values: unknown) {
   const validatedFields = productSchema.safeParse(values);
 
@@ -25,12 +36,13 @@ export async function createProductAction(values: unknown) {
 
   const { title, description, price, category, tags } = validatedFields.data;
   const tagsArray = tags?.split(',').map(tag => tag.trim()).filter(Boolean);
+  const tagsForDb = toPostgresArray(tagsArray);
 
   try {
     productActionLogger.info("Creating a new product in DB", { title });
     await query(
       `INSERT INTO products (title, description, price, currency, category, tags) VALUES ($1, $2, $3, $4, $5, $6)`,
-      [title, description, price, 'RUB', category, tagsArray]
+      [title, description, price, 'RUB', category, tagsForDb]
     );
     productActionLogger.info("Successfully created product.", { title });
     

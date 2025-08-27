@@ -1,3 +1,4 @@
+
 "use client"
 
 import {
@@ -27,7 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ListOrdered, LayoutDashboard, Settings, FileText, Package } from "lucide-react";
+import { ListOrdered, LayoutDashboard, Settings, FileText, Package, Database } from "lucide-react";
 
 
 export default function AdminLayout({
@@ -76,6 +77,14 @@ export default function AdminLayout({
                   <SidebarMenuButton tooltip="Логи">
                     <FileText />
                     Логи
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+               <SidebarMenuItem>
+                <Link href="/admin/status">
+                  <SidebarMenuButton tooltip="Статус системы">
+                    <Database />
+                    Статус
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
