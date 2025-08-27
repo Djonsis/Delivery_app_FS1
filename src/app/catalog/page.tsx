@@ -4,7 +4,8 @@ import SiteHeader from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { getProducts, getCategories } from "@/lib/products.service";
+import { getProducts } from "@/lib/products.service";
+import { getAllCategories } from "@/lib/categories.service";
 import { ProductFilter, SortOption } from "@/lib/types";
 
 interface CatalogPageProps {
@@ -20,10 +21,12 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       maxPrice: searchParams.maxPrice ? Number(searchParams.maxPrice) : undefined,
   }
 
-  const [products, categories] = await Promise.all([
+  const [products, allCategories] = await Promise.all([
     getProducts(filters),
-    getCategories()
+    getAllCategories()
   ]);
+  
+  const categoryNames = allCategories.map(c => c.name);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col">
@@ -39,7 +42,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         </div>
         <ProductCatalog 
           products={products}
-          categories={categories}
+          categories={categoryNames}
         />
       </main>
     </div>

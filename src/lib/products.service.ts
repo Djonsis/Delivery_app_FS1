@@ -238,23 +238,3 @@ export async function deleteProduct(id: string): Promise<void> {
         throw new Error(`Database error. Could not delete product ${id}.`);
     }
 }
-
-
-export async function getCategories(): Promise<string[]> {
-  productsServiceLogger.info("Fetching distinct category names from DB.");
-  try {
-    const { rows } = await query(
-      `SELECT DISTINCT c.name 
-       FROM categories c
-       INNER JOIN products p ON c.id = p.category_id
-       WHERE p.deleted_at IS NULL
-       ORDER BY c.name ASC`
-    );
-    const categoryNames = rows.map(row => row.name);
-    productsServiceLogger.debug(`Found ${categoryNames.length} distinct categories with active products.`);
-    return categoryNames;
-  } catch (error) {
-    productsServiceLogger.error("Error fetching distinct category names from DB", error as Error);
-    throw new Error("Could not fetch category names.");
-  }
-}

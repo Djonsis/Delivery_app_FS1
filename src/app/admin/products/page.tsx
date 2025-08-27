@@ -14,11 +14,6 @@ import { ProductsTable } from "./_components/products-table";
 
 
 export default async function ProductsPage() {
-  // Per LA-004, the page component should not call the service layer directly.
-  // It is responsible for displaying data. The data fetching logic is now
-  // handled within the ProductsTable component, which can then use Server Actions
-  // for mutations. This is a temporary step. A better approach would be to 
-  // fetch data in the page and pass it down, while actions are handled by the table.
   const products = await getProducts();
 
   return (
