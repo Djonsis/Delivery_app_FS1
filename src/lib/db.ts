@@ -1,6 +1,4 @@
 
-"use server";
-
 import { Pool } from 'pg';
 import path from 'path';
 import { logger } from './logger';
@@ -66,7 +64,7 @@ export async function getClient() {
     return pool.connect();
 };
 
-export async function getPoolStatus() {
+export function getPoolStatus() {
     return {
         totalCount: pool.totalCount,
         idleCount: pool.idleCount,

@@ -1,5 +1,5 @@
 
-"use server"; // Ensure this module is server-only
+// Ensure this module is server-only
 
 import * as dotenv from 'dotenv';
 import { logger } from './logger';
