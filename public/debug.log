@@ -1961,3 +1961,50 @@ Promise {
      file: 'auth.c',
      line: '349',
      routine: 'auth_failed' } }
+[2025-08-27T20:48:53.133Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T20:48:53.267Z] [INFO] [DATABASE] DB Connection check: Is Google Cloud? false
+[2025-08-27T20:48:53.393Z] [INFO] [CATEGORIES_SERVICE] Fetching all categories from DB.
+[2025-08-27T20:48:53.859Z] [ERROR] [DATABASE] Error executing query { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:277:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:342:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:909:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
+[2025-08-27T20:48:53.865Z] [ERROR] [CATEGORIES_SERVICE] Error fetching categories from DB { error:
+   { message: 'password authentication failed for user "admin_delivery_app"',
+     stack:
+      'error: password authentication failed for user "admin_delivery_app"\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:277:18)\n    at async getAllCategories (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:342:26)\n    at async Home (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__3dd76b56._.js:909:24)',
+     name: 'error',
+     length: 114,
+     severity: 'FATAL',
+     code: '28P01',
+     detail: undefined,
+     hint: undefined,
+     position: undefined,
+     internalPosition: undefined,
+     internalQuery: undefined,
+     where: undefined,
+     schema: undefined,
+     table: undefined,
+     column: undefined,
+     dataType: undefined,
+     constraint: undefined,
+     file: 'auth.c',
+     line: '349',
+     routine: 'auth_failed' } }
