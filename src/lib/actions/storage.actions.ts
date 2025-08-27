@@ -1,25 +1,15 @@
 
 "use server";
 
+import { s3Client } from "@/lib/s3-client";
+import { appConfig } from "@/lib/config";
 import { serverLogger } from "../server-logger";
-import { S3Client, HeadBucketCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { HeadBucketCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { z } from "zod";
 import crypto from "crypto";
 
 const storageActionLogger = serverLogger.withCategory("STORAGE_ACTION");
-
-// --- S3 Client Singleton ---
-// This prevents creating a new client for every request.
-const s3Client = new S3Client({
-    endpoint: process.env.S3_ENDPOINT_URL,
-    region: process.env.S3_REGION,
-    credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-    },
-    forcePathStyle: true,
-});
 
 export interface StorageStatus {
     bucketName?: string;
@@ -31,29 +21,18 @@ export interface StorageStatus {
 }
 
 export async function getStorageStatusAction(): Promise<StorageStatus> {
-    const config = {
-        bucketName: process.env.S3_BUCKET_NAME,
-        endpoint: process.env.S3_ENDPOINT_URL,
-        region: process.env.S3_REGION,
-        accessKeyId: process.env.S3_ACCESS_KEY_ID,
-    };
+    const { bucketName, endpoint, region, accessKeyId } = appConfig.s3;
     
     const status: StorageStatus = {
-        bucketName: config.bucketName,
-        endpoint: config.endpoint,
-        region: config.region,
-        accessKeyId: config.accessKeyId ? `***${config.accessKeyId.slice(-4)}` : undefined,
+        bucketName,
+        endpoint,
+        region,
+        accessKeyId: accessKeyId ? `***${accessKeyId.slice(-4)}` : undefined,
         connected: false,
     };
 
-    if (!config.bucketName || !config.endpoint || !config.region || !config.accessKeyId || !process.env.S3_SECRET_ACCESS_KEY) {
-        status.error = "Одна или несколько переменных окружения для S3 не установлены (S3_BUCKET_NAME, S3_ENDPOINT_URL, S3_REGION, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY).";
-        storageActionLogger.warn("S3 status check failed: missing environment variables.");
-        return status;
-    }
-
     try {
-        const command = new HeadBucketCommand({ Bucket: config.bucketName });
+        const command = new HeadBucketCommand({ Bucket: bucketName });
         await s3Client.send(command);
 
         status.connected = true;
@@ -83,11 +62,7 @@ export async function getPresignedUrlAction(data: unknown): Promise<{ success: b
     }
 
     const { filename, contentType } = validatedFields.data;
-    const bucketName = process.env.S3_BUCKET_NAME;
-
-    if (!bucketName) {
-        return { success: false, error: "Имя бакета S3 не настроено." };
-    }
+    const { bucketName } = appConfig.s3;
 
     // Generate a unique object key to avoid filename collisions
     const uniqueSuffix = crypto.randomBytes(8).toString('hex');

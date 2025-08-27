@@ -2,6 +2,7 @@
 "use server";
 
 import pool from "@/lib/db";
+import { appConfig } from "@/lib/config";
 import { serverLogger } from "../server-logger";
 
 const dbActionLogger = serverLogger.withCategory("DB_ACTION");
@@ -22,12 +23,8 @@ export interface DbStatus {
 }
 
 export async function getDbStatusAction(): Promise<DbStatus> {
-    const config = {
-        host: process.env.PG_HOST,
-        port: process.env.PG_PORT ? parseInt(process.env.PG_PORT, 10) : undefined,
-        user: process.env.PG_USER,
-        database: process.env.PG_DATABASE,
-    }
+    const { host, port, user, database } = appConfig.db;
+    const config = { host, port, user, database };
     
     try {
         const client = await pool.connect();

@@ -1,57 +1,68 @@
 
+"use server";
+
 import { Pool } from 'pg';
-import { serverLogger } from './server-logger';
 import path from 'path';
+import { serverLogger } from './server-logger';
+import { appConfig } from './config';
 
 const dbLogger = serverLogger.withCategory("DATABASE");
 
-// --- Улучшенная логика подключения к Google Cloud SQL ---
+const { host, port, user, password, database } = appConfig.db;
 
-const pgHost = process.env.PG_HOST || '';
-// Имя инстанса Cloud SQL обычно содержит два двоеточия (project:region:instance)
-const isCloudSql = pgHost.split(':').length === 3;
+// Check if the host is a Cloud SQL connection name (e.g., "project:region:instance")
+const isCloudSql = host.includes(':');
 
-dbLogger.info(`DB Connection check: Is Cloud SQL? ${isCloudSql}`, { pgHost });
+dbLogger.info(`DB Connection check: Is Cloud SQL? ${isCloudSql}`, { pgHost: host });
 
-// Конфигурация подключения
-const config = {
-  user: process.env.PG_USER,
-  password: process.env.PG_PASSWORD,
-  database: process.env.PG_DATABASE,
-  // Рекомендуемые настройки для продакшена
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-  // Если это Cloud SQL, используем специальный путь к сокету.
-  // App Hosting и другие среды Google Cloud автоматически создают этот сокет.
-  // В противном случае, используем стандартное подключение по хосту/порту.
-  host: isCloudSql ? path.join('/cloudsql', pgHost) : pgHost,
-  port: isCloudSql ? undefined : (process.env.PG_PORT ? parseInt(process.env.PG_PORT, 10) : 5432),
+// This configuration is robust for both local development and App Hosting.
+const poolConfig = {
+    user,
+    password,
+    database,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000, // Increased timeout for Cloud SQL
+    // If it's a Cloud SQL instance, connect via the Unix socket provided by App Hosting.
+    // Otherwise, use the standard host/port for local or direct connections.
+    host: isCloudSql ? path.join('/cloudsql', host) : host,
+    port: isCloudSql ? undefined : port,
 };
 
-// Этот пул соединений безопасен для использования во всем приложении.
-const pool = new Pool(config);
+const pool = new Pool(poolConfig);
 
 pool.on('connect', (client) => {
-    dbLogger.info('Новый клиент успешно подключился к базе данных.', { isCloudSql });
+    dbLogger.info('A client has successfully connected to the database.');
 });
 
 pool.on('error', (err, client) => {
-    dbLogger.error('Неожиданная ошибка в пуле соединений', err);
-    process.exit(-1);
+    dbLogger.error('Unexpected error on idle client in the pool', err);
+    // It's critical to handle this to prevent the app from crashing.
+    // In a real production app, you might have more sophisticated logic here.
 });
 
-export const query = (text: string, params?: any[]) => {
+export const query = async (text: string, params?: any[]) => {
     const start = Date.now();
-    dbLogger.debug('Выполнение запроса', { text, params });
-    const res = pool.query(text, params);
-    const duration = Date.now() - start;
-    dbLogger.debug(`Запрос выполнен за ${duration}ms`);
-    return res;
+    let client;
+    try {
+        client = await pool.connect();
+        dbLogger.debug('Executing query', { text });
+        const res = await client.query(text, params);
+        const duration = Date.now() - start;
+        dbLogger.debug(`Query executed successfully in ${duration}ms`);
+        return res;
+    } catch (error) {
+        dbLogger.error('Error executing query', error as Error);
+        throw error; // Re-throw the error to be handled by the caller
+    } finally {
+        if (client) {
+            client.release(); // Ensure the client is always released back to the pool
+        }
+    }
 };
 
 export const getClient = () => {
-    dbLogger.info('Получение клиента из пула');
+    dbLogger.info('Acquiring a client from the pool.');
     return pool.connect();
 };
 

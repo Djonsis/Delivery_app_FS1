@@ -21,10 +21,9 @@ import { useTransition, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { createProductAction } from "../_actions/product.actions";
 import { getPresignedUrlAction } from "@/lib/actions/storage.actions";
+import { appConfig } from "@/lib/config";
 import { useRouter } from "next/navigation";
 import { Combobox } from "@/components/ui/combobox";
-import { Upload } from "lucide-react";
-
 
 const productFormSchema = z.object({
   title: z.string().min(3, "Название должно содержать не менее 3 символов."),
@@ -130,7 +129,7 @@ export default function ProductForm({ product }: ProductFormProps) {
           }
 
           // Construct the public URL after successful upload
-          imageUrl = `${process.env.NEXT_PUBLIC_S3_PUBLIC_URL}/${presignedUrlResult.objectKey}`;
+          imageUrl = `${appConfig.s3.publicUrl}/${presignedUrlResult.objectKey}`;
           
           setIsUploading(false);
         }
