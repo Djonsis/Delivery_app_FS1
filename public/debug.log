@@ -186,3 +186,197 @@
 [2025-08-27T19:26:17.341Z] [INFO] [CONFIG] Application configuration loaded successfully.
 [2025-08-27T19:26:17.414Z] [INFO] [DATABASE] DB Connection check: Is Cloud SQL? true
 { pgHost: 'fastbasket:europe-west10:delivery' }
+[2025-08-27T19:27:54.181Z] [INFO] [CONFIG] Application configuration loaded successfully.
+[2025-08-27T19:27:54.263Z] [INFO] [DATABASE] DB Connection check: Is Cloud SQL? true
+{ pgHost: 'fastbasket:europe-west10:delivery' }
+[2025-08-27T19:27:56.344Z] [INFO] [DB_ACTION] Successfully fetched DB status.
+Promise {
+  { totalCount: 0, idleCount: 0, waitingCount: 0 },
+  [Symbol(async_id_symbol)]: 108238,
+  [Symbol(trigger_async_id_symbol)]: 108236,
+  [Symbol(kResourceStore)]:
+   { isStaticGeneration: false,
+     page: '/admin/status/page',
+     fallbackRouteParams: null,
+     route: '/admin/status',
+     incrementalCache:
+      IncrementalCache {
+        locks: Map(0) {},
+        hasCustomCacheHandler: false,
+        dev: true,
+        disableForTestmode: false,
+        minimalMode: false,
+        requestHeaders:
+         { connection: 'upgrade',
+           host: '127.0.0.1:9002',
+           'content-length': '2',
+           'user-agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',
+           accept: 'text/x-component',
+           'accept-encoding': 'gzip, deflate, br, zstd',
+           'accept-language': 'en-US,en;q=0.9,ru-RU;q=0.8,ru;q=0.7',
+           'content-type': 'text/plain;charset=UTF-8',
+           cookie:
+            'vscode-cli-secret-half=dQ1XkXI13-frdbZePqz9wGnJaaXGnv5N6q3VaPGPYOk; vscode-secret-key-path=/ide-start/mint-key',
+           'next-action': '00b05386f387d73baac8c0e1fbecdc1ae668c37ff9',
+           'next-router-state-tree':
+            '%5B%22%22%2C%7B%22children%22%3A%5B%22admin%22%2C%7B%22children%22%3A%5B%22status%22%2C%7B%22children%22%3A%5B%22__PAGE__%22%2C%7B%7D%2C%22%2Fadmin%2Fstatus%22%2C%22refresh%22%5D%7D%5D%7D%5D%7D%2Cnull%2Cnull%2Ctrue%5D',
+           origin:
+            'https://6000-firebase-studio-1754992365621.cluster-jbb3mjctu5cbgsi6hwq6u4btwe.cloudworkstations.dev',
+           priority: 'u=1, i',
+           referer:
+            'https://6000-firebase-studio-1754992365621.cluster-jbb3mjctu5cbgsi6hwq6u4btwe.cloudworkstations.dev/admin/status',
+           'sec-ch-ua': '"Not;A=Brand";v="99", "Google Chrome";v="139", "Chromium";v="139"',
+           'sec-ch-ua-arch': '"x86"',
+           'sec-ch-ua-bitness': '"64"',
+           'sec-ch-ua-form-factors': '"Desktop"',
+           'sec-ch-ua-full-version': '"139.0.7258.139"',
+           'sec-ch-ua-full-version-list':
+            '"Not;A=Brand";v="99.0.0.0", "Google Chrome";v="139.0.7258.139", "Chromium";v="139.0.7258.139"',
+           'sec-ch-ua-mobile': '?0',
+           'sec-ch-ua-model': '""',
+           'sec-ch-ua-platform': '"Windows"',
+           'sec-ch-ua-platform-version': '"10.0.0"',
+           'sec-ch-ua-wow64': '?0',
+           'sec-fetch-dest': 'empty',
+           'sec-fetch-mode': 'cors',
+           'sec-fetch-site': 'same-origin',
+           'sec-fetch-storage-access': 'active',
+           'sec-user-ip': '10.20.20.207',
+           'x-forwarded-host':
+            '6000-firebase-studio-1754992365621.cluster-jbb3mjctu5cbgsi6hwq6u4btwe.cloudworkstations.dev',
+           'x-goog-workstations-endpoint':
+            'workstations-be1b918a-7d30-4a1e-ac23-b4b83f86ea12.europe-west4-a.c.monospace-9.internal.:980',
+           'x-forwarded-port': '9002',
+           'x-forwarded-proto': 'http',
+           'x-forwarded-for': '127.0.0.1' },
+        requestProtocol: 'http',
+        allowedRevalidateHeaderKeys: undefined,
+        prerenderManifest:
+         { version: 4,
+           routes: {},
+           dynamicRoutes: {},
+           notFoundRoutes: [],
+           preview:
+            { previewModeId: 'bcce73a0e3909b1d731ac3e0cef25b2b',
+              previewModeSigningKey: '0593d71f70883e0c7ce39d7e455853c2c7eed647919a4314a76d110ca23a70be',
+              previewModeEncryptionKey: '1ead817057bea6282f3b4ba85a5908cffc80062708b15814686b97e0625c3434' } },
+        cacheControls:
+         SharedCacheControls {
+           prerenderManifest:
+            { version: 4,
+              routes: {},
+              dynamicRoutes: {},
+              notFoundRoutes: [],
+              preview:
+               { previewModeId: 'bcce73a0e3909b1d731ac3e0cef25b2b',
+                 previewModeSigningKey: '0593d71f70883e0c7ce39d7e455853c2c7eed647919a4314a76d110ca23a70be',
+                 previewModeEncryptionKey: '1ead817057bea6282f3b4ba85a5908cffc80062708b15814686b97e0625c3434' } } },
+        fetchCacheKeyPrefix: '',
+        cacheHandler:
+         FileSystemCache {
+           fs:
+            { existsSync: [Function: existsSync],
+              readFile: [AsyncFunction: readFile],
+              readFileSync: [Function: readFileSync],
+              writeFile: [Function: writeFile],
+              mkdir: [Function: mkdir],
+              stat: [Function: stat] },
+           flushToDisk: true,
+           serverDistDir: '/home/user/studio/.next/server',
+           revalidatedTags: [],
+           debug: false } },
+     cacheLifeProfiles:
+      { default: { stale: 300, revalidate: 900, expire: 4294967294 },
+        seconds: { stale: 0, revalidate: 1, expire: 60 },
+        minutes: { stale: 300, revalidate: 60, expire: 3600 },
+        hours: { stale: 300, revalidate: 3600, expire: 86400 },
+        days: { stale: 300, revalidate: 86400, expire: 604800 },
+        weeks: { stale: 300, revalidate: 604800, expire: 2592000 },
+        max: { stale: 300, revalidate: 2592000, expire: 4294967294 } },
+     isRevalidate: false,
+     isPrerendering: undefined,
+     fetchCache: 'default-no-store',
+     isOnDemandRevalidate: false,
+     isDraftMode: false,
+     requestEndedState: { ended: true },
+     isPrefetchRequest: false,
+     buildId: 'development',
+     reactLoadableManifest: {},
+     assetPrefix: '',
+     afterContext:
+      AfterContext {
+        workUnitStores: Set(0) {},
+        waitUntil: [Function (anonymous)],
+        onClose: [Function: bound onClose],
+        onTaskError: undefined,
+        callbackQueue:
+         EventEmitter {
+           _events: Events <[Object: null prototype] {}> {},
+           _eventsCount: 0,
+           _intervalCount: 0,
+           _intervalEnd: 0,
+           _pendingCount: 0,
+           _resolveEmpty: [Function: empty],
+           _resolveIdle: [Function: empty],
+           _carryoverConcurrencyCount: false,
+           _isIntervalIgnored: true,
+           _intervalCap: Infinity,
+           _interval: 0,
+           _queue: { _queue: [] },
+           _queueClass: [class (anonymous)],
+           _concurrency: Infinity,
+           _intervalId: undefined,
+           _timeout: undefined,
+           _throwOnTimeout: false,
+           _isPaused: true } },
+     dynamicIOEnabled: false,
+     dev: true,
+     previouslyRevalidatedTags: [],
+     refreshTagsByCacheKind:
+      Map(2) { 'default' => { then: [Function: then] }, 'remote' => { then: [Function: then] } },
+     fetchMetrics: [] },
+  [Symbol(kResourceStore)]: undefined,
+  [Symbol(kResourceStore)]: undefined,
+  [Symbol(kResourceStore)]: undefined,
+  [Symbol(kResourceStore)]: { isAction: true },
+  [Symbol(kResourceStore)]: undefined,
+  [Symbol(kResourceStore)]: undefined,
+  [Symbol(kResourceStore)]: undefined,
+  [Symbol(kResourceStore)]: undefined,
+  [Symbol(kResourceStore)]: undefined,
+  [Symbol(kResourceStore)]: undefined,
+  [Symbol(kResourceStore)]: undefined,
+  [Symbol(kResourceStore)]: undefined,
+  [Symbol(kResourceStore)]:
+   { type: 'request',
+     phase: 'action',
+     implicitTags:
+      { tags:
+         [ '_N_T_/layout',
+           '_N_T_/admin/layout',
+           '_N_T_/admin/status/layout',
+           '_N_T_/admin/status/page',
+           '_N_T_/admin/status' ],
+        expirationsByCacheKind:
+         Map(2) { 'default' => { then: [Function: then] }, 'remote' => { then: [Function: then] } } },
+     url: { pathname: '/admin/status', search: '' },
+     rootParams: {},
+     headers: [Getter],
+     cookies: [Getter/Setter],
+     mutableCookies: [Getter],
+     userspaceMutableCookies: [Getter],
+     draftMode: [Getter],
+     renderResumeDataCache: null,
+     isHmrRefresh: false,
+     serverComponentsHmrCache:
+      LRUCache {
+        cache: Map(0) {},
+        sizes: Map(0) {},
+        totalSize: 0,
+        maxSize: 52428800,
+        calculateSize: [Function: length] } },
+  [Symbol(kResourceStore)]: undefined,
+  [Symbol(kResourceStore)]: undefined,
+  [Symbol(kResourceStore)]: undefined }
+[2025-08-27T19:27:56.771Z] [INFO] [STORAGE_ACTION] Successfully connected to S3 storage.

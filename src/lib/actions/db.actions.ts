@@ -28,7 +28,7 @@ export async function getDbStatusAction(): Promise<DbStatus> {
     
     try {
         // Attempt a connection to verify
-        const status = getPoolStatus();
+        const status = await getPoolStatus();
         dbActionLogger.info("Successfully fetched DB status.", status);
         return {
             ...config,
@@ -39,7 +39,7 @@ export async function getDbStatusAction(): Promise<DbStatus> {
         };
     } catch (error) {
         dbActionLogger.error("Failed to get DB status", error as Error);
-        const status = getPoolStatus();
+        const status = await getPoolStatus();
         return {
             ...config,
             totalCount: status.totalCount,
