@@ -3,39 +3,29 @@
 
 import { OrderStatus } from "@/lib/types";
 import { logger } from "@/lib/logger";
+import { updateOrderStatus } from "@/lib/orders.service";
 
 const orderStatusLogger = logger.withCategory("ORDER_STATUS_ACTION");
 
-
-export async function updateOrderStatus(orderId: string, newStatus: OrderStatus) {
-    orderStatusLogger.info(`Updating status for order ${orderId} to "${newStatus}"`);
+export async function updateOrderStatusAction(orderId: string, newStatus: OrderStatus) {
+    orderStatusLogger.info(`Action: Updating status for order ${orderId} to "${newStatus}"`);
     if (!orderId || !newStatus) {
-        orderStatusLogger.warn("Update status failed due to missing arguments.", { orderId, newStatus });
-        throw new Error("Необходим ID заказа и новый статус.");
+        const message = "Необходим ID заказа и новый статус.";
+        orderStatusLogger.warn(`Update status failed: ${message}`, { orderId, newStatus });
+        return { success: false, message };
     }
 
     try {
-        // const orderRef = adminDb.collection("orders").doc(orderId);
+        await updateOrderStatus(orderId, newStatus);
         
-        // const updatePayload = {
-        //     status: newStatus,
-        //     lastUpdated: new Date(),
-        // };
+        const message = `Статус заказа #${orderId} обновлен.`;
+        orderStatusLogger.info(`Successfully updated status for order ${orderId} via service.`, { newStatus });
         
-        // await orderRef.update(updatePayload);
-        
-        // orderStatusLogger.info(`Successfully updated status for order ${orderId}.`, { newStatus });
-
-        // TODO: Add logic to send notification to Telegram bot here
-        // For example:
-        // if (newStatus === "Новый заказ") {
-        //   await sendTelegramNotification(`Новый заказ #${orderId}!`);
-        // }
-        
-        return { success: true, message: `Статус заказа #${orderId} обновлен.` };
+        return { success: true, message };
 
     } catch (error) {
-        orderStatusLogger.error(`Failed to update status for order ${orderId}`, error as Error);
-        throw new Error("Не удалось обновить статус заказа в базе данных.");
+        const message = "Не удалось обновить статус заказа в базе данных.";
+        orderStatusLogger.error(`Failed to update status for order ${orderId} via service`, error as Error);
+        return { success: false, message };
     }
 }

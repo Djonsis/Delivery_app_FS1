@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
@@ -20,8 +19,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Order, OrderStatus, ORDER_STATUSES } from "@/lib/types";
-import { updateOrderStatus } from "./_actions/update-order-status";
+import { updateOrderStatusAction } from "./_actions/update-order-status";
 import { useToast } from "@/hooks/use-toast";
+import { getOrders } from "@/lib/orders.service";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -30,10 +30,22 @@ export default function OrdersPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // TODO: Replace with actual data fetching from API
-    setOrders([]);
-    setLoading(false);
-  }, []);
+    async function fetchOrders() {
+        try {
+            const fetchedOrders = await getOrders();
+            setOrders(fetchedOrders);
+        } catch (error) {
+            toast({
+                title: "Ошибка",
+                description: "Не удалось загрузить список заказов.",
+                variant: "destructive"
+            });
+        } finally {
+            setLoading(false);
+        }
+    }
+    fetchOrders();
+  }, [toast]);
   
   const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
     const originalStatus = orders.find(o => o.id === orderId)?.status;
@@ -45,7 +57,10 @@ export default function OrdersPage() {
 
     startTransition(async () => {
       try {
-        // await updateOrderStatus(orderId, newStatus);
+        const result = await updateOrderStatusAction(orderId, newStatus);
+        if (!result.success) {
+            throw new Error(result.message);
+        }
         toast({
           title: "Статус обновлен",
           description: `Статус заказа #${orderId.substring(0,6)} изменен на "${newStatus}".`,
@@ -59,7 +74,7 @@ export default function OrdersPage() {
         }
         toast({
           title: "Ошибка",
-          description: "Не удалось обновить статус заказа.",
+          description: (error as Error).message || "Не удалось обновить статус заказа.",
           variant: "destructive",
         });
         console.error(error);

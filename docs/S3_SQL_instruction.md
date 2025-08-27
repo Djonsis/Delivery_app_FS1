@@ -67,14 +67,42 @@ CREATE TABLE IF NOT EXISTS products (
   title TEXT NOT NULL,
   description TEXT,
   price NUMERIC(12, 2) NOT NULL DEFAULT 0,
-  currency TEXT NOT NULL DEFAULT 'USD',
+  currency TEXT NOT NULL DEFAULT 'RUB',
   category TEXT NULL,
   tags TEXT[] NULL, -- Поле для SEO-тегов
   image_url TEXT NULL, -- Поле для основной картинки товара
+  rating REAL DEFAULT 4.5,
+  reviews INT DEFAULT 0,
+  weight TEXT NULL,
+  brand TEXT NULL,
+  manufacturer TEXT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   deleted_at TIMESTAMPTZ
 );
+
+-- Таблица заказов
+CREATE TABLE IF NOT EXISTS orders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    customer_name TEXT NOT NULL,
+    total_amount NUMERIC(12, 2) NOT NULL,
+    status TEXT NOT NULL DEFAULT 'Новый заказ',
+    cancellation_reason TEXT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Таблица позиций в заказе
+CREATE TABLE IF NOT EXISTS order_items (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    product_id UUID NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+    quantity NUMERIC(10, 3) NOT NULL,
+    unit_price NUMERIC(12, 2) NOT NULL,
+    PRIMARY KEY (order_id, product_id)
+);
+
 
 -- Связующая таблица для товаров и медиафайлов (для галереи)
 CREATE TABLE IF NOT EXISTS product_media (
