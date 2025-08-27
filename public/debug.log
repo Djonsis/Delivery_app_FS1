@@ -413,3 +413,17 @@ Promise {
      stack:
       'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__69af5577._.js:275:18)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__23b8e327._.js:357:26)\n    at async ProductsPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__23b8e327._.js:1023:22)' } }
 [2025-08-27T19:43:32.256Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T19:46:20.545Z] [INFO] [CONFIG] Server configuration loaded.
+[2025-08-27T19:46:20.599Z] [INFO] [DATABASE] DB Connection check: Is Cloud SQL? true
+{ pgHost: 'fastbasket:europe-west10:delivery' }
+[2025-08-27T19:46:20.650Z] [INFO] [PRODUCTS_SERVICE] Fetching all products from DB.
+[2025-08-27T19:46:20.678Z] [ERROR] [DATABASE] Error executing query
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__aa20563d._.js:292:18)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__aa20563d._.js:367:26)\n    at async ProductsPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__aa20563d._.js:1018:22)' } }
+[2025-08-27T19:46:20.679Z] [ERROR] [PRODUCTS_SERVICE] Error fetching products from DB
+{ error:
+   { message: 'connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432',
+     stack:
+      'Error: connect ENOENT /cloudsql/fastbasket:europe-west10:delivery/.s.PGSQL.5432\n    at /home/user/studio/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async query (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__aa20563d._.js:292:18)\n    at async getProducts (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__aa20563d._.js:367:26)\n    at async ProductsPage (/home/user/studio/.next/server/chunks/ssr/[root-of-the-server]__aa20563d._.js:1018:22)' } }

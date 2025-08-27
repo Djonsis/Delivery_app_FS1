@@ -19,7 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Product } from "@/lib/types";
 import { useTransition, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { createProductAction } from "../_actions/product.actions";
+import { createProductAction, updateProductAction } from "../_actions/product.actions";
 import { getPresignedUrlAction } from "@/lib/actions/storage.actions";
 import { publicConfig } from "@/lib/public-config";
 import { useRouter } from "next/navigation";
@@ -31,7 +31,7 @@ const productFormSchema = z.object({
   price: z.coerce.number().min(0, "Цена должна быть положительным числом."),
   category: z.string().optional(),
   tags: z.string().optional(),
-  image_url: z.string().optional(),
+  imageUrl: z.string().optional(),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -79,14 +79,14 @@ export default function ProductForm({ product }: ProductFormProps) {
       price: product.price,
       category: product.category || "",
       tags: product.tags?.join(", "),
-      image_url: product.image_url || "",
+      imageUrl: product.image_url || "",
     } : {
       title: "",
       description: "",
       price: 0,
       category: "",
       tags: "",
-      image_url: "",
+      imageUrl: "",
     },
   });
 
@@ -101,13 +101,12 @@ export default function ProductForm({ product }: ProductFormProps) {
   const onSubmit = (values: ProductFormValues) => {
     startTransition(async () => {
       try {
-        let imageUrl = product?.image_url; // Start with existing image url if any
+        let imageUrl = product?.image_url;
 
         if (selectedFile) {
           setIsUploading(true);
           toast({ title: "Загрузка изображения...", description: "Пожалуйста, подождите." });
 
-          // 1. Get presigned URL from server
           const presignedUrlResult = await getPresignedUrlAction({
             filename: selectedFile.name,
             contentType: selectedFile.type,
@@ -117,7 +116,6 @@ export default function ProductForm({ product }: ProductFormProps) {
             throw new Error(presignedUrlResult.error || "Не удалось получить URL для загрузки.");
           }
 
-          // 2. Upload file to GCS/S3
           const response = await fetch(presignedUrlResult.url, {
             method: 'PUT',
             body: selectedFile,
@@ -128,23 +126,26 @@ export default function ProductForm({ product }: ProductFormProps) {
             throw new Error('Ошибка при загрузке файла в хранилище.');
           }
 
-          // Construct the public URL after successful upload
           imageUrl = `${publicConfig.s3.publicUrl}/${presignedUrlResult.objectKey}`;
           
           setIsUploading(false);
         }
 
-        // Add the image URL to the form values
         const finalValues = { ...values, imageUrl };
-
+        
+        let result;
         if (product) {
-          // await updateProductAction(product.id, finalValues);
-          toast({ title: "Успешно", description: "Товар успешно обновлен." });
+          result = await updateProductAction(product.id, finalValues);
         } else {
-          await createProductAction(finalValues);
-          toast({ title: "Успешно", description: "Товар успешно создан." });
+          result = await createProductAction(finalValues);
         }
-        router.push("/admin/products");
+
+        if (result.success) {
+            toast({ title: "Успешно", description: result.message });
+            router.push("/admin/products");
+        } else {
+            throw new Error(result.message);
+        }
 
       } catch (error) {
         setIsUploading(false);

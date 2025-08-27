@@ -1,29 +1,33 @@
 
 "use server";
 
-import type { Product } from "./types";
+import type { Product, ProductData } from "./types";
 import { logger } from "./logger";
 import { query } from "./db";
-import { publicConfig } from "./public-config";
 
 const productsServiceLogger = logger.withCategory("PRODUCTS_SERVICE");
 
-// Helper to map DB product to frontend Product type
+// Helper to convert a JS array to a PostgreSQL array literal string
+function toPostgresArray(arr: string[] | undefined | null): string | null {
+    if (!arr || arr.length === 0) {
+        return null;
+    }
+    const escapedElements = arr.map(el => `"${el.replace(/\\/g, '\\\\').replace(/"/g, '""')}"`);
+    return `{${escapedElements.join(',')}}`;
+}
+
 function mapDbProductToProduct(dbProduct: any): Product {
     const title = dbProduct.title || 'Безымянный товар';
-    const p: Product = {
+    return {
         ...dbProduct,
-        name: title, // Map title from DB to name for frontend
-        // Use image_url from db, or fallback to placeholder
+        name: title,
         imageUrl: dbProduct.image_url || `https://placehold.co/600x400.png?text=${encodeURIComponent(title)}`,
-        image_url: dbProduct.image_url,
-        rating: 4.5, // Mock data for fields not in DB yet
+        rating: 4.5,
         reviews: Math.floor(Math.random() * 100),
         weight_category: 'middle',
         min_order_quantity: 1,
         step_quantity: 1,
     };
-    return p;
 }
 
 
@@ -35,7 +39,7 @@ export async function getProducts(): Promise<Product[]> {
         return rows.map(mapDbProductToProduct);
     } catch (error) {
         productsServiceLogger.error("Error fetching products from DB", error as Error);
-        return []; // Return empty array on error
+        throw new Error("Could not fetch products.");
     }
 }
 
@@ -54,7 +58,7 @@ export async function getProductById(id: string): Promise<Product | null> {
         }
     } catch (error) {
         productsServiceLogger.error(`Error fetching product ${id} from DB`, error as Error);
-        return null;
+        throw new Error(`Could not fetch product ${id}.`);
     }
 }
 
@@ -69,7 +73,7 @@ export async function getProductsByCategory(category: string, limitCount: number
         return rows.map(mapDbProductToProduct);
     } catch (error) {
          productsServiceLogger.error(`Error fetching products for category ${category}`, error as Error);
-         return [];
+         throw new Error(`Could not fetch products for category ${category}.`);
     }
 }
 
@@ -81,7 +85,71 @@ export async function getCategories(): Promise<string[]> {
         productsServiceLogger.debug(`Found ${categories.length} unique categories.`);
         return categories;
     } catch (error) {
-         productsServiceLogger.error("Error fetching categories from DB", error as Error);
-        return [];
+        productsServiceLogger.error("Error fetching categories from DB", error as Error);
+        throw new Error("Could not fetch categories.");
+    }
+}
+
+export async function createProduct(data: ProductData): Promise<void> {
+    const { title, description, price, category, tags, imageUrl } = data;
+    
+    const finalDescription = description || null;
+    const finalCategory = category || null;
+    const tagsArray = tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
+    const tagsForDb = toPostgresArray(tagsArray);
+    const finalImageUrl = imageUrl || null;
+
+    productsServiceLogger.info("Creating a new product in DB", { title });
+    try {
+        await query(
+            `INSERT INTO products (title, description, price, currency, category, tags, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [title, finalDescription, price, 'RUB', finalCategory, tagsForDb, finalImageUrl]
+        );
+    } catch (error) {
+        productsServiceLogger.error("Failed to create product in DB", error as Error);
+        throw new Error("Database error. Could not create product.");
+    }
+}
+
+export async function updateProduct(id: string, data: ProductData): Promise<void> {
+    const { title, description, price, category, tags, imageUrl } = data;
+    
+    const finalDescription = description || null;
+    const finalCategory = category || null;
+    const tagsArray = tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
+    const tagsForDb = toPostgresArray(tagsArray);
+    const finalImageUrl = imageUrl || null;
+
+    productsServiceLogger.info(`Updating product in DB: ${id}`, { data });
+    try {
+        await query(
+            `UPDATE products SET 
+                title = $1, 
+                description = $2, 
+                price = $3, 
+                category = $4, 
+                tags = $5, 
+                image_url = $6, 
+                updated_at = NOW()
+             WHERE id = $7`,
+            [title, finalDescription, price, finalCategory, tagsForDb, finalImageUrl, id]
+        );
+    } catch (error) {
+        productsServiceLogger.error(`Failed to update product ${id} in DB`, error as Error);
+        throw new Error(`Database error. Could not update product ${id}.`);
+    }
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+    productsServiceLogger.info(`Attempting to soft-delete product in DB: ${id}`);
+    try {
+        // Soft delete by setting deleted_at
+        await query(
+            `UPDATE products SET deleted_at = NOW() WHERE id = $1`,
+            [id]
+        );
+    } catch (error) {
+        productsServiceLogger.error(`Failed to delete product ${id} from DB`, error as Error);
+        throw new Error(`Database error. Could not delete product ${id}.`);
     }
 }

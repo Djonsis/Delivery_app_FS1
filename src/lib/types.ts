@@ -1,5 +1,16 @@
 
+
 export type WeightCategory = 'light' | 'middle' | 'heavy' | 'none';
+
+// This represents the raw data for creating/updating a product
+export interface ProductData {
+  title: string;
+  description?: string;
+  price: number;
+  category?: string;
+  tags?: string;
+  imageUrl?: string;
+}
 
 export interface Product {
   id: string;
