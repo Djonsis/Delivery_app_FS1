@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -16,10 +17,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Product } from "@/lib/types";
-import { useTransition } from "react";
+import { useTransition, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { createProductAction, updateProductAction } from "../_actions/product.actions";
+import { createProductAction } from "../_actions/product.actions";
 import { useRouter } from "next/navigation";
+import { Combobox } from "@/components/ui/combobox";
 
 
 const productFormSchema = z.object({
@@ -40,6 +42,29 @@ export default function ProductForm({ product }: ProductFormProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const router = useRouter();
+  const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
+
+   useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const res = await fetch('/api/products/categories');
+        if (!res.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+        const categoryNames: string[] = await res.json();
+        setCategories(categoryNames.map(name => ({ value: name, label: name })));
+      } catch (error) {
+        console.error(error);
+        toast({
+            title: "Ошибка",
+            description: "Не удалось загрузить список категорий.",
+            variant: "destructive"
+        })
+      }
+    }
+    fetchCategories();
+  }, [toast]);
+
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -49,7 +74,13 @@ export default function ProductForm({ product }: ProductFormProps) {
       price: product.price,
       category: product.category,
       tags: product.tags?.join(", "),
-    } : {},
+    } : {
+      title: "",
+      description: "",
+      price: 0,
+      category: "",
+      tags: "",
+    },
   });
 
   const onSubmit = (values: ProductFormValues) => {
@@ -123,17 +154,26 @@ export default function ProductForm({ product }: ProductFormProps) {
             )}
             />
             <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Категория</FormLabel>
-                <FormControl>
-                    <Input placeholder="например, Овощи" {...field} />
-                </FormControl>
-                <FormMessage />
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Категория</FormLabel>
+                  <FormControl>
+                     <Combobox
+                        options={categories}
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Выберите или создайте категорию..."
+                        emptyMessage="Категории не найдены."
+                    />
+                  </FormControl>
+                   <FormDescription>
+                    Выберите существующую или введите новую.
+                  </FormDescription>
+                  <FormMessage />
                 </FormItem>
-            )}
+              )}
             />
         </div>
          <FormField
