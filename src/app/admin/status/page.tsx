@@ -5,13 +5,14 @@ import { useState, useEffect, useTransition } from 'react';
 import { getDbStatusAction, type DbStatus } from '@/lib/actions/db.actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { RefreshCw, AlertTriangle, CheckCircle2, Clipboard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
 
 export default function StatusPage() {
     const [dbStatus, setDbStatus] = useState<DbStatus | null>(null);
     const [isLoading, startLoading] = useTransition();
+    const { toast } = useToast();
 
     const fetchStatus = () => {
         startLoading(async () => {
@@ -24,11 +25,19 @@ export default function StatusPage() {
         fetchStatus();
     }, []);
 
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        toast({
+            title: "Скопировано!",
+            description: "Текст ошибки скопирован в буфер обмена.",
+        });
+    }
+
     function StatusRow({ label, value, isSensitive = false }: { label: string; value: string | number | undefined, isSensitive?: boolean}) {
         return (
-             <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">{label}</span>
-                <span className={`font-mono font-semibold ${isSensitive ? 'blur-sm hover:blur-none' : ''}`}>
+             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 border-b last:border-b-0">
+                <span className="text-sm text-muted-foreground">{label}</span>
+                <span className={`font-mono font-semibold break-all ${isSensitive ? 'blur-sm hover:blur-none' : ''}`}>
                     {value ?? <span className="text-xs text-muted-foreground">Не задано</span>}
                 </span>
             </div>
@@ -78,7 +87,7 @@ export default function StatusPage() {
                                 <CardHeader>
                                     <CardTitle className="text-base">Параметры подключения</CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-3">
+                                <CardContent className="divide-y">
                                     <StatusRow label="Хост" value={dbStatus.host} />
                                     <StatusRow label="Порт" value={dbStatus.port} />
                                     <StatusRow label="База данных" value={dbStatus.database} />
@@ -89,7 +98,7 @@ export default function StatusPage() {
                                 <CardHeader>
                                     <CardTitle className="text-base">Статистика пула</CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-3">
+                                <CardContent className="divide-y">
                                     <StatusRow label="Всего соединений в пуле" value={dbStatus.totalCount} />
                                     <StatusRow label="Свободные соединения" value={dbStatus.idleCount} />
                                     <StatusRow label="Запросов в очереди" value={dbStatus.waitingCount} />
@@ -97,9 +106,20 @@ export default function StatusPage() {
                             </Card>
                             
                             {dbStatus.error && (
-                                <div className="p-3 rounded-md bg-destructive/10 text-destructive-foreground border border-destructive/20">
-                                    <p className="font-semibold">Последняя ошибка:</p>
-                                    <pre className="text-sm whitespace-pre-wrap font-mono mt-2">{dbStatus.error}</pre>
+                                <div className="p-4 rounded-md bg-destructive/5 text-destructive-foreground border border-destructive/20">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <p className="font-semibold text-destructive">Последняя ошибка:</p>
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                            onClick={() => copyToClipboard(dbStatus.error!)}
+                                        >
+                                            <Clipboard className="h-4 w-4"/>
+                                            <span className="sr-only">Скопировать ошибку</span>
+                                        </Button>
+                                    </div>
+                                    <pre className="text-sm whitespace-pre-wrap font-mono">{dbStatus.error}</pre>
                                 </div>
                             )}
                         </div>
