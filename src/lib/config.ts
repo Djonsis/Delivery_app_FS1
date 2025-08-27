@@ -1,9 +1,10 @@
 
+"use server"; // Ensure this module is server-only
+
 import * as dotenv from 'dotenv';
 import { logger } from './logger';
 
-// Загружаем переменные окружения из файла .env в корне проекта
-// Это нужно сделать один раз в центральном месте
+// Load environment variables once centrally
 if (process.env.NODE_ENV !== 'production') {
     dotenv.config({ path: '.env' });
 }
@@ -15,12 +16,15 @@ function getEnvVar(key: string, required: boolean = true): string {
     if (!value && required) {
         const errorMessage = `Missing required environment variable: ${key}`;
         configLogger.error(errorMessage, new Error(errorMessage));
-        throw new Error(errorMessage);
+        // This will only throw on the server, preventing build failures.
+        if (typeof window === 'undefined') {
+            throw new Error(errorMessage);
+        }
     }
     return value || '';
 }
 
-export const appConfig = {
+export const serverConfig = {
     db: {
         host: getEnvVar('PG_HOST'),
         port: parseInt(getEnvVar('PG_PORT', false) || '5432', 10),
@@ -30,7 +34,6 @@ export const appConfig = {
     },
     s3: {
         bucketName: getEnvVar('S3_BUCKET_NAME'),
-        publicUrl: getEnvVar('NEXT_PUBLIC_S3_PUBLIC_URL'),
         endpoint: getEnvVar('S3_ENDPOINT_URL'),
         region: getEnvVar('S3_REGION'),
         accessKeyId: getEnvVar('S3_ACCESS_KEY_ID'),
@@ -38,4 +41,4 @@ export const appConfig = {
     },
 };
 
-configLogger.info('Application configuration loaded successfully.');
+configLogger.info('Server configuration loaded.');

@@ -21,7 +21,7 @@ import { useTransition, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { createProductAction } from "../_actions/product.actions";
 import { getPresignedUrlAction } from "@/lib/actions/storage.actions";
-import { appConfig } from "@/lib/config";
+import { publicConfig } from "@/lib/public-config";
 import { useRouter } from "next/navigation";
 import { Combobox } from "@/components/ui/combobox";
 
@@ -129,7 +129,7 @@ export default function ProductForm({ product }: ProductFormProps) {
           }
 
           // Construct the public URL after successful upload
-          imageUrl = `${appConfig.s3.publicUrl}/${presignedUrlResult.objectKey}`;
+          imageUrl = `${publicConfig.s3.publicUrl}/${presignedUrlResult.objectKey}`;
           
           setIsUploading(false);
         }

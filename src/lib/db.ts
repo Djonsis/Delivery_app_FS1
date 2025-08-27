@@ -3,12 +3,12 @@
 
 import { Pool } from 'pg';
 import path from 'path';
-import { logger } from './logger'; // ИЗМЕНЕНО: Использование универсального логгера
-import { appConfig } from './config';
+import { logger } from './logger';
+import { serverConfig } from './config';
 
-const dbLogger = logger.withCategory("DATABASE"); // ИЗМЕНЕНО: Использование универсального логгера
+const dbLogger = logger.withCategory("DATABASE");
 
-const { host, port, user, password, database } = appConfig.db;
+const { host, port, user, password, database } = serverConfig.db;
 
 // Check if the host is a Cloud SQL connection name (e.g., "project:region:instance")
 const isCloudSql = host.includes(':');
@@ -61,12 +61,12 @@ export const query = async (text: string, params?: any[]) => {
     }
 };
 
-export const getClient = async () => {
+export async function getClient() {
     dbLogger.info('Acquiring a client from the pool.');
     return pool.connect();
 };
 
-export const getPoolStatus = async () => {
+export async function getPoolStatus() {
     return {
         totalCount: pool.totalCount,
         idleCount: pool.idleCount,

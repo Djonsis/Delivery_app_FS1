@@ -2,7 +2,7 @@
 "use server";
 
 import { getPoolStatus } from "@/lib/db";
-import { appConfig } from "@/lib/config";
+import { serverConfig } from "@/lib/config";
 import { serverLogger } from "../server-logger";
 
 const dbActionLogger = serverLogger.withCategory("DB_ACTION");
@@ -23,7 +23,7 @@ export interface DbStatus {
 }
 
 export async function getDbStatusAction(): Promise<DbStatus> {
-    const { host, port, user, database } = appConfig.db;
+    const { host, port, user, database } = serverConfig.db;
     
     try {
         // Attempt a connection to verify

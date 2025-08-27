@@ -2,7 +2,7 @@
 "use server";
 
 import { s3Client } from "@/lib/s3-client";
-import { appConfig } from "@/lib/config";
+import { serverConfig } from "@/lib/config";
 import { serverLogger } from "../server-logger";
 import { HeadBucketCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -21,7 +21,7 @@ export interface StorageStatus {
 }
 
 export async function getStorageStatusAction(): Promise<StorageStatus> {
-    const { bucketName, endpoint, region, accessKeyId } = appConfig.s3;
+    const { bucketName, endpoint, region, accessKeyId } = serverConfig.s3;
     
     const status: StorageStatus = {
         bucketName,
@@ -62,7 +62,7 @@ export async function getPresignedUrlAction(data: unknown): Promise<{ success: b
     }
 
     const { filename, contentType } = validatedFields.data;
-    const { bucketName } = appConfig.s3;
+    const { bucketName } = serverConfig.s3;
 
     // Generate a unique object key to avoid filename collisions
     const uniqueSuffix = crypto.randomBytes(8).toString('hex');
