@@ -1,109 +1,32 @@
 
-
-"use client";
-
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound, useParams } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Star, MessageCircle, Plus, Minus, ChevronLeft } from 'lucide-react';
+import { Star, MessageCircle } from 'lucide-react';
 import SiteHeader from '@/components/site-header';
 import ProductCarousel from './_components/product-carousel';
-import { useCart } from '@/hooks/use-cart';
-import { logger } from '@/lib/logger';
-import { useEffect, useState } from 'react';
 import { getProductById, getProductsByCategory } from '@/lib/products.service';
-import type { Product } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
+import AddToCartWidget from './_components/add-to-cart-widget';
 
-const productPageLogger = logger.withCategory("PRODUCT_PAGE");
+interface ProductPageProps {
+  params: { id: string };
+}
 
-export default function ProductPage() {
-  const params = useParams();
-  const id = Array.isArray(params.id) ? params.id[0] : params.id;
-  
-  const [product, setProduct] = useState<Product | null>(null);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { id } = params;
 
-  const { addToCart, updateQuantity, getCartItem } = useCart();
-
-  useEffect(() => {
-    if (id) {
-      const fetchProductData = async () => {
-        setLoading(true);
-        productPageLogger.debug(`Fetching data for product ID: ${id}`);
-        try {
-          const fetchedProduct = await getProductById(id);
-          if (fetchedProduct) {
-            setProduct(fetchedProduct);
-            const related = await getProductsByCategory(fetchedProduct.category, 5);
-            setRelatedProducts(related.filter(p => p.id !== fetchedProduct.id));
-          } else {
-            notFound();
-          }
-        } catch (error) {
-          productPageLogger.error("Failed to fetch product data.", error as Error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchProductData();
-    }
-  }, [id]);
-
-  const cartItem = product ? getCartItem(product.id) : undefined;
-  
-  if (loading) {
-    return <ProductPageSkeleton />;
-  }
+  // Fetch product data on the server
+  const product = await getProductById(id);
 
   if (!product) {
-    productPageLogger.error("Product not found after loading", { id });
     notFound();
   }
-
-  const getPrecision = (step: number) => {
-    const stepStr = step.toString();
-    if (stepStr.includes('.')) {
-      return stepStr.split('.')[1].length;
-    }
-    return 0;
-  };
-  const precision = getPrecision(product.step_quantity);
-
-  const incrementQuantity = () => {
-    const currentQuantity = cartItem ? cartItem.quantity : 0;
-    const newQuantity = parseFloat((currentQuantity + product.step_quantity).toFixed(precision));
-    productPageLogger.debug(`Incrementing quantity for ${product.name}`, { from: currentQuantity, to: newQuantity });
-    if (currentQuantity === 0) {
-      updateQuantity(product, product.min_order_quantity);
-    } else {
-      updateQuantity(product, newQuantity);
-    }
-  };
   
-  const decrementQuantity = () => {
-    if (cartItem) {
-      const newQuantity = parseFloat((cartItem.quantity - product.step_quantity).toFixed(precision));
-      productPageLogger.debug(`Decrementing quantity for ${product.name}`, { from: cartItem.quantity, to: newQuantity });
-      if (newQuantity >= product.min_order_quantity) {
-        updateQuantity(product, newQuantity);
-      } else {
-        updateQuantity(product, 0);
-      }
-    }
-  };
-
-  const handleAddToCart = () => {
-    productPageLogger.info(`Adding ${product.name} to cart from product page`, { product });
-    addToCart(product);
-  }
-
-  const displayedQuantity = cartItem?.quantity ? (cartItem.quantity.toFixed(precision)) : '0';
-
+  // Fetch related products on the server
+  const relatedProducts = await getProductsByCategory(product.category, 5);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -147,23 +70,7 @@ export default function ProductPage() {
               </div>
 
               <div className="mt-6">
-                 {cartItem && cartItem.quantity > 0 ? (
-                  <div className="flex w-full items-center justify-between gap-2">
-                    <Button variant="outline" size="lg" className="flex-1" onClick={decrementQuantity}>
-                      <Minus className="h-5 w-5" />
-                    </Button>
-                     <div className="flex h-11 min-w-24 items-center justify-center rounded-md border border-input bg-background text-center text-xl font-bold">
-                      {displayedQuantity}
-                    </div>
-                    <Button variant="outline" size="lg" className="flex-1" onClick={incrementQuantity}>
-                      <Plus className="h-5 w-5" />
-                    </Button>
-                  </div>
-                ) : (
-                   <Button size="lg" className="w-full" onClick={handleAddToCart}>
-                    Добавить в корзину
-                  </Button>
-                )}
+                 <AddToCartWidget product={product} />
               </div>
 
               <div className="mt-8">
@@ -233,42 +140,11 @@ export default function ProductPage() {
           
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Похожие товары</h2>
-            <ProductCarousel products={relatedProducts} />
+            <ProductCarousel products={relatedProducts.filter(p => p.id !== product.id)} />
           </div>
 
         </div>
       </main>
     </div>
   );
-}
-
-function ProductPageSkeleton() {
-  return (
-     <div className="flex min-h-screen w-full flex-col bg-background">
-      <SiteHeader />
-       <main className="flex-1 py-8">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-6">
-                <Skeleton className="h-8 w-24" />
-            </div>
-             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
-                 <div>
-                    <Skeleton className="aspect-square w-full rounded-xl" />
-                 </div>
-                 <div className="space-y-6">
-                    <Skeleton className="h-10 w-3/4" />
-                    <Skeleton className="h-6 w-1/2" />
-                    <Skeleton className="h-20 w-full" />
-                    <Skeleton className="h-12 w-1/3" />
-                    <Skeleton className="h-12 w-full" />
-                     <div className="mt-8 space-y-4">
-                        <Skeleton className="h-32 w-full" />
-                        <Skeleton className="h-24 w-full" />
-                    </div>
-                 </div>
-             </div>
-         </div>
-       </main>
-     </div>
-  )
 }

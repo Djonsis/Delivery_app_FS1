@@ -4,7 +4,7 @@ import { serverConfig } from "@/lib/config";
 import { HeadBucketCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import crypto from "crypto";
-import type { StorageStatus } from "./actions/storage.actions";
+import { StorageStatus } from "./types";
 
 export async function getStorageStatus(): Promise<StorageStatus> {
     const { bucketName, endpoint, region, accessKeyId } = serverConfig.s3;
@@ -53,4 +53,34 @@ export async function getSignedUrlForUpload({ filename, contentType }: Presigned
         // In a service, we prefer to throw the error to let the caller handle it.
         throw new Error("Failed to generate presigned URL from service.");
     }
+}
+
+
+interface UploadFileInput {
+  file: File;
+  contentType: string;
+}
+
+export async function uploadFile({ file, contentType }: UploadFileInput): Promise<{ objectKey: string }> {
+  const { bucketName } = serverConfig.s3;
+  const uniqueSuffix = crypto.randomBytes(8).toString('hex');
+  const objectKey = `products/${uniqueSuffix}-${file.name}`;
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const command = new PutObjectCommand({
+    Bucket: bucketName,
+    Key: objectKey,
+    Body: buffer,
+    ContentType: contentType,
+    ACL: 'public-read', // Make file publicly readable
+  });
+
+  try {
+    await s3Client.send(command);
+    return { objectKey };
+  } catch (error) {
+    console.error("Error uploading file to S3:", error);
+    throw new Error("Failed to upload file to storage.");
+  }
 }

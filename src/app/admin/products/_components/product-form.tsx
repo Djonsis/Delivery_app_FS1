@@ -17,13 +17,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Product } from "@/lib/types";
-import { useTransition, useState, useEffect } from "react";
+import { useTransition, useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { createProductAction, updateProductAction } from "../_actions/product.actions";
-import { getPresignedUrlAction } from "@/lib/actions/storage.actions";
-import { publicConfig } from "@/lib/public-config";
 import { useRouter } from "next/navigation";
 import { Combobox } from "@/components/ui/combobox";
+import { uploadImageAction } from "@/lib/actions/storage.actions";
 
 const productFormSchema = z.object({
   title: z.string().min(3, "Название должно содержать не менее 3 символов."),
@@ -45,8 +44,8 @@ export default function ProductForm({ product }: ProductFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
 
    useEffect(() => {
@@ -90,45 +89,28 @@ export default function ProductForm({ product }: ProductFormProps) {
     },
   });
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-    }
-  };
-
 
   const onSubmit = (values: ProductFormValues) => {
     startTransition(async () => {
       try {
-        let imageUrl = product?.image_url;
+        const file = fileInputRef.current?.files?.[0];
+        let imageUrl = product?.image_url || values.imageUrl;
 
-        if (selectedFile) {
+        if (file) {
           setIsUploading(true);
           toast({ title: "Загрузка изображения...", description: "Пожалуйста, подождите." });
 
-          const presignedUrlResult = await getPresignedUrlAction({
-            filename: selectedFile.name,
-            contentType: selectedFile.type,
-          });
-
-          if (!presignedUrlResult.success || !presignedUrlResult.url || !presignedUrlResult.objectKey) {
-            throw new Error(presignedUrlResult.error || "Не удалось получить URL для загрузки.");
-          }
-
-          const response = await fetch(presignedUrlResult.url, {
-            method: 'PUT',
-            body: selectedFile,
-            headers: { 'Content-Type': selectedFile.type },
-          });
-
-          if (!response.ok) {
-            throw new Error('Ошибка при загрузке файла в хранилище.');
-          }
-
-          imageUrl = `${publicConfig.s3.publicUrl}/${presignedUrlResult.objectKey}`;
+          const formData = new FormData();
+          formData.append("file", file);
           
+          const uploadResult = await uploadImageAction(formData);
+
           setIsUploading(false);
+
+          if (!uploadResult.success || !uploadResult.imageUrl) {
+            throw new Error(uploadResult.error || "Не удалось загрузить изображение.");
+          }
+          imageUrl = uploadResult.imageUrl;
         }
 
         const finalValues = { ...values, imageUrl };
@@ -198,13 +180,10 @@ export default function ProductForm({ product }: ProductFormProps) {
          <FormItem>
             <FormLabel>Изображение</FormLabel>
              <FormControl>
-                <div className="flex items-center gap-4">
-                    <Input id="picture" type="file" onChange={handleFileChange} className="flex-1" accept="image/*"/>
-                    {selectedFile && <span className="text-sm text-muted-foreground">{selectedFile.name}</span>}
-                </div>
+                <Input id="picture" type="file" ref={fileInputRef} className="flex-1" accept="image/*"/>
             </FormControl>
             <FormDescription>
-                Загрузите изображение для вашего товара.
+                Загрузите изображение для вашего товара. Если оставить пустым, будет использовано старое.
             </FormDescription>
             <FormMessage />
         </FormItem>

@@ -1,94 +1,24 @@
 
-"use client";
-
-import { useEffect, useState, useTransition } from "react";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Order, OrderStatus, ORDER_STATUSES } from "@/lib/types";
-import { updateOrderStatusAction } from "./_actions/update-order-status";
-import { useToast } from "@/hooks/use-toast";
 import { getOrders } from "@/lib/orders.service";
+import OrderStatusSelector from "./_components/order-status-selector";
 
-export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
-
-  useEffect(() => {
-    async function fetchOrders() {
-        try {
-            const fetchedOrders = await getOrders();
-            setOrders(fetchedOrders);
-        } catch (error) {
-            toast({
-                title: "Ошибка",
-                description: "Не удалось загрузить список заказов.",
-                variant: "destructive"
-            });
-        } finally {
-            setLoading(false);
-        }
-    }
-    fetchOrders();
-  }, [toast]);
-  
-  const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
-    const originalStatus = orders.find(o => o.id === orderId)?.status;
-    
-    // Optimistically update UI
-    setOrders(prevOrders => 
-      prevOrders.map(o => o.id === orderId ? { ...o, status: newStatus } : o)
-    );
-
-    startTransition(async () => {
-      try {
-        const result = await updateOrderStatusAction(orderId, newStatus);
-        if (!result.success) {
-            throw new Error(result.message);
-        }
-        toast({
-          title: "Статус обновлен",
-          description: `Статус заказа #${orderId.substring(0,6)} изменен на "${newStatus}".`,
-        });
-      } catch (error) {
-        // Revert UI on error
-        if (originalStatus) {
-            setOrders(prevOrders => 
-              prevOrders.map(o => o.id === orderId ? { ...o, status: originalStatus } : o)
-            );
-        }
-        toast({
-          title: "Ошибка",
-          description: (error as Error).message || "Не удалось обновить статус заказа.",
-          variant: "destructive",
-        });
-        console.error(error);
-      }
-    });
-  };
-
-  if (loading) {
-    return <div>Загрузка заказов...</div>;
-  }
+export default async function OrdersPage() {
+  const orders = await getOrders();
 
   return (
     <div className="border rounded-lg p-2">
       <Table>
+        <TableCaption>Список последних заказов.</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>Заказ</TableHead>
@@ -102,42 +32,17 @@ export default function OrdersPage() {
           {orders.map((order) => (
             <TableRow key={order.id}>
               <TableCell className="font-medium">#{order.id.substring(0, 6)}</TableCell>
-              <TableCell>{order.customer}</TableCell>
-              <TableCell>{new Date(order.date).toLocaleDateString("ru-RU")}</TableCell>
-              <TableCell>{order.total.toFixed(2)} ₽</TableCell>
+              <TableCell>{order.customer_name}</TableCell>
+              <TableCell>{new Date(order.created_at).toLocaleDateString("ru-RU")}</TableCell>
+              <TableCell>{Number(order.total_amount).toFixed(2)} ₽</TableCell>
               <TableCell>
-                <Select
-                  value={order.status}
-                  onValueChange={(newStatus: OrderStatus) => handleStatusChange(order.id, newStatus)}
-                  disabled={isPending}
-                >
-                  <SelectTrigger className="w-[180px]">
-                     <SelectValue>
-                         <Badge 
-                            variant={
-                                order.status === 'Выполнен' ? 'default' : 
-                                order.status === 'Отменен' ? 'destructive' : 'secondary'
-                            }
-                            className="mr-2"
-                         >
-                            {order.status}
-                        </Badge>
-                     </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ORDER_STATUSES.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <OrderStatusSelector orderId={order.id} currentStatus={order.status} />
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-       {orders.length === 0 && !loading && (
+       {orders.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Пока нет ни одного заказа.</p>
           </div>

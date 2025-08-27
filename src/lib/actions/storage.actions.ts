@@ -2,20 +2,13 @@
 "use server";
 
 import { getStorageStatus } from "@/lib/storage.service";
-import { getSignedUrlForUpload } from "@/lib/storage.service";
+import { getSignedUrlForUpload, uploadFile } from "@/lib/storage.service";
 import { logger } from "../logger";
 import { z } from "zod";
+import { StorageStatus } from "../types";
+import { publicConfig } from "../public-config";
 
 const storageActionLogger = logger.withCategory("STORAGE_ACTION");
-
-export interface StorageStatus {
-    bucketName?: string;
-    endpoint?: string;
-    region?: string;
-    accessKeyId?: string;
-    connected: boolean;
-    error?: string;
-}
 
 export async function getStorageStatusAction(): Promise<StorageStatus> {
     try {
@@ -30,7 +23,6 @@ export async function getStorageStatusAction(): Promise<StorageStatus> {
         }
     }
 }
-
 
 const getPresignedUrlSchema = z.object({
     filename: z.string(),
@@ -54,3 +46,27 @@ export async function getPresignedUrlAction(data: unknown): Promise<{ success: b
         return { success: false, error: "Не удалось сгенерировать URL для загрузки." };
     }
 }
+
+
+export async function uploadImageAction(formData: FormData): Promise<{ success: boolean; imageUrl?: string; error?: string }> {
+  const file = formData.get("file") as File;
+  if (!file) {
+    return { success: false, error: "Файл не найден." };
+  }
+
+  try {
+    storageActionLogger.info("Attempting to upload file via service", { filename: file.name, size: file.size });
+    const { objectKey } = await uploadFile({
+      file,
+      contentType: file.type,
+    });
+    
+    const imageUrl = `${publicConfig.s3.publicUrl}/${objectKey}`;
+    storageActionLogger.info("Successfully uploaded file and got public URL", { imageUrl });
+    
+    return { success: true, imageUrl };
+  } catch (error) {
+    storageActionLogger.error("Failed to upload image via action", error as Error);
+    return { success: false, error: "Не удалось загрузить изображение." };
+  }
+};

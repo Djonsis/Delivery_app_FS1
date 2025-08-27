@@ -1,12 +1,22 @@
-"use client";
 
 import ProductCatalog from "@/components/product-catalog";
 import SiteHeader from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
+import { getProducts, getCategories } from "@/lib/products.service";
 
-export default function CatalogPage() {
+interface CatalogPageProps {
+    searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default async function CatalogPage({ searchParams }: CatalogPageProps) {
+  // Fetch data on the server
+  const [products, categories] = await Promise.all([
+    getProducts(),
+    getCategories()
+  ]);
+
   return (
     <div className="relative flex min-h-screen w-full flex-col">
       <SiteHeader />
@@ -19,7 +29,11 @@ export default function CatalogPage() {
               </Button>
             </Link>
         </div>
-        <ProductCatalog />
+        <ProductCatalog 
+          initialProducts={products}
+          initialCategories={categories}
+          searchParams={searchParams}
+        />
       </main>
     </div>
   );

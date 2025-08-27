@@ -1,5 +1,4 @@
 
-
 export type WeightCategory = 'light' | 'middle' | 'heavy' | 'none';
 
 // This represents the raw data for creating/updating a product
@@ -26,9 +25,11 @@ export interface Product {
   category: string | null; // Can be null
   image_url: string | null; // Mapped to imageUrl
   imageUrl: string; // Ensure this is always a string for components
-  rating: number; // Not in DB yet, will be mocked
-  reviews: number; // Not in DB yet, will be mocked
-  weight?: string; // Not in DB yet
+  rating: number;
+  reviews: number;
+  weight?: string;
+  brand?: string;
+  manufacturer?: string;
   weight_category: WeightCategory; // Not in DB yet
   min_order_quantity: number; // Not in DB yet
   step_quantity: number; // Not in DB yet
@@ -38,8 +39,6 @@ export interface Product {
     fat: number;
     carbs: number;
   };
-  brand?: string; // Not in DB yet
-  manufacturer?: string; // Not in DB yet
 }
 
 export interface CartItem {
@@ -67,14 +66,43 @@ export const CANCELLATION_REASONS = [
 
 export type CancellationReason = (typeof CANCELLATION_REASONS)[number];
 
-
 export interface Order {
   id: string;
-  customer: string;
-  date: any; // Using `any` to accommodate both string and Timestamp
-  total: number;
+  user_id: string | null;
+  customer_name: string;
+  total_amount: number;
   status: OrderStatus;
-  cancellationReason?: CancellationReason;
-  items: CartItem[];
-  lastUpdated?: any;
+  cancellation_reason: CancellationReason | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  quantity: number;
+  unit_price: number;
+}
+
+// Status types
+export interface DbStatus {
+    host?: string;
+    port?: number;
+    user?: string;
+    database?: string;
+    totalCount: number;
+    idleCount: number;
+    waitingCount: number;
+    connected: boolean;
+    error?: string;
+}
+
+export interface StorageStatus {
+    bucketName?: string;
+    endpoint?: string;
+    region?: string;
+    accessKeyId?: string;
+    connected: boolean;
+    error?: string;
 }
