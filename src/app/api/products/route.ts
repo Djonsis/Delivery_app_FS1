@@ -1,11 +1,11 @@
 
 import { NextResponse } from 'next/server';
-import { serverLogger } from '@/lib/server-logger';
+import { logger } from '@/lib/logger';
 import { query } from '@/lib/db';
 import type { Product } from '@/lib/types';
 import { getProducts } from '@/lib/products.service';
 
-const apiLogger = serverLogger.withCategory("API_PRODUCTS");
+const apiLogger = logger.withCategory("API_PRODUCTS");
 
 export async function GET(request: Request) {
   try {
