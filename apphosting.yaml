@@ -34,14 +34,3 @@ secretEnvironmentVariables:
     secret: S3_SECRET_ACCESS_KEY
   - key: NEXT_PUBLIC_S3_PUBLIC_URL
     secret: NEXT_PUBLIC_S3_PUBLIC_URL
-  # PG_HOST and PG_PORT are NOT needed here, connection is handled via the socket path.
-  # We still need to pass them for the local environment via .env file.
-  # So we will provide them but with dummy values, they will not be used in the cloud.
-  - key: PG_HOST
-    secret: PG_HOST
-    availability:
-      - BUILD
-  - key: PG_PORT
-    secret: PG_PORT
-    availability:
-      - BUILD
