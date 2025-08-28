@@ -3,12 +3,12 @@
 
 import { getStorageStatus } from "@/lib/storage.service";
 import { getSignedUrlForUpload, uploadFile } from "@/lib/storage.service";
-import { logger } from "../logger";
+import { serverLogger } from "../server-logger";
 import { z } from "zod";
 import { StorageStatus } from "../types";
 import { publicConfig } from "../public-config";
 
-const storageActionLogger = logger.withCategory("STORAGE_ACTION");
+const storageActionLogger = serverLogger.withCategory("STORAGE_ACTION");
 
 export async function getStorageStatusAction(): Promise<StorageStatus> {
     try {

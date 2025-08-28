@@ -8,9 +8,9 @@ import {
   deleteProduct,
   updateProduct,
 } from "@/lib/products.service";
-import { logger } from "@/lib/logger";
+import { serverLogger } from "@/lib/server-logger";
 
-const productActionLogger = logger.withCategory("PRODUCT_ACTION");
+const productActionLogger = serverLogger.withCategory("PRODUCT_ACTION");
 
 const productSchema = z.object({
   title: z.string().min(3, "Название должно быть не менее 3 символов."),

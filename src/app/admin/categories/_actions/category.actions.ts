@@ -3,9 +3,9 @@
 
 import { z } from "zod";
 import { createCategory, updateCategory, deleteCategory } from "@/lib/categories.service";
-import { logger } from "@/lib/logger";
+import { serverLogger } from "@/lib/server-logger";
 
-const categoryActionLogger = logger.withCategory("CATEGORY_ACTION");
+const categoryActionLogger = serverLogger.withCategory("CATEGORY_ACTION");
 
 const categorySchema = z.object({
   name: z.string().min(2, "Название должно быть не менее 2 символов."),

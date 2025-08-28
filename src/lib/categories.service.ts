@@ -2,11 +2,11 @@
 "use server";
 
 import { query } from "./db";
-import { logger } from "./logger";
+import { serverLogger } from "./server-logger";
 import { Category } from "./types";
 import { revalidatePath } from "next/cache";
 
-const serviceLogger = logger.withCategory("CATEGORIES_SERVICE");
+const serviceLogger = serverLogger.withCategory("CATEGORIES_SERVICE");
 
 // Helper function to generate a slug from a name
 const generateSlug = (name: string) => {
@@ -22,7 +22,7 @@ export async function getAllCategories(): Promise<Category[]> {
         return rows;
     } catch (error) {
         serviceLogger.error("Error fetching categories from DB", error as Error);
-        // Re-throw a more generic error to the UI
+        // Re-throw a more generic error to the UI to avoid leaking implementation details.
         throw new Error("Could not fetch categories.");
     }
 }
@@ -44,7 +44,7 @@ export async function getCategoryById(id: string): Promise<Category | null> {
 }
 
 
-export async function createCategory(data: Omit<Category, 'id' | 'created_at' | 'updated_at'>): Promise<{ success: boolean; message: string }> {
+export async function createCategory(data: Omit<Category, 'id' | 'created_at' | 'updated_at' | 'slug'>): Promise<{ success: boolean; message: string }> {
     const { name, sku_prefix, description } = data;
     const slug = generateSlug(name);
     serviceLogger.info("Creating a new category in DB", { name, slug });

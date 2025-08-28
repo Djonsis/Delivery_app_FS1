@@ -2,11 +2,11 @@
 "use server"
 
 import { getClient, query } from "@/lib/db";
-import { logger } from "@/lib/logger";
+import { serverLogger } from "@/lib/server-logger";
 import { Order, OrderStatus, CreateOrderPayload } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
-const ordersServiceLogger = logger.withCategory("ORDERS_SERVICE");
+const ordersServiceLogger = serverLogger.withCategory("ORDERS_SERVICE");
 
 
 export async function getOrders(): Promise<Order[]> {

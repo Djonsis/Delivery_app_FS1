@@ -4,10 +4,10 @@
 // Please use `getAllCategories` from `categories.service.ts` instead.
 
 import { NextResponse } from 'next/server';
-import { logger } from '@/lib/logger';
+import { serverLogger } from '@/lib/server-logger';
 import { getAllCategories } from '@/lib/categories.service';
 
-const apiLogger = logger.withCategory("API_CATEGORIES");
+const apiLogger = serverLogger.withCategory("API_CATEGORIES");
 
 export async function GET(request: Request) {
   try {

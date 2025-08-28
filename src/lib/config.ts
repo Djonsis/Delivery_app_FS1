@@ -1,8 +1,8 @@
 // Ensure this module is server-only
 import 'dotenv/config'
-import { logger } from './logger';
+import { serverLogger } from './server-logger';
 
-const configLogger = logger.withCategory('CONFIG');
+const configLogger = serverLogger.withCategory('CONFIG');
 
 function getEnvVar(key: string, required: boolean = true): string {
     const value = process.env[key];

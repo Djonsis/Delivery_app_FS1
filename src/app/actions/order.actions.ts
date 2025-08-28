@@ -2,10 +2,10 @@
 "use server";
 
 import { z } from "zod";
-import { logger } from "@/lib/logger";
+import { serverLogger } from "@/lib/server-logger";
 import { createOrder } from "@/lib/orders.service";
 
-const orderActionLogger = logger.withCategory("ORDER_ACTION");
+const orderActionLogger = serverLogger.withCategory("ORDER_ACTION");
 
 const orderItemSchema = z.object({
   productId: z.string().uuid(),

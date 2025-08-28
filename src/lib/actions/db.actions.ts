@@ -2,10 +2,10 @@
 "use server";
 
 import { getDbStatus } from "@/lib/db.service";
-import { logger } from "../logger";
+import { serverLogger } from "../server-logger";
 import { DbStatus } from "../types";
 
-const dbActionLogger = logger.withCategory("DB_ACTION");
+const dbActionLogger = serverLogger.withCategory("DB_ACTION");
 
 export async function getDbStatusAction(): Promise<DbStatus> {
     try {

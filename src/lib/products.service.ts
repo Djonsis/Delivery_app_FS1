@@ -2,11 +2,11 @@
 "use server";
 
 import type { Product, ProductData, ProductFilter } from "./types";
-import { logger } from "./logger";
+import { serverLogger } from "./server-logger";
 import { query } from "./db";
 import { getCategoryById } from "./categories.service";
 
-const productsServiceLogger = logger.withCategory("PRODUCTS_SERVICE");
+const productsServiceLogger = serverLogger.withCategory("PRODUCTS_SERVICE");
 
 // Helper to convert a JS array to a PostgreSQL array literal string
 function toPostgresArray(arr: string[] | undefined | null): string | null {

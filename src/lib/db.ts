@@ -1,9 +1,9 @@
 
 import { Pool } from 'pg';
-import { logger } from './logger';
+import { serverLogger } from './server-logger';
 import { serverConfig } from './config';
 
-const dbLogger = logger.withCategory("DATABASE");
+const dbLogger = serverLogger.withCategory("DATABASE");
 
 const { user, password, database } = serverConfig.db;
 
