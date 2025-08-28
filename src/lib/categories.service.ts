@@ -22,6 +22,7 @@ export async function getAllCategories(): Promise<Category[]> {
         return rows;
     } catch (error) {
         serviceLogger.error("Error fetching categories from DB", error as Error);
+        // Re-throw a more generic error to the UI
         throw new Error("Could not fetch categories.");
     }
 }
@@ -60,13 +61,13 @@ export async function createCategory(data: Omit<Category, 'id' | 'created_at' | 
         const dbError = error as any;
         serviceLogger.error("Failed to create category in DB", dbError);
         if (dbError.code === '23505') { // Unique violation
-            if (dbError.constraint === 'categories_name_key') {
+            if (dbError.constraint?.includes('name')) {
                 return { success: false, message: "Категория с таким названием уже существует." };
             }
-             if (dbError.constraint === 'categories_slug_key') {
+             if (dbError.constraint?.includes('slug')) {
                 return { success: false, message: "Категория с таким slug уже существует." };
             }
-            if (dbError.constraint === 'categories_sku_prefix_key') {
+            if (dbError.constraint?.includes('sku_prefix')) {
                 return { success: false, message: "Категория с таким префиксом артикула уже существует." };
             }
         }
@@ -100,13 +101,13 @@ export async function updateCategory(id: string, data: Partial<Omit<Category, 'i
         const dbError = error as any;
         serviceLogger.error(`Failed to update category ${id} in DB`, dbError);
         if (dbError.code === '23505') { // Unique violation
-             if (dbError.constraint === 'categories_name_key') {
+             if (dbError.constraint?.includes('name')) {
                 return { success: false, message: "Категория с таким названием уже существует." };
             }
-             if (dbError.constraint === 'categories_slug_key') {
+             if (dbError.constraint?.includes('slug')) {
                 return { success: false, message: "Категория с таким slug уже существует." };
             }
-            if (dbError.constraint === 'categories_sku_prefix_key') {
+            if (dbError.constraint?.includes('sku_prefix')) {
                 return { success: false, message: "Категория с таким префиксом артикула уже существует." };
             }
         }
