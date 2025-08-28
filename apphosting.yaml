@@ -5,10 +5,10 @@
 runtime: nodejs20
 
 # This specifies that this backend needs access to Cloud SQL.
-cloudsql:
-  # The instance connection name can be found on the Cloud SQL instance overview page.
-  instances:
-    - fastbasket:europe-west10:delivery
+# cloudsql:
+#   # The instance connection name can be found on the Cloud SQL instance overview page.
+#   instances:
+#     - fastbasket:europe-west10:delivery
 
 # Non-secret environment variables.
 # These values are available during both build and runtime.
