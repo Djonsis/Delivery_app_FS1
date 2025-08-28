@@ -1,6 +1,5 @@
 
 import { Pool } from 'pg';
-import path from 'path';
 import { logger } from './logger';
 import { serverConfig } from './config';
 
@@ -9,6 +8,7 @@ const dbLogger = logger.withCategory("DATABASE");
 const { user, password, database } = serverConfig.db;
 
 // Check if running in a Google Cloud environment (like App Hosting or Cloud Run)
+// process.env.K_SERVICE is a standard environment variable in these environments.
 const isGoogleCloud = !!process.env.K_SERVICE;
 
 dbLogger.info(`DB Connection check: Is Google Cloud? ${isGoogleCloud}`);
@@ -24,24 +24,34 @@ const poolConfig = {
     connectionTimeoutMillis: 10000,
     // If it's a Cloud SQL instance running in a Google Cloud environment, connect via the Unix socket.
     // Otherwise, use the standard host/port for local connections (e.g., via Cloud SQL Proxy).
-    host: isGoogleCloud ? path.join('/cloudsql', 'fastbasket:europe-west10:delivery') : serverConfig.db.host,
+    host: isGoogleCloud 
+        ? `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}` 
+        : serverConfig.db.host,
     port: isGoogleCloud ? undefined : serverConfig.db.port,
 };
 
 
-dbLogger.info(`Pool config created. Host: ${poolConfig.host}`);
+dbLogger.info(`Pool config created. Host: ${poolConfig.host}, Port: ${poolConfig.port || 'default'}`);
 
-const pool = new Pool(poolConfig);
+let pool: Pool;
 
-pool.on('connect', (client) => {
-    dbLogger.info('A client has successfully connected to the database.');
-});
+try {
+    pool = new Pool(poolConfig);
 
-pool.on('error', (err, client) => {
-    dbLogger.error('Unexpected error on idle client in the pool', err);
-    // It's critical to handle this to prevent the app from crashing.
-    // In a real production app, you might have more sophisticated logic here.
-});
+    pool.on('connect', (client) => {
+        dbLogger.info('A client has successfully connected to the database.');
+    });
+
+    pool.on('error', (err, client) => {
+        dbLogger.error('Unexpected error on idle client in the pool', err);
+    });
+
+} catch (error) {
+    dbLogger.error('Failed to initialize connection pool', error as Error);
+    // If the pool fails to initialize, we need to throw to prevent the app from starting in a broken state.
+    throw new Error('Database pool could not be initialized.');
+}
+
 
 export const query = async (text: string, params?: any[]) => {
     const start = Date.now();
@@ -69,6 +79,13 @@ export async function getClient() {
 };
 
 export function getPoolStatus() {
+    if (!pool) {
+        return {
+            totalCount: 0,
+            idleCount: 0,
+            waitingCount: 0,
+        }
+    }
     return {
         totalCount: pool.totalCount,
         idleCount: pool.idleCount,
