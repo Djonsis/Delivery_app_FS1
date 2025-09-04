@@ -7,9 +7,13 @@ import { Order, OrderStatus, CreateOrderPayload } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
 const ordersServiceLogger = serverLogger.withCategory("ORDERS_SERVICE");
-
+const isLocal = !process.env.K_SERVICE;
 
 export async function getOrders(): Promise<Order[]> {
+    if (isLocal) {
+        ordersServiceLogger.warn("Running in local/studio environment. Returning mock orders.");
+        return [];
+    }
     ordersServiceLogger.info("Fetching all orders from DB.");
     try {
         const { rows } = await query('SELECT * FROM orders ORDER BY created_at DESC');

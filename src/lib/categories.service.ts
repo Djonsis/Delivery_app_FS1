@@ -7,6 +7,7 @@ import { Category } from "./types";
 import { revalidatePath } from "next/cache";
 
 const serviceLogger = serverLogger.withCategory("CATEGORIES_SERVICE");
+const isLocal = !process.env.K_SERVICE;
 
 // Helper function to generate a slug from a name
 const generateSlug = (name: string) => {
@@ -15,6 +16,10 @@ const generateSlug = (name: string) => {
 
 
 export async function getAllCategories(): Promise<Category[]> {
+    if (isLocal) {
+        serviceLogger.warn("Running in local/studio environment. Returning mock categories.");
+        return [];
+    }
     serviceLogger.info("Fetching all categories from DB.");
     try {
         const { rows } = await query('SELECT * FROM categories ORDER BY name ASC');
@@ -28,6 +33,10 @@ export async function getAllCategories(): Promise<Category[]> {
 }
 
 export async function getCategoryById(id: string): Promise<Category | null> {
+    if (isLocal) {
+        serviceLogger.warn(`Running in local/studio environment. Mocking getCategoryById for ID: ${id}`);
+        return null;
+    }
     serviceLogger.info(`Fetching category by ID: ${id}`);
     try {
         const { rows } = await query('SELECT * FROM categories WHERE id = $1', [id]);

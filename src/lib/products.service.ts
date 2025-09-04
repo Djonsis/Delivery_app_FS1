@@ -7,6 +7,7 @@ import { query } from "./db";
 import { getCategoryById } from "./categories.service";
 
 const productsServiceLogger = serverLogger.withCategory("PRODUCTS_SERVICE");
+const isLocal = !process.env.K_SERVICE;
 
 // Helper to convert a JS array to a PostgreSQL array literal string
 function toPostgresArray(arr: string[] | undefined | null): string | null {
@@ -57,6 +58,10 @@ async function generateSkuForCategory(categoryId: string): Promise<string> {
 
 
 export async function getProducts(filters?: ProductFilter): Promise<Product[]> {
+    if (isLocal) {
+        productsServiceLogger.warn("Running in local/studio environment. Returning mock products.");
+        return [];
+    }
     productsServiceLogger.info("Fetching products from DB with filters.", { filters });
     
     let baseQuery = `
@@ -119,6 +124,10 @@ export async function getProducts(filters?: ProductFilter): Promise<Product[]> {
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
+    if (isLocal) {
+        productsServiceLogger.warn(`Running in local/studio environment. Mocking getProductById for ID: ${id}`);
+        return null;
+    }
     productsServiceLogger.info(`Fetching product by ID: ${id}`);
     try {
        const { rows } = await query(`
@@ -143,6 +152,10 @@ export async function getProductById(id: string): Promise<Product | null> {
 }
 
 export async function getProductsByCategory(categoryName: string | null, limitCount: number = 5): Promise<Product[]> {
+    if (isLocal) {
+        productsServiceLogger.warn(`Running in local/studio environment. Mocking getProductsByCategory for: ${categoryName}`);
+        return [];
+    }
     productsServiceLogger.info(`Fetching products by category from DB: ${categoryName}`, { limit: limitCount });
     if (!categoryName) return [];
     try {
