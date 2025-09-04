@@ -1,9 +1,9 @@
 
 import { Pool } from 'pg';
-import { serverLogger } from './server-logger';
+import { logger } from './logger';
 import { serverConfig } from './config';
 
-const dbLogger = serverLogger.withCategory("DATABASE");
+const dbLogger = logger.withCategory("DATABASE");
 
 const { user, password, database } = serverConfig.db;
 
@@ -12,7 +12,7 @@ const { user, password, database } = serverConfig.db;
 const isGoogleCloud = !!process.env.K_SERVICE;
 
 dbLogger.info(`DB Connection check: Is Google Cloud? ${isGoogleCloud}`);
-dbLogger.info(`Connecting with user: ${user} to database: ${database}`);
+
 
 // This configuration is robust for both local development and App Hosting.
 const poolConfig = {
@@ -30,8 +30,14 @@ const poolConfig = {
     port: isGoogleCloud ? undefined : serverConfig.db.port,
 };
 
+dbLogger.info('Initializing connection pool with config:', {
+    user: poolConfig.user,
+    database: poolConfig.database,
+    host: poolConfig.host,
+    port: poolConfig.port || 'default (socket)',
+    isGoogleCloud,
+});
 
-dbLogger.info(`Pool config created. Host: ${poolConfig.host}, Port: ${poolConfig.port || 'default'}`);
 
 let pool: Pool;
 

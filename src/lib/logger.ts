@@ -1,5 +1,5 @@
-// Client-side logger - safe for use in browser environments.
-// It only writes to the browser's console and has no server-side dependencies.
+// This logger is safe for use on both the client and server.
+// It does not contain any server-side dependencies like 'fs'.
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -10,7 +10,21 @@ const LOG_LEVELS: Record<LogLevel, number> = {
     error: 3,
 };
 
-const configuredLevel = LOG_LEVELS[(process.env.NEXT_PUBLIC_LOG_LEVEL as LogLevel) || 'debug'] ?? LOG_LEVELS.debug;
+// Robustly get the log level, safe for any environment.
+// This incorporates the user's excellent suggestion.
+const getLogLevel = () => {
+    try {
+        if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_LOG_LEVEL) {
+            return LOG_LEVELS[process.env.NEXT_PUBLIC_LOG_LEVEL as LogLevel] ?? LOG_LEVELS.debug;
+        }
+    } catch (e) {
+        // In some environments, accessing process.env can throw.
+        // Fallback to default.
+    }
+    return LOG_LEVELS.debug;
+}
+
+const configuredLevel = getLogLevel();
 const performanceTimers = new Map<string, number>();
 
 class Logger {
@@ -27,6 +41,7 @@ class Logger {
     private log(level: LogLevel, message: string, data?: any) {
         if (LOG_LEVELS[level] < configuredLevel) return;
 
+        // All logs go to the console. The hosting environment (like Cloud Logging) will handle them.
         const consoleMessage = `[${level.toUpperCase()}] [${this.category}] ${message}`;
         const dataToLog = data ? data : '';
 
