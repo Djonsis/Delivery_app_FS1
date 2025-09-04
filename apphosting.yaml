@@ -13,7 +13,7 @@ cloudsql:
 # Non-secret environment variables.
 # These values are available during both build and runtime.
 environmentVariables:
-  LOG_LEVEL: debug
+  NEXT_PUBLIC_LOG_LEVEL: debug
   LOG_FORMAT: text
   NEXT_PUBLIC_S3_PUBLIC_URL: https://storage.googleapis.com/fastbasket-images
   K_SERVICE: 'fastbasket'

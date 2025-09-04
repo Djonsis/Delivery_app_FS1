@@ -2,34 +2,75 @@
 "use client";
 
 import { useState, useEffect, useTransition } from 'react';
-import { getDbStatusAction, type DbStatus } from '@/lib/actions/db.actions';
+import { getDbStatusAction, type DbStatus, checkTablesAction, initializeDbAction } from '@/lib/actions/db.actions';
 import { getStorageStatusAction, type StorageStatus } from '@/lib/actions/storage.actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, AlertTriangle, CheckCircle2, Clipboard, Package, Database } from 'lucide-react';
+import { RefreshCw, AlertTriangle, CheckCircle2, Clipboard, Package, Database, Table, HelpCircle, HardHat } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
+interface TableStatus {
+    name: string;
+    exists: boolean;
+}
 
 export default function StatusPage() {
     const [dbStatus, setDbStatus] = useState<DbStatus | null>(null);
     const [storageStatus, setStorageStatus] = useState<StorageStatus | null>(null);
+    const [tableStatuses, setTableStatuses] = useState<TableStatus[]>([]);
+
     const [isLoading, startLoading] = useTransition();
+    const [isInitializing, startInitializing] = useTransition();
     const { toast } = useToast();
 
     const fetchStatus = () => {
         startLoading(async () => {
-            const [db, storage] = await Promise.all([
+            const [db, storage, tables] = await Promise.all([
                 getDbStatusAction(),
-                getStorageStatusAction()
+                getStorageStatusAction(),
+                checkTablesAction()
             ]);
             setDbStatus(db);
             setStorageStatus(storage);
+            setTableStatuses(tables);
         });
     };
 
     useEffect(() => {
         fetchStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const handleInitializeDb = () => {
+        startInitializing(async () => {
+            const result = await initializeDbAction();
+            if (result.success) {
+                toast({
+                    title: "Успех!",
+                    description: "База данных успешно инициализирована.",
+                });
+                fetchStatus(); // Re-fetch status to show new tables
+            } else {
+                toast({
+                    title: "Ошибка инициализации",
+                    description: result.error,
+                    variant: "destructive",
+                });
+            }
+        });
+    }
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
@@ -50,6 +91,8 @@ export default function StatusPage() {
         )
     }
 
+    const allTablesExist = tableStatuses.length > 0 && tableStatuses.every(t => t.exists);
+
     return (
         <div className="flex flex-col h-full gap-4">
             <Card>
@@ -68,6 +111,47 @@ export default function StatusPage() {
                     </div>
                 </CardHeader>
             </Card>
+
+            {!allTablesExist && dbStatus?.connected && (
+                <Card className="border-destructive">
+                    <CardHeader>
+                        <div className="flex items-center gap-3">
+                            <AlertTriangle className="h-6 w-6 text-destructive" />
+                            <CardTitle className="text-destructive">Требуется инициализация базы данных</CardTitle>
+                        </div>
+                         <CardDescription>
+                           База данных подключена, но необходимые таблицы отсутствуют. Нажмите кнопку, чтобы создать структуру таблиц.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive">
+                                    <HardHat className="mr-2 h-4 w-4" />
+                                    Инициализировать базу данных
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Это действие создаст все необходимые таблицы в вашей базе данных. 
+                                    Операция безопасна для повторного выполнения и не удалит существующие данные, если таблицы уже есть.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Отмена</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleInitializeDb} disabled={isInitializing}>
+                                    {isInitializing ? "Выполнение..." : "Да, создать таблицы"}
+                                </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                       
+                    </CardContent>
+                </Card>
+            )}
+
 
             <Card>
                 <CardHeader>
@@ -91,23 +175,35 @@ export default function StatusPage() {
                         <div className="space-y-4">
                             <Card className="bg-muted/30">
                                 <CardHeader>
-                                    <CardTitle className="text-base">Параметры подключения</CardTitle>
+                                     <CardTitle className="text-base flex items-center gap-2">
+                                        <Table className="h-5 w-5"/>
+                                        Статус таблиц
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="divide-y">
+                                    {tableStatuses.length > 0 ? tableStatuses.map(t => (
+                                        <div key={t.name} className="flex items-center justify-between py-2">
+                                            <span className="font-mono text-sm">{t.name}</span>
+                                            {t.exists 
+                                                ? <Badge variant="secondary" className="bg-green-100 text-green-800">Найдена</Badge> 
+                                                : <Badge variant="destructive">Отсутствует</Badge>
+                                            }
+                                        </div>
+                                    )) : <p className="text-sm text-muted-foreground">Не удалось проверить таблицы.</p>}
+                                </CardContent>
+                            </Card>
+                            <Card className="bg-muted/30">
+                                <CardHeader>
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <Database className="h-5 w-5"/>
+                                        Параметры подключения
+                                    </CardTitle>
                                 </CardHeader>
                                 <CardContent className="divide-y">
                                     <StatusRow label="Хост" value={dbStatus.host} />
                                     <StatusRow label="Порт" value={dbStatus.port} />
                                     <StatusRow label="База данных" value={dbStatus.database} />
                                     <StatusRow label="Пользователь" value={dbStatus.user} />
-                                </CardContent>
-                            </Card>
-                             <Card className="bg-muted/30">
-                                <CardHeader>
-                                    <CardTitle className="text-base">Статистика пула</CardTitle>
-                                </CardHeader>
-                                <CardContent className="divide-y">
-                                    <StatusRow label="Всего соединений в пуле" value={dbStatus.totalCount} />
-                                    <StatusRow label="Свободные соединения" value={dbStatus.idleCount} />
-                                    <StatusRow label="Запросов в очереди" value={dbStatus.waitingCount} />
                                 </CardContent>
                             </Card>
                             
@@ -157,7 +253,10 @@ export default function StatusPage() {
                         <div className="space-y-4">
                             <Card className="bg-muted/30">
                                 <CardHeader>
-                                    <CardTitle className="text-base">Параметры</CardTitle>
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <Package className="h-5 w-5"/>
+                                        Параметры
+                                    </CardTitle>
                                 </CardHeader>
                                 <CardContent className="divide-y">
                                     <StatusRow label="Бакет (Bucket)" value={storageStatus.bucketName} />
@@ -194,3 +293,5 @@ export default function StatusPage() {
         </div>
     );
 }
+
+    
