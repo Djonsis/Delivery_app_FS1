@@ -8,6 +8,8 @@ import { getProducts } from "@/lib/products.service";
 import { getAllCategories } from "@/lib/categories.service";
 import { ProductFilter, SortOption } from "@/lib/types";
 
+export const dynamic = 'force-dynamic';
+
 interface CatalogPageProps {
     searchParams: { [key: string]: string | string[] | undefined }
 }

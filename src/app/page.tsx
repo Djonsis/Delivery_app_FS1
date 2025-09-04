@@ -3,6 +3,11 @@ import CategoryGrid from "@/components/category-grid";
 import SiteHeader from "@/components/site-header";
 import { getAllCategories } from "@/lib/categories.service";
 
+// Эта строка критически важна. Она заставляет Next.js генерировать эту страницу
+// динамически при каждом запросе, а не один раз во время сборки.
+// Это решает проблему, так как во время сборки у нас нет доступа к базе данных.
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const categories = await getAllCategories();
 

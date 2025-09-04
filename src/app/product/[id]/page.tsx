@@ -5,11 +5,13 @@ import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Star, MessageCircle } from 'lucide-react';
+import { Star, MessageCircle, ChevronLeft } from 'lucide-react';
 import SiteHeader from '@/components/site-header';
 import ProductCarousel from './_components/product-carousel';
 import { getProductById, getProductsByCategory } from '@/lib/products.service';
 import AddToCartWidget from './_components/add-to-cart-widget';
+
+export const dynamic = 'force-dynamic';
 
 interface ProductPageProps {
   params: { id: string };
@@ -45,14 +47,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div className="relative aspect-square w-full overflow-hidden rounded-xl">
               <Image
                 src={product.imageUrl}
-                alt={product.name}
+                alt={product.title}
                 fill
                 className="object-cover"
-                data-ai-hint={product.category}
+                data-ai-hint={product.category || ''}
               />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{product.name}</h1>
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{product.title}</h1>
               <div className="mt-3 flex items-center gap-4">
                 <div className="flex items-center gap-1">
                   <Star className="h-5 w-5 text-primary fill-primary" />
