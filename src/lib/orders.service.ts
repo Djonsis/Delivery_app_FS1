@@ -5,6 +5,7 @@ import { getClient, query } from "@/lib/db";
 import { serverLogger } from "@/lib/server-logger";
 import { Order, OrderStatus, CreateOrderPayload } from "@/lib/types";
 import { revalidatePath } from "next/cache";
+import { mockOrder } from "./mock-data";
 
 const ordersServiceLogger = serverLogger.withCategory("ORDERS_SERVICE");
 const isLocal = !process.env.K_SERVICE;
@@ -12,7 +13,7 @@ const isLocal = !process.env.K_SERVICE;
 export async function getOrders(): Promise<Order[]> {
     if (isLocal) {
         ordersServiceLogger.warn("Running in local/studio environment. Returning mock orders.");
-        return [];
+        return [mockOrder];
     }
     ordersServiceLogger.info("Fetching all orders from DB.");
     try {
@@ -26,6 +27,10 @@ export async function getOrders(): Promise<Order[]> {
 }
 
 export async function updateOrderStatus(orderId: string, newStatus: OrderStatus): Promise<void> {
+    if (isLocal) {
+        ordersServiceLogger.warn(`Running in local/studio environment. Mocking updateOrderStatus for order: ${orderId}`);
+        return;
+    }
     ordersServiceLogger.info(`Service: Updating status for order ${orderId} to "${newStatus}"`);
     try {
         const result = await query(
@@ -43,6 +48,10 @@ export async function updateOrderStatus(orderId: string, newStatus: OrderStatus)
 }
 
 export async function createOrder(payload: CreateOrderPayload): Promise<{ orderId: string }> {
+     if (isLocal) {
+        ordersServiceLogger.warn(`Running in local/studio environment. Mocking createOrder.`);
+        return { orderId: 'mock-order-id-123' };
+    }
     const { customerName, items, totalAmount } = payload;
     ordersServiceLogger.info("Attempting to create a new order in DB", { customerName, itemCount: items.length });
     const client = await getClient();

@@ -5,6 +5,7 @@ import type { Product, ProductData, ProductFilter } from "./types";
 import { serverLogger } from "./server-logger";
 import { query } from "./db";
 import { getCategoryById } from "./categories.service";
+import { mockProduct } from "./mock-data";
 
 const productsServiceLogger = serverLogger.withCategory("PRODUCTS_SERVICE");
 const isLocal = !process.env.K_SERVICE;
@@ -60,7 +61,7 @@ async function generateSkuForCategory(categoryId: string): Promise<string> {
 export async function getProducts(filters?: ProductFilter): Promise<Product[]> {
     if (isLocal) {
         productsServiceLogger.warn("Running in local/studio environment. Returning mock products.");
-        return [];
+        return [mockProduct, {...mockProduct, id: 'mock-prod-02', name: "Огурцы (Тест)", title: "Огурцы (Тест)"}];
     }
     productsServiceLogger.info("Fetching products from DB with filters.", { filters });
     
@@ -126,7 +127,7 @@ export async function getProducts(filters?: ProductFilter): Promise<Product[]> {
 export async function getProductById(id: string): Promise<Product | null> {
     if (isLocal) {
         productsServiceLogger.warn(`Running in local/studio environment. Mocking getProductById for ID: ${id}`);
-        return null;
+        return id === mockProduct.id ? mockProduct : null;
     }
     productsServiceLogger.info(`Fetching product by ID: ${id}`);
     try {
@@ -154,7 +155,7 @@ export async function getProductById(id: string): Promise<Product | null> {
 export async function getProductsByCategory(categoryName: string | null, limitCount: number = 5): Promise<Product[]> {
     if (isLocal) {
         productsServiceLogger.warn(`Running in local/studio environment. Mocking getProductsByCategory for: ${categoryName}`);
-        return [];
+        return categoryName === mockProduct.category ? [mockProduct] : [];
     }
     productsServiceLogger.info(`Fetching products by category from DB: ${categoryName}`, { limit: limitCount });
     if (!categoryName) return [];
@@ -177,6 +178,10 @@ export async function getProductsByCategory(categoryName: string | null, limitCo
 
 
 export async function createProduct(data: ProductData): Promise<void> {
+    if (isLocal) {
+        productsServiceLogger.warn(`Running in local/studio environment. Mocking createProduct.`);
+        return;
+    }
     const { title, description, price, categoryId, tags, imageUrl } = data;
     
     if (!categoryId) {
@@ -210,6 +215,10 @@ export async function createProduct(data: ProductData): Promise<void> {
 }
 
 export async function updateProduct(id: string, data: ProductData): Promise<void> {
+     if (isLocal) {
+        productsServiceLogger.warn(`Running in local/studio environment. Mocking updateProduct for ID: ${id}`);
+        return;
+    }
     const { title, description, price, categoryId, tags, imageUrl } = data;
     
     const finalDescription = description || null;
@@ -239,6 +248,10 @@ export async function updateProduct(id: string, data: ProductData): Promise<void
 }
 
 export async function deleteProduct(id: string): Promise<void> {
+     if (isLocal) {
+        productsServiceLogger.warn(`Running in local/studio environment. Mocking deleteProduct for ID: ${id}`);
+        return;
+    }
     productsServiceLogger.info(`Attempting to soft-delete product in DB: ${id}`);
     try {
         // Soft delete by setting deleted_at

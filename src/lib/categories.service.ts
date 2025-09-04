@@ -5,6 +5,7 @@ import { query } from "./db";
 import { serverLogger } from "./server-logger";
 import { Category } from "./types";
 import { revalidatePath } from "next/cache";
+import { mockCategory } from "./mock-data";
 
 const serviceLogger = serverLogger.withCategory("CATEGORIES_SERVICE");
 const isLocal = !process.env.K_SERVICE;
@@ -18,7 +19,7 @@ const generateSlug = (name: string) => {
 export async function getAllCategories(): Promise<Category[]> {
     if (isLocal) {
         serviceLogger.warn("Running in local/studio environment. Returning mock categories.");
-        return [];
+        return [mockCategory];
     }
     serviceLogger.info("Fetching all categories from DB.");
     try {
@@ -35,7 +36,7 @@ export async function getAllCategories(): Promise<Category[]> {
 export async function getCategoryById(id: string): Promise<Category | null> {
     if (isLocal) {
         serviceLogger.warn(`Running in local/studio environment. Mocking getCategoryById for ID: ${id}`);
-        return null;
+        return id === mockCategory.id ? mockCategory : null;
     }
     serviceLogger.info(`Fetching category by ID: ${id}`);
     try {
