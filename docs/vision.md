@@ -384,35 +384,332 @@ class HybridService implements AIRecommendationService { ... }
 
 ### 7.1. Развертывание (Deployment)
 
--   **Платформа:** Firebase App Hosting.
--   **Процесс:** Деплой происходит через Firebase CLI. В будущем будет настроен CI/CD-пайплайн (например, через GitHub Actions), который будет автоматически развертывать изменения из `main` ветки после прохождения тестов.
--   **Среды:**
-    -   **Локальная (Studio):** Для разработки UI и логики. Использует моковые данные.
-    -   **Продакшн:** Развернутое приложение на App Hosting. Работает с реальной Cloud SQL базой данных.
+#### Стратегия эволюции платформы
 
-### 7.2. Конфигурирование (Configuration)
+*   **MVP (0-6 месяцев):** Firebase App Hosting - минимальные настройки, быстрый старт
+*   **Рост (6-18 месяцев):** Cloud Run - больше контроля, экономия затрат
+*   **Масштабирование (18+ месяцев):** GKE - enterprise-grade reliability
 
--   **Принцип:** Строгое разделение кода и конфигурации.
--   **Инструменты:**
-    -   **`.env`:** Для локальной разработки. Содержит все необходимые ключи и пароли, **не должен** попадать в Git.
-    -   **Secret Manager (Google Cloud):** Для хранения всех секретов в продакшене (пароли от БД, ключи S3).
-    -   **`apphosting.yaml`:** Для привязки секретов из Secret Manager к переменным окружения в продакшн-среде.
--   **Доступ в коде:** Конфигурация читается через централизованный модуль `src/lib/config.ts`.
+#### Критерии перехода между платформами
 
-### 7.3. Логгирование (Logging)
+**Firebase App Hosting → Cloud Run:**
+*Переходим когда:*
+*   Monthly infrastructure costs > $500 (экономия 30-50% на Cloud Run)
+*   Нужны background jobs (email campaigns, batch processing)
+*   Требуются custom runtime environments
+*   Firebase App Hosting ограничивает рост
 
--   **Принцип:** Разделение логгеров для клиента и сервера.
--   **Инструменты:**
-    -   **Универсальный логгер (`src/lib/logger.ts`):** Безопасен для клиента и сервера, пишет только в консоль.
-    -   **Серверный логгер (`src/lib/server-logger.ts`):** Используется только на сервере, может писать в файл `public/debug.log` для удобства отладки.
-    -   **Cloud Logging:** В продакшене все логи, выведенные в консоль, автоматически собираются и агрегируются в Cloud Logging для анализа.
--   **Документация:** Подробное руководство находится в `docs/logging_guide.md`.
+*НЕ переходим если:*
+*   Команда < 3 разработчиков
+*   Нет DevOps экспертизы в команде
+*   MVP еще не достиг product-market fit
+*   Текущее решение работает стабильно
+
+**Cloud Run → GKE:**
+*Переходим когда:*
+*   > 5 микросервисов в production
+*   Нужны advanced deployment strategies (blue-green, canary)
+*   Enterprise compliance требования
+*   Complex service mesh необходим
+
+#### CI/CD Pipeline Evolution
+
+**Этап 1 (MVP):**
+*Pipeline:*
+*   Manual deploy через Firebase CLI
+*   Automated tests в GitHub Actions
+*   Manual approval для production
+*   Rollback: manual restore from backup
+
+**Этап 2 (после product-market fit):**
+*Pipeline:*
+*   Auto-deploy из main ветки после тестов
+*   Preview environments для каждого PR (TTL: 7 дней)
+*   Automated rollback при critical errors
+*   Infrastructure as Code (Terraform)
+*   Feature flags для инкрементальных релизов
+
+### 7.2. Среды (Environments)
+
+#### MVP-конфигурация
+*   **Local:** Firebase Studio + моковые данные
+*   **Production:** Боевая среда с реальными данными
+
+#### Расширенная конфигурация (после PMF)
+*   **Staging:** Полная копия prod с тестовыми данными
+*   **Preview:** Динамические среды для feature branches
+*   **Production:** Боевая среда с мониторингом и алертами
+
+**Принцип:** Environment parity - все среды используют идентичную конфигурацию инфраструктуры.
+
+### 7.3. Конфигурирование (Configuration)
+
+#### Принципы
+*   Строгое разделение кода и конфигурации (12-factor app)
+*   Все секреты только через Google Secret Manager
+*   Никаких hardcoded значений в коде
+
+#### Инструменты по фазам
+
+**MVP:**
+*   `.env` файлы для local development (не коммитятся)
+*   `apphosting.yaml` для production secrets
+*   Manual secret rotation по необходимости
+
+**Growth:**
+*   Google Secret Manager для всех secrets
+*   Automated secret rotation (каждые 90 дней)
+*   Infrastructure as Code через Terraform
+
+### 7.4. Логгирование и Мониторинг
+
+#### Архитектура логгирования
+Единый безопасный логгер со structured logs и request correlation:
+```typescript
+// src/lib/logger.ts
+import { randomUUID } from "crypto";
+
+export const withRequestId = (reqId: string = randomUUID()) => ({
+  info: (message: string, context?: object) => {
+    console.info(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'info',
+      requestId: reqId,
+      message,
+      service: process.env.K_SERVICE || 'local',
+      ...context
+    }));
+  }
+  // ... другие уровни
+});
+```
+
+#### Startup-Oriented Метрики
+
+**Survival Level (MVP, 0-6 месяцев):**
+*   **Availability:**
+    *   Failed orders < 5% от общего числа
+    *   Жалобы на недоступность < 3 в неделю
+    *   Инструменты: UptimeRobot (бесплатно), Google Analytics
+*   **Performance:**
+    *   LCP < 4 секунды на mobile
+    *   Cart abandonment < 70%
+    *   Инструменты: Google Search Console, Core Web Vitals
+*   **Errors:**
+    *   < 10 уникальных JS errors в день
+    *   < 5 server errors в день
+    *   Payment success rate > 85%
+    *   Инструменты: Sentry free tier, Cloud Logging
+
+**Growth Level (6-12 месяцев):**
+*   **User Experience:**
+    *   7-day retention > 20%
+    *   Session duration > 2 минуты для новых пользователей
+    *   Returning users > 5 pages за сессию
+*   **Business Impact:**
+    *   Technical revenue loss < 5% от total
+    *   Technical support tickets < 10%
+    *   Performance-conversion correlation positive
+
+#### Алерты по приоритету
+
+**Immediate action (SMS/PagerDuty):**
+*   Site completely down
+*   Payment processing >50% failure rate
+*   Database connection failed
+
+**Daily review (Email/Slack):**
+*   Performance degradation (LCP +2s)
+*   Error rate spike (>20/hour)
+*   Conversion drop >20% day-over-day
+
+#### Cost Management
+
+**AI Usage Controls:**
+1.  LLM budget limits - первоочередной приоритет
+2.  Circuit breakers для AI вызовов
+3.  Real-time cost tracking для каждого LLM потока
+4.  Soft degradation вместо полного отключения
+
+**Infra Cost Controls:**
+*   Cloud Billing export → BigQuery → Dashboard
+*   Monthly budget alerts (+20% overspend warning)
+*   Cost per Active User KPI (goal: <$0.5/user)
+
+### 7.5. Безопасность (Security)
+
+#### MVP Security (минимально необходимое)
+*   IAM принцип минимальных привилегий
+*   MFA для всех production аккаунтов
+*   Dependency scanning: GitHub Dependabot (бесплатно)
+*   Basic secrets management: Google Secret Manager
+
+#### Growth Security (после PMF)
+*   SAST: SonarCloud для статического анализа
+*   Vulnerability management: Snyk для deep scanning
+*   Security audit: ежегодный internal review
+*   `npm audit --production` при каждом CI прогоне
+
+**Принцип:** Безопасность важна, но не должна блокировать development velocity на раннем этапе.
+
+### 7.6. Disaster Recovery
+
+#### MVP Backup Strategy
+*   **Database:** Automated backups каждые 12 часов (Cloud SQL default)
+*   **File storage:** Single-region с manual backup procedures
+*   **Configuration:** Version control в Git
+
+#### Recovery Targets (реалистичные для стартапа)
+*   **RTO:** 8 часов для полного восстановления (business hours)
+*   **RPO:** Максимальная потеря данных 2 часа
+*   **Procedure:** Documented runbooks, tested ежемесячно
+
+#### Chaos Testing Light
+*Раз в месяц симулировать:*
+*   Падение БД
+*   Потерю сети
+*   Недоступность API
+
+*Проверка:* recovery runbook действительно работает
+
+### 7.7. Resource Allocation Framework
+
+#### 60/20/20 Rule для стартапа
+*   **60%** - Core product features (пользовательская ценность)
+*   **20%** - Infrastructure/DevOps (минимум для стабильности)
+*   **20%** - Technical debt/R&D (эксперименты и улучшения)
+
+#### Decision Framework
+*При любом техническом решении:*
+1.  Поможет ли привлечь новых пользователей?
+2.  Поможет ли удержать существующих?
+3.  Критично ли для core value proposition?
+4.  Можем ли обойтись без этого 3 месяца?
+
+Если первые 3 ответа "нет", а 4-й "да" - откладываем.
+
+#### Feature Freeze Triggers
+*Немедленная остановка новых features:*
+*   Site down >2 часов в неделю
+*   Payment success rate <80% на 2+ дня
+*   > 50 technical support tickets в неделю
+*   Core Web Vitals failing для >50% users
+
+---
 
 ## 8. Progressive Web App (PWA)
 
-Приложение проектируется с целью соответствия стандартам Progressive Web App для обеспечения лучшего пользовательского опыта, включая возможность установки и офлайн-доступа.
+### 8.1. Текущий статус
+*   HTTPS enabled, responsive design реализован
+*   Next.js App Router для оптимальной производительности
+*   Lighthouse Score: Performance 90+, Accessibility 95+
+*   PWA-ready foundation без дополнительной работы
 
-- **Текущий статус:** Приложение уже является адаптивным и работает по HTTPS. Архитектура Next.js App Router обеспечивает высокую производительность.
-- **Следующие шаги:** Для полноценной реализации PWA необходимо будет добавить:
-    1.  **Web App Manifest (`manifest.json`):** Для описания метаданных приложения.
-    2.  **Service Worker:** Для кеширования ключевых ресурсов и обеспечения базовой офлайн-функциональности.
+### 8.2. Business-Driven PWA Roadmap
+
+#### Критерии для начала PWA развития
+*НЕ начинаем PWA пока:*
+*   Monthly Active Users < 1000
+*   7-day retention < 15%
+*   Отсутствует product-market fit
+
+*Начинаем PWA когда:*
+*   Stable user growth 20%+ месяц к месяцу
+*   Пользователи просят offline функциональность
+*   Mobile traffic > 70% от общего
+
+#### Phase 1: Basic PWA (После PMF + 1000 MAU)
+*   **Timeline:** 2-3 недели разработки
+*   **Investment:** ~40 developer-hours
+*   **Deliverables:**
+    *   Web App Manifest для home screen installation
+    *   Basic Service Worker для offline fallback
+    *   Custom splash screens и app icons
+    *   Push Notifications через Firebase Messaging
+*   **Success Metrics:**
+    *   Install rate > 10% активных пользователей за 3 месяца
+    *   Installed users retention +15% vs non-installed
+*   **Exit Criteria:**
+    *   Install rate < 3% после 2 месяцев → прекращаем PWA development
+    *   No retention improvement → focus на другие priorities
+
+#### Phase 2: Smart Offline (После Phase 1 success)
+*   **Timeline:** 4-6 недель разработки
+*   **Investment:** ~120 developer-hours
+*   **Deliverables:**
+    *   Intelligent caching strategy (stale-while-revalidate)
+    *   Offline cart management через IndexedDB
+    *   Background sync для delayed order submission
+*   **Success Metrics:**
+    *   5% sessions частично offline
+    *   Offline-initiated orders > 2% от total
+    *   Session duration +25% для PWA users
+
+#### Phase 3: Advanced Features (Month 12+)
+*   **Timeline:** 6-8 недель разработки
+*   **Investment:** ~200 developer-hours
+*   **Deliverables:**
+    *   Advanced push notifications (segmentation, promotions)
+    *   Background updates для product catalog
+    *   Optional: Offline AI caching (только если user demand подтверждён)
+*   **Success Metrics:**
+    *   Push notification CTR > 5%
+    *   Offline sessions > 5% от total
+    *   Customer satisfaction +0.5 points
+
+### 8.3. Technical Implementation Strategy
+
+#### Performance Considerations
+*   Service Worker bundle size < 20KB
+*   IndexedDB operations в Web Workers (non-blocking UI)
+*   Cache storage management < 50MB per domain
+*   Progressive enhancement approach
+
+#### Monitoring и Analytics
+*Track:*
+*   PWA install events
+*   Offline usage patterns
+*   Cache hit/miss ratios
+*   Service worker error rates
+*   Business impact metrics
+*Tools:*
+*   Google Analytics (PWA events)
+*   Workbox Analytics
+*   Custom performance marks
+
+### 8.4. Cost-Benefit Analysis
+
+#### Development Investment
+*   Phase 1: ~$6,000 (40 hours × $150/hour)
+*   Phase 2: ~$18,000 (120 hours × $150/hour)
+*   Phase 3: ~$30,000 (200 hours × $150/hour)
+*   **Total:** ~$54,000 over 12-18 months
+
+#### Expected Business Returns
+*   Phase 1: Install users +15% retention → +$5,000 monthly revenue
+*   Phase 2: Offline functionality → +10% conversion → +$8,000 monthly
+*   Phase 3: Push notifications → +5% re-engagement → +$3,000 monthly
+*   **Total potential monthly lift:** +$16,000
+*   **Payback period:** ~4 months after full implementation
+
+#### Risk Mitigation
+*   **Technical risk:** Start with proven technologies (Workbox)
+*   **Business risk:** Clear exit criteria для каждой фазы
+*   **Resource risk:** PWA development только после core product stability
+*   **Market risk:** Validate user demand перед major investment
+
+### 8.5. Integration с Overall Product Strategy
+
+#### PWA как Competitive Advantage
+*   Faster mobile experience vs competitors
+*   Offline functionality unique в food delivery space
+*   App-like experience без App Store friction
+*   Push notifications без mobile app development costs
+
+#### Alignment с Business Goals
+*   **Customer acquisition:** Improved mobile experience
+*   **Customer retention:** Offline access, push notifications
+*   **Customer lifetime value:** Enhanced engagement через app-like features
+*   **Cost efficiency:** PWA cheaper чем native mobile apps
+
+**Key Principle:** PWA развитие следует за business success, не предшествует ему.
