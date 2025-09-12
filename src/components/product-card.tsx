@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Image from "next/image";
@@ -30,7 +31,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const precision = getPrecision(product.step_quantity);
 
   const handleQuantityChange = (newQuantity: number) => {
-    productCardLogger.debug(`Handling quantity change for ${product.name}`, { newQuantity });
+    productCardLogger.debug(`Handling quantity change for ${product.title}`, { newQuantity });
     if (newQuantity < 0) return;
     
     let roundedQuantity = parseFloat(newQuantity.toFixed(precision));
@@ -46,7 +47,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const incrementQuantity = () => {
     const currentQuantity = cartItem ? cartItem.quantity : 0;
     const newQuantity = parseFloat((currentQuantity + product.step_quantity).toFixed(precision));
-    productCardLogger.debug(`Incrementing quantity for ${product.name}`, { from: currentQuantity, to: newQuantity });
+    productCardLogger.debug(`Incrementing quantity for ${product.title}`, { from: currentQuantity, to: newQuantity });
     if (currentQuantity === 0) {
       handleQuantityChange(product.min_order_quantity);
     } else {
@@ -57,7 +58,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const decrementQuantity = () => {
     if (cartItem) {
       const newQuantity = parseFloat((cartItem.quantity - product.step_quantity).toFixed(precision));
-       productCardLogger.debug(`Decrementing quantity for ${product.name}`, { from: cartItem.quantity, to: newQuantity });
+       productCardLogger.debug(`Decrementing quantity for ${product.title}`, { from: cartItem.quantity, to: newQuantity });
       if (newQuantity >= product.min_order_quantity) {
         handleQuantityChange(newQuantity);
       } else {
@@ -69,8 +70,15 @@ export function ProductCard({ product }: ProductCardProps) {
   const displayedQuantity = cartItem?.quantity ? (cartItem.quantity.toFixed(precision)) : '0';
 
   const handleAddToCart = () => {
-    productCardLogger.info(`Adding ${product.name} to cart.`, { product });
+    productCardLogger.info(`Adding ${product.title} to cart.`, { product });
     addToCart(product);
+  }
+
+  const formatWeight = () => {
+    if (!product.is_weighted) {
+        return 'за шт.';
+    }
+    return `/ ${product.unit}`;
   }
 
   return (
@@ -80,7 +88,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="relative aspect-[4/3] w-full overflow-hidden">
               <Image
                 src={product.imageUrl}
-                alt={product.name}
+                alt={product.title}
                 fill
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
                 data-ai-hint={product.category}
@@ -88,7 +96,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           </CardHeader>
           <CardContent className="flex flex-1 flex-col p-4">
-            <CardTitle className="mt-1 text-lg font-semibold">{product.name}</CardTitle>
+            <CardTitle className="mt-1 text-lg font-semibold">{product.title}</CardTitle>
             <div className="mt-2 flex items-center gap-2">
                 <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 text-[#ffc247] fill-[#ffc247]" />
@@ -99,7 +107,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="flex-grow" />
             <div className="mt-4 flex items-baseline justify-between">
               <p className="text-2xl font-bold text-primary">{Math.round(product.price)} ₽</p>
-              {product.weight && <p className="text-sm text-muted-foreground">{product.weight}</p>}
+              {product.is_weighted && <p className="text-sm text-muted-foreground">{formatWeight()}</p>}
             </div>
           </CardContent>
       </Link>

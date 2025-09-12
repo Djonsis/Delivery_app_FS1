@@ -2,6 +2,10 @@
 
 export type WeightCategory = 'light' | 'middle' | 'heavy' | 'none';
 
+// Унифицированный тип единиц измерения
+export type UnitType = "kg" | "g" | "pcs";
+
+
 // This represents the raw data for creating/updating a product
 export interface ProductData {
   title: string;
@@ -15,39 +19,43 @@ export interface ProductData {
 export interface Product {
   id: string;
   sku: string | null;
-  name: string; // Will be mapped to 'title' from DB
   title: string;
   description: string | null;
   price: number;
   currency: string;
-  tags: string[] | null;
+  tags: string[];
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+
   category: string | null; // This is the category NAME joined from the categories table
   category_id: string | null; // The foreign key
-  image_url: string | null; // Mapped to imageUrl
-  imageUrl: string; // Ensure this is always a string for components
+
+  imageUrl: string; // единый формат (camelCase)
+
   rating: number;
   reviews: number;
-  weight?: string;
+
+  // --- Весовые товары ---
+  is_weighted: boolean;
+  unit: UnitType;
+  weight_category?: WeightCategory;
+
+  min_order_quantity: number; // поддерживает дробные значения
+  step_quantity: number;
+
+  price_per_unit?: number; // например: 200 руб/кг
+  price_unit?: UnitType;
+
+  // Доп. атрибуты
   brand?: string;
   manufacturer?: string;
-  min_order_quantity: number;
-  step_quantity: number;
   nutrition?: {
     calories: number;
     protein: number;
     fat: number;
     carbs: number;
   } | null;
-  
-  // New fields for weighted products
-  is_weighted?: boolean;
-  weight_category?: WeightCategory;
-  unit?: 'kg' | 'g' | 'pcs';
-  price_per_unit?: number;
-  price_unit?: 'kg' | 'g' | 'pcs';
 }
 
 export interface CartItem {

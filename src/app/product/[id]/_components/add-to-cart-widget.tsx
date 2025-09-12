@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useCart } from '@/hooks/use-cart';
@@ -33,7 +34,7 @@ export default function AddToCartWidget({ product }: AddToCartWidgetProps) {
   const incrementQuantity = () => {
     const currentQuantity = cartItem ? cartItem.quantity : 0;
     const newQuantity = parseFloat((currentQuantity + product.step_quantity).toFixed(precision));
-    productPageLogger.debug(`Incrementing quantity for ${product.name}`, { from: currentQuantity, to: newQuantity });
+    productPageLogger.debug(`Incrementing quantity for ${product.title}`, { from: currentQuantity, to: newQuantity });
     if (currentQuantity === 0) {
       updateQuantity(product, product.min_order_quantity);
     } else {
@@ -44,7 +45,7 @@ export default function AddToCartWidget({ product }: AddToCartWidgetProps) {
   const decrementQuantity = () => {
     if (cartItem) {
       const newQuantity = parseFloat((cartItem.quantity - product.step_quantity).toFixed(precision));
-      productPageLogger.debug(`Decrementing quantity for ${product.name}`, { from: cartItem.quantity, to: newQuantity });
+      productPageLogger.debug(`Decrementing quantity for ${product.title}`, { from: cartItem.quantity, to: newQuantity });
       if (newQuantity >= product.min_order_quantity) {
         updateQuantity(product, newQuantity);
       } else {
@@ -54,7 +55,7 @@ export default function AddToCartWidget({ product }: AddToCartWidgetProps) {
   };
 
   const handleAddToCart = () => {
-    productPageLogger.info(`Adding ${product.name} to cart from product page`, { product });
+    productPageLogger.info(`Adding ${product.title} to cart from product page`, { product });
     addToCart(product);
   }
 

@@ -1,4 +1,5 @@
 
+
 "use server";
 
 import type { Product, ProductData, ProductFilter } from "./types";
@@ -23,14 +24,16 @@ function mapDbProductToProduct(dbProduct: any): Product {
     const title = dbProduct.title || 'Безымянный товар';
     return {
         ...dbProduct,
-        name: title,
+        title: title,
+        tags: dbProduct.tags || [],
         imageUrl: dbProduct.image_url || `https://placehold.co/600x400.png?text=${encodeURIComponent(title)}`,
         rating: parseFloat(dbProduct.rating) ?? 4.5,
         reviews: parseInt(dbProduct.reviews) ?? Math.floor(Math.random() * 100),
         min_order_quantity: parseFloat(dbProduct.min_order_quantity) ?? 1,
         step_quantity: parseFloat(dbProduct.step_quantity) ?? 1,
         price: parseFloat(dbProduct.price),
-        weight_category: 'middle', // This can be calculated based on weight later
+        is_weighted: dbProduct.is_weighted || false,
+        unit: dbProduct.unit || 'pcs',
     };
 }
 
@@ -61,7 +64,7 @@ async function generateSkuForCategory(categoryId: string): Promise<string> {
 export async function getProducts(filters?: ProductFilter): Promise<Product[]> {
     if (isLocal()) {
         productsServiceLogger.warn("Running in local/studio environment. Returning mock products.");
-        return [mockProduct, {...mockProduct, id: 'mock-prod-02', name: "Огурцы (Тест)", title: "Огурцы (Тест)"}];
+        return [mockProduct, {...mockProduct, id: 'mock-prod-02', title: "Огурцы (Тест)"}];
     }
     productsServiceLogger.info("Fetching products from DB with filters.", { filters });
     
@@ -177,7 +180,7 @@ export async function getProductsByCategory(categoryName: string | null, limitCo
 }
 
 
-export async function createProduct(data: ProductData): Promise<void> {
+export async function createProduct(data: any): Promise<void> { // Changed to any to accept string tags
     if (isLocal()) {
         productsServiceLogger.warn(`Running in local/studio environment. Mocking createProduct.`);
         return;
@@ -193,7 +196,7 @@ export async function createProduct(data: ProductData): Promise<void> {
 
     const finalDescription = description || null;
     const finalCategoryId = categoryId || null;
-    const tagsArray = tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
+    const tagsArray = typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
     const tagsForDb = toPostgresArray(tagsArray);
     const finalImageUrl = imageUrl || null;
 
@@ -214,7 +217,7 @@ export async function createProduct(data: ProductData): Promise<void> {
     }
 }
 
-export async function updateProduct(id: string, data: ProductData): Promise<void> {
+export async function updateProduct(id: string, data: any): Promise<void> { // Changed to any to accept string tags
      if (isLocal()) {
         productsServiceLogger.warn(`Running in local/studio environment. Mocking updateProduct for ID: ${id}`);
         return;
@@ -223,7 +226,7 @@ export async function updateProduct(id: string, data: ProductData): Promise<void
     
     const finalDescription = description || null;
     const finalCategoryId = categoryId || null;
-    const tagsArray = tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
+    const tagsArray = typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
     const tagsForDb = toPostgresArray(tagsArray);
     const finalImageUrl = imageUrl || null;
 

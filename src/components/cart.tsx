@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Image from "next/image";
@@ -97,13 +98,13 @@ export function Cart() {
                     <div className="relative h-20 w-20 overflow-hidden rounded-md">
                       <Image
                         src={product.imageUrl}
-                        alt={product.name}
+                        alt={product.title}
                         fill
                         className="object-cover"
                       />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-medium">{product.name}</h3>
+                      <h3 className="font-medium">{product.title}</h3>
                       <p className="text-sm text-muted-foreground">
                         {Math.round(product.price)} ₽
                       </p>
@@ -114,7 +115,7 @@ export function Cart() {
                           className="h-7 w-7"
                           onClick={() => {
                             const newQuantity = parseFloat((quantity - product.step_quantity).toFixed(precision));
-                            cartComponentLogger.debug(`Decrementing quantity for ${product.name}`, { from: quantity, to: newQuantity });
+                            cartComponentLogger.debug(`Decrementing quantity for ${product.title}`, { from: quantity, to: newQuantity });
                             if (newQuantity > 0 && newQuantity < product.min_order_quantity) {
                                 updateQuantity(product, 0);
                             } else {
@@ -133,7 +134,7 @@ export function Cart() {
                           className="h-7 w-7"
                           onClick={() => {
                             const newQuantity = parseFloat((quantity + product.step_quantity).toFixed(precision));
-                            cartComponentLogger.debug(`Incrementing quantity for ${product.name}`, { from: quantity, to: newQuantity });
+                            cartComponentLogger.debug(`Incrementing quantity for ${product.title}`, { from: quantity, to: newQuantity });
                             updateQuantity(product, newQuantity)
                           }}
                         >
@@ -146,7 +147,7 @@ export function Cart() {
                       size="icon"
                       className="text-muted-foreground"
                       onClick={() => {
-                        cartComponentLogger.info(`Removing product from cart via X button: ${product.name}`, { productId: product.id });
+                        cartComponentLogger.info(`Removing product from cart via X button: ${product.title}`, { productId: product.id });
                         removeFromCart(product.id)
                       }}
                     >

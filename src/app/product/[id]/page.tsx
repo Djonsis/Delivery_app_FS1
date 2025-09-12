@@ -1,4 +1,5 @@
 
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -29,6 +30,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
   
   // Fetch related products on the server
   const relatedProducts = await getProductsByCategory(product.category, 5);
+
+  const formatWeight = (product: import('/home/user/studio/src/lib/types').Product) => {
+    if (!product.is_weighted) {
+        return 'за шт.';
+    }
+    return `/ ${product.unit}`;
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -68,7 +76,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <p className="mt-4 text-muted-foreground">{product.description}</p>
               
               <div className="mt-6">
-                <p className="text-4xl font-bold text-primary">{Math.round(product.price)} ₽ {product.weight && <span className="text-lg font-normal text-muted-foreground">/ {product.weight}</span>}</p>
+                <p className="text-4xl font-bold text-primary">{Math.round(product.price)} ₽ {product.is_weighted && <span className="text-lg font-normal text-muted-foreground">{formatWeight(product)}</span>}</p>
               </div>
 
               <div className="mt-6">

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -75,7 +76,7 @@ export default function ProductForm({ product }: ProductFormProps) {
       price: product.price,
       categoryId: product.category_id || undefined,
       tags: product.tags?.join(", "),
-      imageUrl: product.image_url || "",
+      imageUrl: product.imageUrl || "",
     } : {
       title: "",
       description: "",
@@ -90,7 +91,7 @@ export default function ProductForm({ product }: ProductFormProps) {
     startTransition(async () => {
       try {
         const file = fileInputRef.current?.files?.[0];
-        let imageUrl = product?.image_url || values.imageUrl;
+        let imageUrl = product?.imageUrl || values.imageUrl;
 
         if (file) {
           setIsUploading(true);
