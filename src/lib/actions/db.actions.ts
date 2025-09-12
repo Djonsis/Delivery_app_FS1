@@ -111,15 +111,20 @@ export async function initializeDbAction(): Promise<{ success: boolean, error?: 
           image_url TEXT NULL,
           rating REAL DEFAULT 4.5,
           reviews INT DEFAULT 0,
-          weight TEXT NULL,
           brand TEXT NULL,
           manufacturer TEXT NULL,
-          min_order_quantity NUMERIC(10, 3) DEFAULT 1.0,
-          step_quantity NUMERIC(10, 3) DEFAULT 1.0,
           nutrition JSONB NULL,
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-          deleted_at TIMESTAMPTZ
+          deleted_at TIMESTAMPTZ,
+
+          -- Поля для весовых товаров
+          is_weighted BOOLEAN DEFAULT false,
+          unit VARCHAR(10) DEFAULT 'pcs'::character varying NOT NULL,
+          price_per_unit NUMERIC(10, 2),
+          price_unit VARCHAR(10),
+          min_order_quantity NUMERIC(10, 3) DEFAULT 1.0,
+          step_quantity NUMERIC(10, 3) DEFAULT 1.0
         );
 
         CREATE TABLE IF NOT EXISTS orders (
@@ -158,5 +163,3 @@ export async function initializeDbAction(): Promise<{ success: boolean, error?: 
         return { success: false, error: (error as Error).message };
     }
 }
-
-    

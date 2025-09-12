@@ -83,19 +83,24 @@ CREATE TABLE IF NOT EXISTS products (
   price NUMERIC(12, 2) NOT NULL DEFAULT 0,
   currency TEXT NOT NULL DEFAULT 'RUB',
   category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
-  tags TEXT[] NULL, -- Поле для SEO-тегов
-  image_url TEXT NULL, -- Поле для основной картинки товара
+  tags TEXT[] NULL,
+  image_url TEXT NULL,
   rating REAL DEFAULT 4.5,
   reviews INT DEFAULT 0,
-  weight TEXT NULL,
   brand TEXT NULL,
   manufacturer TEXT NULL,
-  min_order_quantity NUMERIC(10, 3) DEFAULT 1.0,
-  step_quantity NUMERIC(10, 3) DEFAULT 1.0,
   nutrition JSONB NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  deleted_at TIMESTAMPTZ
+  deleted_at TIMESTAMPTZ,
+  
+  -- Поля для весовых товаров
+  is_weighted BOOLEAN DEFAULT false,
+  unit VARCHAR(10) DEFAULT 'pcs'::character varying NOT NULL,
+  price_per_unit NUMERIC(10, 2),
+  price_unit VARCHAR(10),
+  min_order_quantity NUMERIC(10, 3) DEFAULT 1.0,
+  step_quantity NUMERIC(10, 3) DEFAULT 1.0
 );
 
 -- Таблица заказов
