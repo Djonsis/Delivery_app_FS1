@@ -6,9 +6,9 @@ import { serverLogger } from "./server-logger";
 import { Category } from "./types";
 import { revalidatePath } from "next/cache";
 import { mockCategory } from "./mock-data";
+import { isLocal } from "./env";
 
 const serviceLogger = serverLogger.withCategory("CATEGORIES_SERVICE");
-const isLocal = !process.env.K_SERVICE;
 
 // Helper function to generate a slug from a name
 const generateSlug = (name: string) => {
@@ -17,7 +17,7 @@ const generateSlug = (name: string) => {
 
 
 export async function getAllCategories(): Promise<Category[]> {
-    if (isLocal) {
+    if (isLocal()) {
         serviceLogger.warn("Running in local/studio environment. Returning mock categories.");
         return [mockCategory];
     }
@@ -34,7 +34,7 @@ export async function getAllCategories(): Promise<Category[]> {
 }
 
 export async function getCategoryById(id: string): Promise<Category | null> {
-    if (isLocal) {
+    if (isLocal()) {
         serviceLogger.warn(`Running in local/studio environment. Mocking getCategoryById for ID: ${id}`);
         return id === mockCategory.id ? mockCategory : null;
     }

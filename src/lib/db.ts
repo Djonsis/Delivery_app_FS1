@@ -2,16 +2,14 @@
 import { Pool } from 'pg';
 import { logger } from './logger';
 import { serverConfig } from './config';
+import { isCloud as isGoogleCloud } from './env';
 
 const dbLogger = logger.withCategory("DATABASE");
 
 const { user, password, database } = serverConfig.db;
 
 // Check if running in a Google Cloud environment (like App Hosting or Cloud Run)
-// process.env.K_SERVICE is a standard environment variable in these environments.
-const isGoogleCloud = !!process.env.K_SERVICE;
-
-dbLogger.info(`DB Connection check: Is Google Cloud? ${isGoogleCloud}`);
+dbLogger.info(`DB Connection check: Is Google Cloud? ${isGoogleCloud()}`);
 
 
 // This configuration is robust for both local development and App Hosting.
@@ -24,10 +22,10 @@ const poolConfig = {
     connectionTimeoutMillis: 10000,
     // If it's a Cloud SQL instance running in a Google Cloud environment, connect via the Unix socket.
     // Otherwise, use the standard host/port for local connections (e.g., via Cloud SQL Proxy).
-    host: isGoogleCloud 
+    host: isGoogleCloud() 
         ? `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}` 
         : serverConfig.db.host,
-    port: isGoogleCloud ? undefined : serverConfig.db.port,
+    port: isGoogleCloud() ? undefined : serverConfig.db.port,
 };
 
 dbLogger.info('Initializing connection pool with config:', {
@@ -35,7 +33,7 @@ dbLogger.info('Initializing connection pool with config:', {
     database: poolConfig.database,
     host: poolConfig.host,
     port: poolConfig.port || 'default (socket)',
-    isGoogleCloud,
+    isGoogleCloud: isGoogleCloud(),
 });
 
 

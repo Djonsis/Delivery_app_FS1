@@ -6,12 +6,12 @@ import { serverLogger } from "@/lib/server-logger";
 import { Order, OrderStatus, CreateOrderPayload } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { mockOrder } from "./mock-data";
+import { isLocal } from "./env";
 
 const ordersServiceLogger = serverLogger.withCategory("ORDERS_SERVICE");
-const isLocal = !process.env.K_SERVICE;
 
 export async function getOrders(): Promise<Order[]> {
-    if (isLocal) {
+    if (isLocal()) {
         ordersServiceLogger.warn("Running in local/studio environment. Returning mock orders.");
         return [mockOrder];
     }
@@ -27,7 +27,7 @@ export async function getOrders(): Promise<Order[]> {
 }
 
 export async function updateOrderStatus(orderId: string, newStatus: OrderStatus): Promise<void> {
-    if (isLocal) {
+    if (isLocal()) {
         ordersServiceLogger.warn(`Running in local/studio environment. Mocking updateOrderStatus for order: ${orderId}`);
         return;
     }
@@ -48,7 +48,7 @@ export async function updateOrderStatus(orderId: string, newStatus: OrderStatus)
 }
 
 export async function createOrder(payload: CreateOrderPayload): Promise<{ orderId: string }> {
-     if (isLocal) {
+     if (isLocal()) {
         ordersServiceLogger.warn(`Running in local/studio environment. Mocking createOrder.`);
         return { orderId: 'mock-order-id-123' };
     }

@@ -6,9 +6,9 @@ import { serverLogger } from "./server-logger";
 import { query } from "./db";
 import { getCategoryById } from "./categories.service";
 import { mockProduct } from "./mock-data";
+import { isLocal } from "./env";
 
 const productsServiceLogger = serverLogger.withCategory("PRODUCTS_SERVICE");
-const isLocal = !process.env.K_SERVICE;
 
 // Helper to convert a JS array to a PostgreSQL array literal string
 function toPostgresArray(arr: string[] | undefined | null): string | null {
@@ -59,7 +59,7 @@ async function generateSkuForCategory(categoryId: string): Promise<string> {
 
 
 export async function getProducts(filters?: ProductFilter): Promise<Product[]> {
-    if (isLocal) {
+    if (isLocal()) {
         productsServiceLogger.warn("Running in local/studio environment. Returning mock products.");
         return [mockProduct, {...mockProduct, id: 'mock-prod-02', name: "Огурцы (Тест)", title: "Огурцы (Тест)"}];
     }
@@ -125,7 +125,7 @@ export async function getProducts(filters?: ProductFilter): Promise<Product[]> {
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-    if (isLocal) {
+    if (isLocal()) {
         productsServiceLogger.warn(`Running in local/studio environment. Mocking getProductById for ID: ${id}`);
         return id === mockProduct.id ? mockProduct : null;
     }
@@ -153,7 +153,7 @@ export async function getProductById(id: string): Promise<Product | null> {
 }
 
 export async function getProductsByCategory(categoryName: string | null, limitCount: number = 5): Promise<Product[]> {
-    if (isLocal) {
+    if (isLocal()) {
         productsServiceLogger.warn(`Running in local/studio environment. Mocking getProductsByCategory for: ${categoryName}`);
         return categoryName === mockProduct.category ? [mockProduct] : [];
     }
@@ -178,7 +178,7 @@ export async function getProductsByCategory(categoryName: string | null, limitCo
 
 
 export async function createProduct(data: ProductData): Promise<void> {
-    if (isLocal) {
+    if (isLocal()) {
         productsServiceLogger.warn(`Running in local/studio environment. Mocking createProduct.`);
         return;
     }
@@ -215,7 +215,7 @@ export async function createProduct(data: ProductData): Promise<void> {
 }
 
 export async function updateProduct(id: string, data: ProductData): Promise<void> {
-     if (isLocal) {
+     if (isLocal()) {
         productsServiceLogger.warn(`Running in local/studio environment. Mocking updateProduct for ID: ${id}`);
         return;
     }
@@ -248,7 +248,7 @@ export async function updateProduct(id: string, data: ProductData): Promise<void
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-     if (isLocal) {
+     if (isLocal()) {
         productsServiceLogger.warn(`Running in local/studio environment. Mocking deleteProduct for ID: ${id}`);
         return;
     }
