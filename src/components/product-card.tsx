@@ -22,13 +22,14 @@ export function ProductCard({ product }: ProductCardProps) {
   const cartItem = getCartItem(product.id);
 
   const getPrecision = (step: number) => {
-    const stepStr = step.toString();
+    const stepStr = String(step);
     if (stepStr.includes('.')) {
       return stepStr.split('.')[1].length;
     }
     return 0;
   };
-  const precision = getPrecision(product.step_quantity);
+
+  const precision = getPrecision(product.step_quantity || 1);
 
   const handleQuantityChange = (newQuantity: number) => {
     productCardLogger.debug(`Handling quantity change for ${product.title}`, { newQuantity });
@@ -46,10 +47,10 @@ export function ProductCard({ product }: ProductCardProps) {
   
   const incrementQuantity = () => {
     const currentQuantity = cartItem ? cartItem.quantity : 0;
-    const newQuantity = parseFloat((currentQuantity + product.step_quantity).toFixed(precision));
+    const newQuantity = currentQuantity + (product.step_quantity || 1);
     productCardLogger.debug(`Incrementing quantity for ${product.title}`, { from: currentQuantity, to: newQuantity });
     if (currentQuantity === 0) {
-      handleQuantityChange(product.min_order_quantity);
+      handleQuantityChange(product.min_order_quantity || 1);
     } else {
       handleQuantityChange(newQuantity);
     }
@@ -57,9 +58,9 @@ export function ProductCard({ product }: ProductCardProps) {
   
   const decrementQuantity = () => {
     if (cartItem) {
-      const newQuantity = parseFloat((cartItem.quantity - product.step_quantity).toFixed(precision));
+      const newQuantity = cartItem.quantity - (product.step_quantity || 1);
        productCardLogger.debug(`Decrementing quantity for ${product.title}`, { from: cartItem.quantity, to: newQuantity });
-      if (newQuantity >= product.min_order_quantity) {
+      if (newQuantity >= (product.min_order_quantity || 1)) {
         handleQuantityChange(newQuantity);
       } else {
         updateQuantity(product, 0);
@@ -91,7 +92,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 alt={product.title}
                 fill
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
-                data-ai-hint={product.category}
+                data-ai-hint={product.category || ''}
               />
             </div>
           </CardHeader>
@@ -107,7 +108,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="flex-grow" />
             <div className="mt-4 flex items-baseline justify-between">
               <p className="text-2xl font-bold text-primary">{Math.round(product.price)} ₽</p>
-              {product.is_weighted && <p className="text-sm text-muted-foreground">{formatWeight()}</p>}
+              <p className="text-sm text-muted-foreground">{formatWeight()}</p>
             </div>
           </CardContent>
       </Link>

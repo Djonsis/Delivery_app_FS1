@@ -17,6 +17,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Product, Category } from "@/lib/types";
 import { useTransition, useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -33,6 +41,13 @@ const productFormSchema = z.object({
   categoryId: z.string({ required_error: "Необходимо выбрать категорию." }).uuid("Необходимо выбрать категорию."),
   tags: z.string().optional(),
   imageUrl: z.string().optional(),
+  
+  is_weighted: z.boolean().default(false),
+  unit: z.enum(["kg", "g", "pcs"]).default("pcs"),
+  price_per_unit: z.coerce.number().min(0).optional(),
+  price_unit: z.enum(["kg", "g", "pcs"]).optional(),
+  min_order_quantity: z.coerce.number().min(0).default(1),
+  step_quantity: z.coerce.number().min(0).default(1),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -77,12 +92,22 @@ export default function ProductForm({ product }: ProductFormProps) {
       categoryId: product.category_id || undefined,
       tags: product.tags?.join(", "),
       imageUrl: product.imageUrl || "",
+      is_weighted: product.is_weighted,
+      unit: product.unit,
+      price_per_unit: product.price_per_unit || undefined,
+      price_unit: product.price_unit || undefined,
+      min_order_quantity: product.min_order_quantity,
+      step_quantity: product.step_quantity,
     } : {
       title: "",
       description: "",
       price: 0,
       tags: "",
       imageUrl: "",
+      is_weighted: false,
+      unit: "pcs",
+      min_order_quantity: 1,
+      step_quantity: 1,
     },
   });
 
@@ -136,7 +161,8 @@ export default function ProductForm({ product }: ProductFormProps) {
       }
     });
   };
-
+  
+  const isWeighted = form.watch("is_weighted");
   const isSubmitDisabled = isPending || isUploading;
   const categoryOptions = categories.map(c => ({ value: c.id, label: c.name }));
 
@@ -253,6 +279,96 @@ export default function ProductForm({ product }: ProductFormProps) {
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="is_weighted"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>
+                  Весовой товар
+                </FormLabel>
+                <FormDescription>
+                  Если включено, появятся дополнительные поля для настройки веса и цены за единицу.
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
+
+        {isWeighted && (
+            <div className="grid grid-cols-2 gap-8 p-4 border rounded-md">
+                <FormField
+                control={form.control}
+                name="unit"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Единица измерения</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Выберите единицу" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="kg">кг</SelectItem>
+                            <SelectItem value="g">г</SelectItem>
+                            <SelectItem value="pcs">шт</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="price_per_unit"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Цена за единицу</FormLabel>
+                        <FormControl>
+                            <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                <FormField
+                control={form.control}
+                name="min_order_quantity"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Мин. заказ</FormLabel>
+                    <FormControl>
+                        <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value))}/>
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+
+                <FormField
+                control={form.control}
+                name="step_quantity"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Шаг количества</FormLabel>
+                    <FormControl>
+                        <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value))}/>
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            </div>
+        )}
         
         <Button type="submit" disabled={isSubmitDisabled}>
           {isPending ? "Сохранение..." : (isUploading ? "Загрузка..." : (product ? "Обновить товар" : "Создать товар"))}

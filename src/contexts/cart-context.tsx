@@ -22,25 +22,35 @@ const initialState: CartState = {
   cartItems: [],
 };
 
+const getPrecision = (step: number = 1) => {
+    const stepStr = String(step);
+    if (stepStr.includes('.')) {
+        return stepStr.split('.')[1].length;
+    }
+    return 0;
+};
+
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case 'ADD_TO_CART': {
       const product = action.payload;
       const existingItem = state.cartItems.find(item => item.product.id === product.id);
       
+      const precision = getPrecision(product.step_quantity);
+      
       if (existingItem) {
         return {
           ...state,
           cartItems: state.cartItems.map(item =>
             item.product.id === product.id
-              ? { ...item, quantity: item.quantity + product.step_quantity }
+              ? { ...item, quantity: parseFloat((item.quantity + (product.step_quantity || 1)).toFixed(precision)) }
               : item
           ),
         };
       } else {
         return {
           ...state,
-          cartItems: [...state.cartItems, { product, quantity: product.min_order_quantity }],
+          cartItems: [...state.cartItems, { product, quantity: product.min_order_quantity || 1 }],
         };
       }
     }
@@ -54,8 +64,11 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case 'UPDATE_QUANTITY': {
         const { product, quantity } = action.payload;
         const productId = product.id;
+        
+        const precision = getPrecision(product.step_quantity);
+        const newQuantity = parseFloat(quantity.toFixed(precision));
 
-        if (quantity <= 0) {
+        if (newQuantity <= 0) {
             return {
                 ...state,
                 cartItems: state.cartItems.filter(item => item.product.id !== productId),
@@ -67,13 +80,13 @@ function cartReducer(state: CartState, action: CartAction): CartState {
                 return {
                     ...state,
                     cartItems: state.cartItems.map(item =>
-                        item.product.id === productId ? { ...item, quantity } : item
+                        item.product.id === productId ? { ...item, quantity: newQuantity } : item
                     ),
                 };
             } else {
                  return {
                     ...state,
-                    cartItems: [...state.cartItems, { product, quantity }],
+                    cartItems: [...state.cartItems, { product, quantity: newQuantity }],
                 };
             }
         }
@@ -113,7 +126,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
   const addToCart = (product: Product) => {
-    cartLogger.info(`Adding product to cart: ${product.name}`, { productId: product.id });
+    cartLogger.info(`Adding product to cart: ${product.title}`, { productId: product.id });
     dispatch({ type: 'ADD_TO_CART', payload: product });
   }
   const removeFromCart = (id: string) => {

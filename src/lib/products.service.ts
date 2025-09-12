@@ -2,7 +2,7 @@
 
 "use server";
 
-import type { Product, ProductData, ProductFilter } from "./types";
+import type { Product } from "./types";
 import { serverLogger } from "./server-logger";
 import { query } from "./db";
 import { getCategoryById } from "./categories.service";
@@ -29,11 +29,14 @@ function mapDbProductToProduct(dbProduct: any): Product {
         imageUrl: dbProduct.image_url || `https://placehold.co/600x400.png?text=${encodeURIComponent(title)}`,
         rating: parseFloat(dbProduct.rating) ?? 4.5,
         reviews: parseInt(dbProduct.reviews) ?? Math.floor(Math.random() * 100),
+        price: parseFloat(dbProduct.price),
+        is_weighted: dbProduct.is_weighted ?? false,
+        unit: dbProduct.unit ?? 'pcs',
         min_order_quantity: parseFloat(dbProduct.min_order_quantity) ?? 1,
         step_quantity: parseFloat(dbProduct.step_quantity) ?? 1,
-        price: parseFloat(dbProduct.price),
-        is_weighted: dbProduct.is_weighted || false,
-        unit: dbProduct.unit || 'pcs',
+        price_per_unit: dbProduct.price_per_unit ? parseFloat(dbProduct.price_per_unit) : undefined,
+        price_unit: dbProduct.price_unit ?? undefined,
+        nutrition: dbProduct.nutrition || null,
     };
 }
 
@@ -61,7 +64,7 @@ async function generateSkuForCategory(categoryId: string): Promise<string> {
 }
 
 
-export async function getProducts(filters?: ProductFilter): Promise<Product[]> {
+export async function getProducts(filters?: any): Promise<Product[]> {
     if (isLocal()) {
         productsServiceLogger.warn("Running in local/studio environment. Returning mock products.");
         return [mockProduct, {...mockProduct, id: 'mock-prod-02', title: "Огурцы (Тест)"}];
@@ -180,12 +183,15 @@ export async function getProductsByCategory(categoryName: string | null, limitCo
 }
 
 
-export async function createProduct(data: any): Promise<void> { // Changed to any to accept string tags
+export async function createProduct(data: any): Promise<void> { 
     if (isLocal()) {
         productsServiceLogger.warn(`Running in local/studio environment. Mocking createProduct.`);
         return;
     }
-    const { title, description, price, categoryId, tags, imageUrl } = data;
+    const { 
+        title, description, price, categoryId, tags, imageUrl,
+        is_weighted, unit, price_per_unit, price_unit, min_order_quantity, step_quantity 
+    } = data;
     
     if (!categoryId) {
         productsServiceLogger.error("Cannot create product without categoryId", { data });
@@ -194,18 +200,23 @@ export async function createProduct(data: any): Promise<void> { // Changed to an
 
     const sku = await generateSkuForCategory(categoryId);
 
-    const finalDescription = description || null;
-    const finalCategoryId = categoryId || null;
     const tagsArray = typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
-    const tagsForDb = toPostgresArray(tagsArray);
-    const finalImageUrl = imageUrl || null;
 
     productsServiceLogger.info("Creating a new product in DB", { title, sku });
     try {
-        await query(
-            `INSERT INTO products (title, sku, description, price, currency, category_id, tags, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-            [title, sku, finalDescription, price, 'RUB', finalCategoryId, tagsForDb, finalImageUrl]
-        );
+        const queryText = `
+            INSERT INTO products (
+                title, sku, description, price, currency, category_id, tags, image_url,
+                is_weighted, unit, price_per_unit, price_unit, min_order_quantity, step_quantity
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`;
+        
+        const queryParams = [
+            title, sku, description || null, price, 'RUB', categoryId || null, toPostgresArray(tagsArray), imageUrl || null,
+            is_weighted, unit, price_per_unit || null, price_unit || null, min_order_quantity, step_quantity
+        ];
+        
+        await query(queryText, queryParams);
+
     } catch (error) {
         const dbError = error as any;
         if (dbError.code === '23505' && dbError.constraint === 'products_sku_key') {
@@ -217,33 +228,33 @@ export async function createProduct(data: any): Promise<void> { // Changed to an
     }
 }
 
-export async function updateProduct(id: string, data: any): Promise<void> { // Changed to any to accept string tags
+export async function updateProduct(id: string, data: any): Promise<void> {
      if (isLocal()) {
         productsServiceLogger.warn(`Running in local/studio environment. Mocking updateProduct for ID: ${id}`);
         return;
     }
-    const { title, description, price, categoryId, tags, imageUrl } = data;
+    const { 
+        title, description, price, categoryId, tags, imageUrl,
+        is_weighted, unit, price_per_unit, price_unit, min_order_quantity, step_quantity 
+    } = data;
     
-    const finalDescription = description || null;
-    const finalCategoryId = categoryId || null;
     const tagsArray = typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
-    const tagsForDb = toPostgresArray(tagsArray);
-    const finalImageUrl = imageUrl || null;
 
     productsServiceLogger.info(`Updating product in DB: ${id}`, { data });
     try {
-        await query(
-            `UPDATE products SET 
-                title = $1, 
-                description = $2, 
-                price = $3, 
-                category_id = $4, 
-                tags = $5, 
-                image_url = $6, 
+         const queryText = `
+            UPDATE products SET 
+                title = $1, description = $2, price = $3, category_id = $4, tags = $5, image_url = $6, 
+                is_weighted = $7, unit = $8, price_per_unit = $9, price_unit = $10, min_order_quantity = $11, step_quantity = $12,
                 updated_at = NOW()
-             WHERE id = $7`,
-            [title, finalDescription, price, finalCategoryId, tagsForDb, finalImageUrl, id]
-        );
+            WHERE id = $13`;
+        
+        const queryParams = [
+            title, description || null, price, categoryId || null, toPostgresArray(tagsArray), imageUrl || null,
+            is_weighted, unit, price_per_unit || null, price_unit || null, min_order_quantity, step_quantity,
+            id
+        ];
+        await query(queryText, queryParams);
     } catch (error) {
         productsServiceLogger.error(`Failed to update product ${id} in DB`, error as Error);
         throw new Error(`Database error. Could not update product ${id}.`);

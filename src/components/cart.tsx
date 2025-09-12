@@ -72,7 +72,7 @@ export function Cart() {
   };
 
   const getPrecision = (step: number) => {
-    const stepStr = step.toString();
+    const stepStr = String(step);
     if (stepStr.includes('.')) {
       return stepStr.split('.')[1].length;
     }
@@ -90,7 +90,7 @@ export function Cart() {
           <ScrollArea className="flex-1 pr-4">
             <div className="flex flex-col gap-6">
               {cartItems.map(({ product, quantity }) => {
-                const precision = getPrecision(product.step_quantity);
+                const precision = getPrecision(product.step_quantity || 1);
                 const displayedQuantity = quantity.toFixed(precision);
 
                 return (
@@ -106,7 +106,7 @@ export function Cart() {
                     <div className="flex-1">
                       <h3 className="font-medium">{product.title}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {Math.round(product.price)} ₽
+                        {Math.round(product.price)} ₽ {product.is_weighted && `/ ${product.unit}`}
                       </p>
                       <div className="mt-2 flex items-center gap-2">
                         <Button
@@ -114,9 +114,9 @@ export function Cart() {
                           size="icon"
                           className="h-7 w-7"
                           onClick={() => {
-                            const newQuantity = parseFloat((quantity - product.step_quantity).toFixed(precision));
+                            const newQuantity = quantity - (product.step_quantity || 1);
                             cartComponentLogger.debug(`Decrementing quantity for ${product.title}`, { from: quantity, to: newQuantity });
-                            if (newQuantity > 0 && newQuantity < product.min_order_quantity) {
+                            if (newQuantity > 0 && newQuantity < (product.min_order_quantity || 1)) {
                                 updateQuantity(product, 0);
                             } else {
                                 updateQuantity(product, newQuantity)
@@ -133,7 +133,7 @@ export function Cart() {
                           size="icon"
                           className="h-7 w-7"
                           onClick={() => {
-                            const newQuantity = parseFloat((quantity + product.step_quantity).toFixed(precision));
+                            const newQuantity = quantity + (product.step_quantity || 1);
                             cartComponentLogger.debug(`Incrementing quantity for ${product.title}`, { from: quantity, to: newQuantity });
                             updateQuantity(product, newQuantity)
                           }}

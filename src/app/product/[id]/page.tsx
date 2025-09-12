@@ -11,6 +11,7 @@ import SiteHeader from '@/components/site-header';
 import ProductCarousel from './_components/product-carousel';
 import { getProductById, getProductsByCategory } from '@/lib/products.service';
 import AddToCartWidget from './_components/add-to-cart-widget';
+import type { Product } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,11 +32,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
   // Fetch related products on the server
   const relatedProducts = await getProductsByCategory(product.category, 5);
 
-  const formatWeight = (product: import('/home/user/studio/src/lib/types').Product) => {
-    if (!product.is_weighted) {
+  const formatWeight = (p: Product) => {
+    if (!p.is_weighted) {
         return 'за шт.';
     }
-    return `/ ${product.unit}`;
+    return `/ ${p.unit}`;
   }
 
   return (
@@ -76,7 +77,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <p className="mt-4 text-muted-foreground">{product.description}</p>
               
               <div className="mt-6">
-                <p className="text-4xl font-bold text-primary">{Math.round(product.price)} ₽ {product.is_weighted && <span className="text-lg font-normal text-muted-foreground">{formatWeight(product)}</span>}</p>
+                <p className="text-4xl font-bold text-primary">{Math.round(product.price)} ₽ <span className="text-lg font-normal text-muted-foreground">{formatWeight(product)}</span></p>
               </div>
 
               <div className="mt-6">

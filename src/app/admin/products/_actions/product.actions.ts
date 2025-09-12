@@ -19,6 +19,14 @@ const productSchema = z.object({
   categoryId: z.string().uuid("Необходимо выбрать категорию.").optional(),
   tags: z.string().optional(),
   imageUrl: z.string().optional(),
+
+  // --- новые поля для весовых товаров ---
+  is_weighted: z.boolean().default(false),
+  unit: z.enum(["kg", "g", "pcs"]).default("pcs"),
+  price_per_unit: z.coerce.number().min(0).optional(),
+  price_unit: z.enum(["kg", "g", "pcs"]).optional(),
+  min_order_quantity: z.coerce.number().min(0).default(1),
+  step_quantity: z.coerce.number().min(0).default(1),
 });
 
 export async function createProductAction(values: unknown) {
