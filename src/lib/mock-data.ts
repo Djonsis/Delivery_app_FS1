@@ -34,7 +34,6 @@ export const mockProduct: Product = {
   weight: '1кг',
   brand: 'ТестБренд',
   manufacturer: 'МокЗавод',
-  weight_category: 'middle',
   min_order_quantity: 0.5,
   step_quantity: 0.5,
   nutrition: {
@@ -43,6 +42,12 @@ export const mockProduct: Product = {
     fat: 0.2,
     carbs: 4,
   },
+  // New fields for weighted products
+  is_weighted: true,
+  weight_category: 'middle',
+  unit: 'kg',
+  price_per_unit: 199.99,
+  price_unit: 'kg',
 };
 
 export const mockOrder: Order = {

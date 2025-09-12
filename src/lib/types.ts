@@ -1,4 +1,5 @@
 
+
 export type WeightCategory = 'light' | 'middle' | 'heavy' | 'none';
 
 // This represents the raw data for creating/updating a product
@@ -32,7 +33,6 @@ export interface Product {
   weight?: string;
   brand?: string;
   manufacturer?: string;
-  weight_category: WeightCategory; // Not in DB yet
   min_order_quantity: number;
   step_quantity: number;
   nutrition?: {
@@ -41,6 +41,13 @@ export interface Product {
     fat: number;
     carbs: number;
   } | null;
+  
+  // New fields for weighted products
+  is_weighted?: boolean;
+  weight_category?: WeightCategory;
+  unit?: 'kg' | 'g' | 'pcs';
+  price_per_unit?: number;
+  price_unit?: 'kg' | 'g' | 'pcs';
 }
 
 export interface CartItem {
