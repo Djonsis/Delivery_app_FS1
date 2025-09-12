@@ -72,6 +72,19 @@ CREATE TABLE IF NOT EXISTS categories (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Таблица шаблонов весовых товаров
+CREATE TABLE IF NOT EXISTS weight_templates (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL UNIQUE, -- "Овощи (кг, 0.5-0.1)", "Специи (г, 10-10)"
+  description TEXT,
+  unit VARCHAR(10) NOT NULL, -- "kg", "g", "pcs"
+  min_order_quantity NUMERIC(10, 3) NOT NULL,
+  step_quantity NUMERIC(10, 3) NOT NULL,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 
 -- Основная таблица товаров
 CREATE TABLE IF NOT EXISTS products (
@@ -101,7 +114,8 @@ CREATE TABLE IF NOT EXISTS products (
   price_per_unit NUMERIC(10, 2),
   price_unit VARCHAR(10),
   min_order_quantity NUMERIC(10, 3) DEFAULT 1.0,
-  step_quantity NUMERIC(10, 3) DEFAULT 1.0
+  step_quantity NUMERIC(10, 3) DEFAULT 1.0,
+  weight_template_id UUID REFERENCES weight_templates(id) ON DELETE SET NULL
 );
 
 -- Таблица заказов

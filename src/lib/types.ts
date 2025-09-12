@@ -56,6 +56,8 @@ export interface Product {
     fat: number;
     carbs: number;
   } | null;
+
+  weight_template_id?: string;
 }
 
 export interface CartItem {
@@ -70,6 +72,18 @@ export interface Category {
   slug: string;
   sku_prefix: string;
   description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WeightTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  unit: UnitType;
+  min_order_quantity: number;
+  step_quantity: number;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }

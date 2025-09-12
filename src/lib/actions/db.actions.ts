@@ -1,4 +1,5 @@
 
+
 "use server";
 
 import { getDbStatus } from "@/lib/db.service";
@@ -25,7 +26,7 @@ export async function getDbStatusAction(): Promise<DbStatus> {
     }
 }
 
-const TABLES_TO_CHECK = ['users', 'categories', 'products', 'orders', 'order_items'];
+const TABLES_TO_CHECK = ['users', 'categories', 'products', 'orders', 'order_items', 'weight_templates'];
 
 export async function checkTablesAction(): Promise<{ name: string, exists: boolean }[]> {
     dbActionLogger.info("Checking for table existence.");
@@ -98,6 +99,18 @@ export async function initializeDbAction(): Promise<{ success: boolean, error?: 
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
 
+        CREATE TABLE IF NOT EXISTS weight_templates (
+            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            name TEXT NOT NULL UNIQUE,
+            description TEXT,
+            unit VARCHAR(10) NOT NULL,
+            min_order_quantity NUMERIC(10, 3) NOT NULL,
+            step_quantity NUMERIC(10, 3) NOT NULL,
+            is_active BOOLEAN DEFAULT true,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+
         CREATE TABLE IF NOT EXISTS products (
           id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
           sku TEXT UNIQUE,
@@ -125,7 +138,8 @@ export async function initializeDbAction(): Promise<{ success: boolean, error?: 
           price_per_unit NUMERIC(10, 2),
           price_unit VARCHAR(10),
           min_order_quantity NUMERIC(10, 3) DEFAULT 1.0,
-          step_quantity NUMERIC(10, 3) DEFAULT 1.0
+          step_quantity NUMERIC(10, 3) DEFAULT 1.0,
+          weight_template_id UUID REFERENCES weight_templates(id) ON DELETE SET NULL
         );
 
         CREATE TABLE IF NOT EXISTS orders (
