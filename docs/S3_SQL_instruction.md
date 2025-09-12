@@ -96,6 +96,7 @@ CREATE TABLE IF NOT EXISTS products (
   
   -- Поля для весовых товаров
   is_weighted BOOLEAN DEFAULT false,
+  weight_category VARCHAR(10),
   unit VARCHAR(10) DEFAULT 'pcs'::character varying NOT NULL,
   price_per_unit NUMERIC(10, 2),
   price_unit VARCHAR(10),
