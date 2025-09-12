@@ -16,7 +16,7 @@ const productSchema = z.object({
   title: z.string().min(3, "Название должно быть не менее 3 символов."),
   description: z.string().optional(),
   price: z.coerce.number().min(0, "Цена должна быть положительным числом."),
-  categoryId: z.string().uuid("Необходимо выбрать категорию.").optional(),
+  categoryId: z.string().uuid("Необходимо выбрать категорию."),
   tags: z.string().optional(),
   imageUrl: z.string().optional(),
 
@@ -27,6 +27,14 @@ const productSchema = z.object({
   price_unit: z.enum(["kg", "g", "pcs"]).optional(),
   min_order_quantity: z.coerce.number().min(0).default(1),
   step_quantity: z.coerce.number().min(0).default(1),
+}).refine(data => {
+  if (data.is_weighted) {
+    return data.price_per_unit !== undefined && data.price_per_unit > 0;
+  }
+  return true;
+}, {
+  message: "Цена за единицу обязательна для весовых товаров.",
+  path: ["price_per_unit"],
 });
 
 export async function createProductAction(values: unknown) {

@@ -48,6 +48,14 @@ const productFormSchema = z.object({
   price_unit: z.enum(["kg", "g", "pcs"]).optional(),
   min_order_quantity: z.coerce.number().min(0).default(1),
   step_quantity: z.coerce.number().min(0).default(1),
+}).refine(data => {
+  if (data.is_weighted) {
+    return data.price_per_unit !== undefined && data.price_per_unit > 0;
+  }
+  return true;
+}, {
+  message: "Цена за единицу обязательна для весовых товаров.",
+  path: ["price_per_unit"],
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -148,7 +156,18 @@ export default function ProductForm({ product }: ProductFormProps) {
             toast({ title: "Успешно", description: result.message });
             router.push("/admin/products");
         } else {
-            throw new Error(result.message);
+            // Check if there are specific field errors from the server action
+            if (result.errors) {
+              for (const [field, messages] of Object.entries(result.errors)) {
+                 if (messages && messages.length > 0) {
+                    form.setError(field as keyof ProductFormValues, {
+                        type: "server",
+                        message: messages.join(", "),
+                    });
+                 }
+              }
+            }
+            throw new Error(result.message || "Не удалось сохранить товар.");
         }
 
       } catch (error) {
