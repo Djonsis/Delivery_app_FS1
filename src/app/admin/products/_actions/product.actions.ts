@@ -64,6 +64,7 @@ export async function createProductAction(values: unknown) {
     let productData = { ...validatedFields.data };
     
     if (productData.weight_template_id && productData.is_weighted) {
+      // FIX: Added await here
       const template = await weightTemplatesService.getById(productData.weight_template_id);
       if (template) {
         productData.unit = productData.unit || template.unit;
@@ -103,6 +104,7 @@ export async function updateProductAction(id: string, values: unknown) {
     let productData = { ...validatedFields.data };
     
     if (productData.weight_template_id && productData.is_weighted) {
+      // FIX: Added await here
       const template = await weightTemplatesService.getById(productData.weight_template_id);
       if (template) {
         productData.unit = productData.unit || template.unit;
