@@ -1,24 +1,20 @@
 
 "use server";
 
-import { OrderStatus, ORDER_STATUSES } from "@/lib/types";
+import { revalidatePath } from "next/cache";
 import { serverLogger } from "@/lib/server-logger";
 import { ordersService } from "@/lib/orders.service";
-import { revalidatePath } from "next/cache";
+import { OrderStatus } from "@/lib/types";
+import { validateOrderStatus } from "@/lib/orders.utils";
 
 const orderStatusLogger = serverLogger.withCategory("ORDER_STATUS_ACTION");
 
 export async function updateOrderStatusAction(orderId: string, newStatus: OrderStatus) {
     orderStatusLogger.info(`Action: Updating status for order ${orderId} to "${newStatus}"`);
-    if (!orderId || !newStatus) {
-        const message = "Необходим ID заказа и новый статус.";
+    
+    if (!orderId || !validateOrderStatus(newStatus)) {
+        const message = !orderId ? "Необходим ID заказа." : `Недопустимый статус заказа: ${newStatus}`;
         orderStatusLogger.warn(`Update status failed: ${message}`, { orderId, newStatus });
-        return { success: false, message };
-    }
-
-    if (!ORDER_STATUSES.includes(newStatus)) {
-        const message = `Недопустимый статус заказа: ${newStatus}`;
-        orderStatusLogger.error(`Update status failed: ${message}`, { orderId, newStatus });
         return { success: false, message };
     }
 

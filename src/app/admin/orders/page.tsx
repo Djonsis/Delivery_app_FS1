@@ -14,6 +14,23 @@ import OrderStatusSelector from "./_components/order-status-selector";
 export default async function OrdersPage() {
   const orders = await ordersService.getOrders();
 
+  if (orders.length === 0) {
+    return (
+        <div className="border rounded-lg p-2">
+            <Table>
+                <TableCaption>Список последних заказов.</TableCaption>
+                 <tbody className="w-full">
+                    <tr>
+                    <td colSpan={5} className="text-center py-12">
+                        <p className="text-muted-foreground">Пока нет ни одного заказа.</p>
+                    </td>
+                    </tr>
+                </tbody>
+            </Table>
+        </div>
+    );
+  }
+
   return (
     <div className="border rounded-lg p-2">
       <Table>
@@ -40,15 +57,7 @@ export default async function OrdersPage() {
             </TableRow>
           ))}
         </TableBody>
-       {orders.length === 0 && (
-          <tbody className="w-full">
-            <tr>
-              <td colSpan={5} className="text-center py-12">
-                <p className="text-muted-foreground">Пока нет ни одного заказа.</p>
-              </td>
-            </tr>
-          </tbody>
-        )}
+      </Table>
     </div>
   );
 }

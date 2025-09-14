@@ -1,15 +1,16 @@
 
-import { getClient, query } from "@/lib/db";
+import { query } from "@/lib/db";
 import { serverLogger } from "@/lib/server-logger";
-import { Order, OrderStatus, CreateOrderPayload, ORDER_STATUSES } from "@/lib/types";
+import { Order, OrderStatus, CreateOrderPayload } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { mockOrder } from "./mock-data";
 import { runLocalOrDb, isLocal } from "./env";
+import { validateOrderStatus } from "./orders.utils";
 
 const ordersServiceLogger = serverLogger.withCategory("ORDERS_SERVICE");
 
 export const ordersService = {
-    getOrders: async function(): Promise<Order[]> {
+    async getOrders(): Promise<Order[]> {
         return runLocalOrDb(
             () => [mockOrder],
             async () => {
@@ -21,14 +22,14 @@ export const ordersService = {
         );
     },
 
-    updateOrderStatus: async function(orderId: string, newStatus: OrderStatus): Promise<Order> {
+    async updateOrderStatus(orderId: string, newStatus: OrderStatus): Promise<Order> {
         if (isLocal()) {
             ordersServiceLogger.warn(`Running in local/studio environment. Mocking updateOrderStatus for order: ${orderId}`);
             return { ...mockOrder, status: newStatus };
         }
         ordersServiceLogger.info(`Service: Updating status for order ${orderId} to "${newStatus}"`);
         
-        if (!ORDER_STATUSES.includes(newStatus)) {
+        if (!validateOrderStatus(newStatus)) {
             throw new Error(`Недопустимый статус заказа: ${newStatus}`);
         }
         
@@ -48,7 +49,7 @@ export const ordersService = {
         }
     },
 
-    createOrder: async function(payload: CreateOrderPayload): Promise<{ orderId: string }> {
+    async createOrder(payload: CreateOrderPayload): Promise<{ orderId: string }> {
         return runLocalOrDb(
             () => {
                 ordersServiceLogger.warn(`Running in local/studio environment. Mocking createOrder.`);
@@ -57,16 +58,14 @@ export const ordersService = {
             async () => {
                 const { customerName, items, totalAmount } = payload;
                 ordersServiceLogger.info("Attempting to create a new order in DB", { customerName, itemCount: items.length });
-                const client = await getClient();
+                const client = await query('BEGIN');
 
                 try {
-                    await client.query('BEGIN');
-
                     const orderInsertQuery = `
                         INSERT INTO orders (customer_name, total_amount, status) 
                         VALUES ($1, $2, $3) 
                         RETURNING id`;
-                    const orderResult = await client.query(orderInsertQuery, [customerName, totalAmount, 'Новый заказ']);
+                    const orderResult = await query(orderInsertQuery, [customerName, totalAmount, 'Новый заказ']);
                     const newOrderId = orderResult.rows[0].id;
                     ordersServiceLogger.debug("Created entry in 'orders' table", { newOrderId });
 
@@ -75,11 +74,11 @@ export const ordersService = {
                         VALUES ($1, $2, $3, $4)`;
                     
                     for (const item of items) {
-                        await client.query(itemInsertQuery, [newOrderId, item.productId, item.quantity, item.unitPrice]);
+                        await query(itemInsertQuery, [newOrderId, item.productId, item.quantity, item.unitPrice]);
                     }
                     ordersServiceLogger.debug(`Inserted ${items.length} items into 'order_items' table`);
 
-                    await client.query('COMMIT');
+                    await query('COMMIT');
                     ordersServiceLogger.info("Successfully created new order and committed transaction.", { orderId: newOrderId });
 
                     revalidatePath('/admin/orders');
@@ -87,11 +86,9 @@ export const ordersService = {
                     return { orderId: newOrderId };
 
                 } catch (error) {
-                    await client.query('ROLLBACK');
+                    await query('ROLLBACK');
                     ordersServiceLogger.error("Error creating order in DB transaction, rolling back.", error as Error);
                     throw new Error("Не удалось сохранить заказ в базе данных.");
-                } finally {
-                    client.release();
                 }
             }
         );
