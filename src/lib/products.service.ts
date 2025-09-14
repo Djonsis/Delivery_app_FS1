@@ -76,7 +76,7 @@ async function generateSkuForCategory(categoryId: string): Promise<string> {
 export const productsService = {
     async getAll(filters?: ProductFilter): Promise<Product[]> {
         return runLocalOrDb(
-            () => mockProducts.filter(product => !product.deleted_at),
+            () => Promise.resolve(mockProducts.filter(product => !product.deleted_at)),
             async () => {
                 productsServiceLogger.info("Fetching products from DB with filters.", { filters });
     
@@ -130,7 +130,7 @@ export const productsService = {
 
     async getById(id: string): Promise<Product | null> {
         return runLocalOrDb(
-            () => mockProducts.find(p => p.id === id && !p.deleted_at) || null,
+            () => Promise.resolve(mockProducts.find(p => p.id === id && !p.deleted_at) || null),
             async () => {
                 productsServiceLogger.info("Fetching product by ID from database.", { id });
                 const { rows } = await query(`
@@ -149,7 +149,7 @@ export const productsService = {
 
     async getByCategory(categoryName: string | null, limitCount: number = 5): Promise<Product[]> {
         return runLocalOrDb(
-            () => categoryName === mockProduct.category ? mockProducts : [],
+            () => Promise.resolve(categoryName === mockProduct.category ? mockProducts : []),
             async () => {
                 productsServiceLogger.info(`Fetching products by category from DB: ${categoryName}`, { limit: limitCount });
                 if (!categoryName) return [];
@@ -202,7 +202,7 @@ export const productsService = {
                 };
                 
                 mockProducts.push(newProduct);
-                return newProduct;
+                return Promise.resolve(newProduct);
             },
             async () => {
                 productsServiceLogger.info("Creating product in database.", { title: productData.title });
@@ -249,7 +249,7 @@ export const productsService = {
                     updated_at: new Date().toISOString(),
                 };
 
-                return mockProducts[productIndex];
+                return Promise.resolve(mockProducts[productIndex]);
             },
             async () => {
                 productsServiceLogger.info("Updating product in database.", { id, title: productData.title });
@@ -286,6 +286,7 @@ export const productsService = {
             () => {
                 const productIndex = mockProducts.findIndex(p => p.id === id);
                 if (productIndex !== -1) mockProducts[productIndex].deleted_at = new Date().toISOString();
+                return Promise.resolve();
             },
             async () => {
                 productsServiceLogger.info(`Attempting to soft-delete product in DB: ${id}`);

@@ -17,7 +17,7 @@ const mapDbRowToWeightTemplate = (row: any): WeightTemplate => ({
 export const weightTemplatesService = {
     async getActive(): Promise<WeightTemplate[]> {
         return runLocalOrDb(
-            () => mockTemplates.filter(t => t.is_active),
+            () => Promise.resolve(mockTemplates.filter(t => t.is_active)),
             async () => {
                 serviceLogger.info("Fetching all active weight templates from DB.");
                 const { rows } = await query(
@@ -31,7 +31,7 @@ export const weightTemplatesService = {
 
     async getAll(): Promise<WeightTemplate[]> {
         return runLocalOrDb(
-            () => mockTemplates,
+            () => Promise.resolve(mockTemplates),
             async () => {
                 serviceLogger.info("Fetching all weight templates from DB for admin.");
                 const { rows } = await query(
@@ -44,7 +44,7 @@ export const weightTemplatesService = {
 
     async getById(id: string): Promise<WeightTemplate | null> {
         return runLocalOrDb(
-            () => mockTemplates.find(t => t.id === id) || null,
+            () => Promise.resolve(mockTemplates.find(t => t.id === id) || null),
             async () => {
                 serviceLogger.info("Fetching weight template by ID from DB.", { id });
                 const { rows } = await query(
@@ -69,7 +69,7 @@ export const weightTemplatesService = {
                 };
                 mockTemplates.push(newTemplate);
                 serviceLogger.warn("Running in local mode. Created mock weight template.", { newTemplate });
-                return newTemplate;
+                return Promise.resolve(newTemplate);
             },
             async () => {
                 serviceLogger.info("Creating new weight template.", { name: data.name });
@@ -91,7 +91,7 @@ export const weightTemplatesService = {
                 const templateIndex = mockTemplates.findIndex(t => t.id === id);
                 if (templateIndex === -1) throw new Error("Template not found in mock data");
                 mockTemplates[templateIndex] = { ...mockTemplates[templateIndex], ...data, updated_at: new Date().toISOString() };
-                return mockTemplates[templateIndex];
+                return Promise.resolve(mockTemplates[templateIndex]);
             },
             async () => {
                 serviceLogger.info("Updating weight template.", { id });
