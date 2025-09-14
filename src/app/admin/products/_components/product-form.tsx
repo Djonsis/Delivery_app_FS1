@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
@@ -52,12 +52,10 @@ const productFormSchema = z.object({
     return true; 
   }
   
-  // If a template is selected, validation is less strict because the action will fill in the details.
   if (data.weight_template_id) {
     return true;
   }
   
-  // For manual configuration, require all fields.
   const hasManualFields = data.unit && 
                            data.min_order_quantity !== undefined && 
                            data.step_quantity !== undefined;
@@ -187,7 +185,6 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
   
   const handleTemplateChange = (templateId: string) => {
     const newTemplateId = templateId === "manual" ? "" : templateId;
-    form.setValue("weight_template_id", newTemplateId);
     
     if (newTemplateId) {
       const template = weightTemplates.find(t => t.id === newTemplateId);
@@ -281,29 +278,27 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
                 </FormItem>
             )}
             />
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Категория</FormLabel>
-                  <FormControl>
-                     <Combobox
-                        options={categoryOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Выберите категорию..."
-                        emptyMessage="Категории не найдены."
-                        allowCreation={false}
-                    />
-                  </FormControl>
-                   <FormDescription>
-                    Выберите существующую категорию.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormItem className="flex flex-col">
+              <FormLabel>Категория</FormLabel>
+              <Controller
+                name="categoryId"
+                control={form.control}
+                render={({ field }) => (
+                  <Combobox
+                    options={categoryOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Выберите категорию..."
+                    emptyMessage="Категории не найдены."
+                    allowCreation={false}
+                  />
+                )}
+              />
+              <FormDescription>
+                Выберите существующую категорию.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
         </div>
          <FormField
           control={form.control}
@@ -347,13 +342,19 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
 
         {isWeighted && (
           <>
-            <FormField
-              control={form.control}
-              name="weight_template_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Шаблон весового товара</FormLabel>
-                  <Select onValueChange={(value) => handleTemplateChange(value)} value={field.value ?? ""}>
+            <FormItem>
+              <FormLabel>Шаблон весового товара</FormLabel>
+              <Controller
+                control={form.control}
+                name="weight_template_id"
+                render={({ field }) => (
+                  <Select 
+                    value={field.value ?? ""} 
+                    onValueChange={(value) => {
+                      const templateId = value === "manual" ? "" : value;
+                      field.onChange(templateId);
+                      handleTemplateChange(templateId);
+                  }}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Выберите шаблон или настройте вручную" />
@@ -373,13 +374,13 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    Выберите готовый шаблон для быстрой настройки или оставьте пустым для ручной настройки.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                )}
+              />
+              <FormDescription>
+                Выберите готовый шаблон для быстрой настройки или оставьте пустым для ручной настройки.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
 
             <div className="grid grid-cols-2 gap-8 p-4 border rounded-md">
               {selectedTemplateId && (
