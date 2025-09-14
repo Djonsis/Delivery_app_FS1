@@ -43,23 +43,25 @@ const productFormSchema = z.object({
   imageUrl: z.string().optional(),
   
   is_weighted: z.boolean().default(false),
-  weight_template_id: z.string().optional().nullable(),
+  weight_template_id: z.string().uuid().optional().nullable(),
   unit: z.enum(["kg", "g", "pcs"]).default("pcs"),
   price_per_unit: z.coerce.number().min(0).optional(),
   price_unit: z.enum(["kg", "g", "pcs"]).optional(),
   min_order_quantity: z.coerce.number().min(0).default(1),
   step_quantity: z.coerce.number().min(0).default(1),
 }).refine((data) => {
-  if (data.is_weighted && !data.weight_template_id) {
-    const hasRequiredFields = data.unit && 
+  if (data.is_weighted) {
+    const hasManualFields = data.unit && 
                              data.min_order_quantity !== undefined && 
                              data.step_quantity !== undefined;
-    return hasRequiredFields;
+    if (!hasManualFields) {
+      return false;
+    }
   }
   return true;
 }, {
   message: "При ручной настройке весового товара необходимо заполнить все поля: ед. изм., мин. заказ, шаг.",
-  path: ["weight_template_id"]
+  path: ["unit"] // Attach error to a relevant field
 });
 
 
@@ -110,11 +112,11 @@ export default function ProductForm({ product }: ProductFormProps) {
       imageUrl: product.imageUrl || "",
       is_weighted: product.is_weighted,
       weight_template_id: product.weight_template_id || "",
-      unit: product.unit,
+      unit: product.unit || "pcs",
       price_per_unit: product.price_per_unit || undefined,
       price_unit: product.price_unit || undefined,
-      min_order_quantity: product.min_order_quantity,
-      step_quantity: product.step_quantity,
+      min_order_quantity: product.min_order_quantity || 1,
+      step_quantity: product.step_quantity || 1,
     } : {
       title: "",
       description: "",
@@ -200,7 +202,7 @@ export default function ProductForm({ product }: ProductFormProps) {
         form.setValue('step_quantity', template.step_quantity);
         toast({
           title: "Шаблон применен",
-          description: `Настройки из шаблона "${template.name}" применены.`,
+          description: `Настройки из шаблона "${template.name}" применены. Вы можете их переопределить.`,
         });
       }
     }
@@ -405,7 +407,7 @@ export default function ProductForm({ product }: ProductFormProps) {
                     <FormLabel>Единица измерения</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger disabled={!!selectedTemplateId}>
+                        <SelectTrigger>
                           <SelectValue placeholder="Выберите единицу" />
                         </SelectTrigger>
                       </FormControl>
@@ -429,7 +431,7 @@ export default function ProductForm({ product }: ProductFormProps) {
                     <FormControl>
                       <Input 
                         type="number" 
-                        step="0.01" 
+                        step="any"
                         {...field}
                         value={field.value ?? ""}
                         onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)} 
@@ -451,7 +453,6 @@ export default function ProductForm({ product }: ProductFormProps) {
                         type="number" 
                         step="any" 
                         {...field}
-                        disabled={!!selectedTemplateId}
                         onChange={e => field.onChange(parseFloat(e.target.value) || 1)}
                       />
                     </FormControl>
@@ -471,7 +472,6 @@ export default function ProductForm({ product }: ProductFormProps) {
                         type="number" 
                         step="any" 
                         {...field}
-                        disabled={!!selectedTemplateId}
                         onChange={e => field.onChange(parseFloat(e.target.value) || 1)}
                       />
                     </FormControl>

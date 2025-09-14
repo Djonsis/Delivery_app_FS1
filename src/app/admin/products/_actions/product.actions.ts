@@ -13,9 +13,10 @@ const productSchema = z.object({
   title: z.string().min(3, "Название должно быть не менее 3 символов."),
   description: z.string().optional(),
   price: z.coerce.number().min(0, "Цена должна быть положительным числом."),
-  categoryId: z.string().uuid("Необходимо выбрать категорию.").optional(),
+  categoryId: z.string({ required_error: "Необходимо выбрать категорию." }).uuid("Необходимо выбрать категорию."),
   tags: z.string().optional(),
   imageUrl: z.string().optional(),
+  
   is_weighted: z.boolean().default(false),
   weight_template_id: z.string().uuid().optional().nullable(),
   unit: z.enum(["kg", "g", "pcs"]).default("pcs"),
@@ -24,19 +25,18 @@ const productSchema = z.object({
   min_order_quantity: z.coerce.number().min(0).default(1),
   step_quantity: z.coerce.number().min(0).default(1),
 }).refine((data) => {
-  if (data.is_weighted && !data.weight_template_id) {
-    const hasRequiredFields = data.unit && 
+  if (data.is_weighted) {
+    const hasManualFields = data.unit && 
                              data.min_order_quantity !== undefined && 
                              data.step_quantity !== undefined;
-    
-    if (!hasRequiredFields) {
+    if (!hasManualFields) {
       return false;
     }
   }
   return true;
 }, {
   message: "При ручной настройке весового товара необходимо заполнить все поля: ед. изм., мин. заказ, шаг.",
-  path: ["weight_template_id"]
+  path: ["unit"] // Attach error to a relevant field
 });
 
 
@@ -52,18 +52,18 @@ export async function createProductAction(values: unknown) {
   try {
     let productData = { ...validatedFields.data };
     
+    // Snapshot approach: Apply template values but allow overrides
     if (productData.weight_template_id && productData.is_weighted) {
       productActionLogger.info("Loading weight template for product creation", { templateId: productData.weight_template_id });
       
       const template = await getWeightTemplateById(productData.weight_template_id);
       if (template) {
-        productData = {
-          ...productData,
-          unit: productData.unit || template.unit,
-          min_order_quantity: productData.min_order_quantity ?? template.min_order_quantity,
-          step_quantity: productData.step_quantity ?? template.step_quantity,
-        };
-        productActionLogger.info("Applied weight template to product data", { 
+        // Values from form take precedence, otherwise use template values
+        productData.unit = productData.unit || template.unit;
+        productData.min_order_quantity = productData.min_order_quantity ?? template.min_order_quantity;
+        productData.step_quantity = productData.step_quantity ?? template.step_quantity;
+
+        productActionLogger.info("Applied template snapshot to product data", { 
           templateName: template.name,
         });
       } else {
@@ -76,6 +76,7 @@ export async function createProductAction(values: unknown) {
     productActionLogger.info("Successfully created product.", { title: productData.title });
     
     revalidatePath("/admin/products");
+    revalidatePath("/admin/products/new");
     revalidatePath("/catalog");
 
     return { success: true, message: "Товар успешно создан." };
@@ -102,21 +103,21 @@ export async function updateProductAction(id: string, values: unknown) {
   try {
     let productData = { ...validatedFields.data };
     
+    // Snapshot approach: Apply template values but allow overrides
     if (productData.weight_template_id && productData.is_weighted) {
       productActionLogger.info("Loading weight template for product update", { id, templateId: productData.weight_template_id });
       
       const template = await getWeightTemplateById(productData.weight_template_id);
       if (template) {
-        productData = {
-          ...productData,
-          unit: productData.unit || template.unit,
-          min_order_quantity: productData.min_order_quantity ?? template.min_order_quantity,
-          step_quantity: productData.step_quantity ?? template.step_quantity,
-        };
-        productActionLogger.info("Applied weight template to product update", { id, templateName: template.name });
+        // Values from form take precedence, otherwise use template values
+        productData.unit = productData.unit || template.unit;
+        productData.min_order_quantity = productData.min_order_quantity ?? template.min_order_quantity;
+        productData.step_quantity = productData.step_quantity ?? template.step_quantity;
+        
+        productActionLogger.info("Applied template snapshot to product update", { id, templateName: template.name });
       }
     } else if (!productData.is_weighted) {
-        // Если товар перестал быть весовым, обнуляем id шаблона
+        // If product is no longer weighted, clear template ID
         productData.weight_template_id = null;
     }
     
@@ -126,7 +127,6 @@ export async function updateProductAction(id: string, values: unknown) {
     
     revalidatePath("/admin/products");
     revalidatePath(`/admin/products/${id}/edit`);
-    revalidatePath(`/product/${id}`);
     revalidatePath("/catalog");
 
     return { success: true, message: "Товар успешно обновлен." };
