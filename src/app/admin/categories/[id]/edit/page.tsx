@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getCategoryById } from "@/lib/categories.service";
+import { categoriesService } from "@/lib/categories.service";
 import { notFound } from "next/navigation";
 
 interface EditCategoryPageProps {
@@ -17,7 +17,7 @@ interface EditCategoryPageProps {
 }
 
 export default async function EditCategoryPage({ params }: EditCategoryPageProps) {
-  const category = await getCategoryById(params.id);
+  const category = await categoriesService.getById(params.id);
 
   if (!category) {
     notFound();

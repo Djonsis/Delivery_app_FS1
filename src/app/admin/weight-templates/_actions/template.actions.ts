@@ -4,7 +4,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { serverLogger } from "@/lib/server-logger";
-import { createWeightTemplate, updateWeightTemplate } from "@/lib/weight-templates.service";
+import { weightTemplatesService } from "@/lib/weight-templates.service";
 
 const templateActionLogger = serverLogger.withCategory("TEMPLATE_ACTION");
 
@@ -32,7 +32,7 @@ export async function createTemplateAction(values: unknown) {
 
   try {
     templateActionLogger.info("Attempting to create template via service", { data: validatedFields.data });
-    await createWeightTemplate(validatedFields.data);
+    await weightTemplatesService.create(validatedFields.data);
     templateActionLogger.info("Successfully created template.", { name: validatedFields.data.name });
 
     revalidatePath("/admin/weight-templates");
@@ -61,7 +61,7 @@ export async function updateTemplateAction(id: string, values: unknown) {
 
   try {
     templateActionLogger.info("Attempting to update template via service", { id, data: validatedFields.data });
-    await updateWeightTemplate(id, validatedFields.data);
+    await weightTemplatesService.update(id, validatedFields.data);
     templateActionLogger.info("Successfully updated template.", { id });
     
     revalidatePath("/admin/weight-templates");
@@ -80,7 +80,7 @@ export async function toggleTemplateStatusAction(id: string, currentStatus: bool
     }
 
     try {
-        await updateWeightTemplate(id, { is_active: !currentStatus });
+        await weightTemplatesService.update(id, { is_active: !currentStatus });
         const message = `Шаблон успешно ${!currentStatus ? 'активирован' : 'деактивирован'}.`;
         templateActionLogger.info(message, { id });
         

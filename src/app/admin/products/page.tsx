@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getProducts } from "@/lib/products.service";
+import { productsService } from "@/lib/products.service";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import { ProductsTable } from "./_components/products-table";
 
 
 export default async function ProductsPage() {
-  const products = await getProducts();
+  const products = await productsService.getAll();
 
   return (
     <Card>

@@ -3,9 +3,9 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { createProduct, deleteProduct, updateProduct } from "@/lib/products.service";
+import { productsService } from "@/lib/products.service";
 import { serverLogger } from "@/lib/server-logger";
-import { getWeightTemplateById } from "@/lib/weight-templates.service";
+import { weightTemplatesService } from "@/lib/weight-templates.service";
 
 const productActionLogger = serverLogger.withCategory("PRODUCT_ACTION");
 
@@ -45,6 +45,12 @@ const productSchema = z.object({
   path: ["weight_template_id"] // Attach error to a relevant field for better UX
 });
 
+function revalidateProductPaths(id?: string) {
+  revalidatePath("/admin/products");
+  revalidatePath("/catalog");
+  if (id) revalidatePath(`/admin/products/${id}/edit`);
+  revalidatePath("/admin/products/new");
+}
 
 export async function createProductAction(values: unknown) {
   const validatedFields = productSchema.safeParse(values);
@@ -62,7 +68,7 @@ export async function createProductAction(values: unknown) {
     if (productData.weight_template_id && productData.is_weighted) {
       productActionLogger.info("Loading weight template for product creation", { templateId: productData.weight_template_id });
       
-      const template = await getWeightTemplateById(productData.weight_template_id);
+      const template = await weightTemplatesService.getById(productData.weight_template_id);
       if (template) {
         // Values from form take precedence, otherwise use template values
         productData.unit = productData.unit || template.unit;
@@ -78,12 +84,10 @@ export async function createProductAction(values: unknown) {
     }
     
     productActionLogger.info("Attempting to create product via service", { data: productData });
-    await createProduct(productData);
+    await productsService.create(productData);
     productActionLogger.info("Successfully created product.", { title: productData.title });
     
-    revalidatePath("/admin/products");
-    revalidatePath("/admin/products/new");
-    revalidatePath("/catalog");
+    revalidateProductPaths();
 
     return { success: true, message: "Товар успешно создан." };
   } catch (error) {
@@ -113,7 +117,7 @@ export async function updateProductAction(id: string, values: unknown) {
     if (productData.weight_template_id && productData.is_weighted) {
       productActionLogger.info("Loading weight template for product update", { id, templateId: productData.weight_template_id });
       
-      const template = await getWeightTemplateById(productData.weight_template_id);
+      const template = await weightTemplatesService.getById(productData.weight_template_id);
       if (template) {
         // Values from form take precedence, otherwise use template values
         productData.unit = productData.unit || template.unit;
@@ -128,12 +132,10 @@ export async function updateProductAction(id: string, values: unknown) {
     }
     
     productActionLogger.info("Attempting to update product via service", { id, data: productData });
-    await updateProduct(id, productData);
+    await productsService.update(id, productData);
     productActionLogger.info("Successfully updated product.", { id });
     
-    revalidatePath("/admin/products");
-    revalidatePath(`/admin/products/${id}/edit`);
-    revalidatePath("/catalog");
+    revalidateProductPaths(id);
 
     return { success: true, message: "Товар успешно обновлен." };
   } catch (error) {
@@ -150,11 +152,10 @@ export async function deleteProductAction(id: string) {
   
   try {
     productActionLogger.info("Attempting to delete product via service", { id });
-    await deleteProduct(id);
+    await productsService.delete(id);
     productActionLogger.info("Successfully deleted product.", { id });
 
-    revalidatePath("/admin/products");
-    revalidatePath("/catalog");
+    revalidateProductPaths();
 
     return { success: true, message: "Товар успешно удален." };
   } catch (error) {

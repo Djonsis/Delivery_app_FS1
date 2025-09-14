@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getProductById } from "@/lib/products.service";
+import { productsService } from "@/lib/products.service";
 import { notFound } from "next/navigation";
 
 interface EditProductPageProps {
@@ -17,7 +17,7 @@ interface EditProductPageProps {
 }
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
-  const product = await getProductById(params.id);
+  const product = await productsService.getById(params.id);
 
   if (!product) {
     notFound();

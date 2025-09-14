@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 import { serverLogger } from "@/lib/server-logger";
-import { createOrder } from "@/lib/orders.service";
+import { ordersService } from "@/lib/orders.service";
 
 const orderActionLogger = serverLogger.withCategory("ORDER_ACTION");
 
@@ -32,7 +32,7 @@ export async function createOrderAction(values: unknown) {
   
   try {
     orderActionLogger.info("Payload valid, calling createOrder service.", { data: validatedFields.data });
-    const { orderId } = await createOrder(validatedFields.data);
+    const { orderId } = await ordersService.createOrder(validatedFields.data);
     orderActionLogger.info("Successfully created order via service.", { orderId });
     
     return { success: true, message: "Заказ успешно создан.", orderId };

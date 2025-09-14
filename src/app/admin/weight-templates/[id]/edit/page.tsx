@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getWeightTemplateById } from "@/lib/weight-templates.service";
+import { weightTemplatesService } from "@/lib/weight-templates.service";
 import { notFound } from "next/navigation";
 
 interface EditTemplatePageProps {
@@ -17,7 +17,7 @@ interface EditTemplatePageProps {
 }
 
 export default async function EditTemplatePage({ params }: EditTemplatePageProps) {
-  const template = await getWeightTemplateById(params.id);
+  const template = await weightTemplatesService.getById(params.id);
 
   if (!template) {
     notFound();

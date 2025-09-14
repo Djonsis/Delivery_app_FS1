@@ -6,14 +6,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getAllCategories } from "@/lib/categories.service";
+import { categoriesService } from "@/lib/categories.service";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";
 import CategoriesTable from "./_components/categories-table";
 
 export default async function CategoriesPage() {
-    const categories = await getAllCategories();
+    const categories = await categoriesService.getAll();
 
     return (
         <Card>

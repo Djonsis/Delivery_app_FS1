@@ -9,11 +9,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { getOrders } from "@/lib/orders.service";
+import { ordersService } from "@/lib/orders.service";
 import OrderStatusSelector from "./_components/order-status-selector";
 
 export default async function OrdersPage() {
-  const orders = await getOrders();
+  const orders = await ordersService.getOrders();
 
   return (
     <div className="border rounded-lg p-2">
@@ -41,7 +41,6 @@ export default async function OrdersPage() {
             </TableRow>
           ))}
         </TableBody>
-      </Table>
        {orders.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Пока нет ни одного заказа.</p>

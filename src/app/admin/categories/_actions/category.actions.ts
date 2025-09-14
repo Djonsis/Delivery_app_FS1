@@ -2,7 +2,7 @@
 "use server";
 
 import { z } from "zod";
-import { createCategory, updateCategory, deleteCategory } from "@/lib/categories.service";
+import { categoriesService } from "@/lib/categories.service";
 import { serverLogger } from "@/lib/server-logger";
 
 const categoryActionLogger = serverLogger.withCategory("CATEGORY_ACTION");
@@ -22,7 +22,7 @@ export async function createCategoryAction(values: unknown) {
     }
 
     categoryActionLogger.info("Attempting to create category", { data: validatedFields.data });
-    const result = await createCategory(validatedFields.data);
+    const result = await categoriesService.create(validatedFields.data);
 
     if (result.success) {
         categoryActionLogger.info("Successfully created category.", { name: validatedFields.data.name });
@@ -44,7 +44,7 @@ export async function updateCategoryAction(id: string, values: unknown) {
     }
 
     categoryActionLogger.info(`Attempting to update category ${id}`, { data: validatedFields.data });
-    const result = await updateCategory(id, validatedFields.data);
+    const result = await categoriesService.update(id, validatedFields.data);
 
     if (result.success) {
         categoryActionLogger.info(`Successfully updated category ${id}.`);
@@ -62,7 +62,7 @@ export async function deleteCategoryAction(id: string) {
     }
 
     categoryActionLogger.info(`Attempting to delete category ${id}`);
-    const result = await deleteCategory(id);
+    const result = await categoriesService.delete(id);
     
     if (result.success) {
         categoryActionLogger.info(`Successfully deleted category ${id}.`);

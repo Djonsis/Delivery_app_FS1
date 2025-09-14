@@ -3,7 +3,7 @@
 
 import { OrderStatus } from "@/lib/types";
 import { serverLogger } from "@/lib/server-logger";
-import { updateOrderStatus } from "@/lib/orders.service";
+import { ordersService } from "@/lib/orders.service";
 
 const orderStatusLogger = serverLogger.withCategory("ORDER_STATUS_ACTION");
 
@@ -16,7 +16,7 @@ export async function updateOrderStatusAction(orderId: string, newStatus: OrderS
     }
 
     try {
-        await updateOrderStatus(orderId, newStatus);
+        await ordersService.updateOrderStatus(orderId, newStatus);
         
         const message = `Статус заказа #${orderId} обновлен.`;
         orderStatusLogger.info(`Successfully updated status for order ${orderId} via service.`, { newStatus });

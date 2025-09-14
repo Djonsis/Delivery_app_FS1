@@ -1,5 +1,4 @@
 
-
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -9,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Star, MessageCircle, ChevronLeft } from 'lucide-react';
 import SiteHeader from '@/components/site-header';
 import ProductCarousel from './_components/product-carousel';
-import { getProductById, getProductsByCategory } from '@/lib/products.service';
+import { productsService } from '@/lib/products.service';
 import AddToCartWidget from './_components/add-to-cart-widget';
 import type { Product } from '@/lib/types';
 
@@ -23,14 +22,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const { id } = params;
 
   // Fetch product data on the server
-  const product = await getProductById(id);
+  const product = await productsService.getById(id);
 
   if (!product) {
     notFound();
   }
   
   // Fetch related products on the server
-  const relatedProducts = await getProductsByCategory(product.category, 5);
+  const relatedProducts = await productsService.getByCategory(product.category, 5);
 
   const formatWeight = (p: Product) => {
     if (!p.is_weighted) {

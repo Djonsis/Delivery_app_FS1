@@ -6,14 +6,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getAllWeightTemplates } from "@/lib/weight-templates.service";
+import { weightTemplatesService } from "@/lib/weight-templates.service";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";
 import TemplatesTable from "./_components/templates-table";
 
 export default async function WeightTemplatesPage() {
-    const templates = await getAllWeightTemplates();
+    const templates = await weightTemplatesService.getAll();
 
     return (
         <Card>

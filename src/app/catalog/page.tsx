@@ -4,8 +4,8 @@ import SiteHeader from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { getProducts } from "@/lib/products.service";
-import { getAllCategories } from "@/lib/categories.service";
+import { productsService } from "@/lib/products.service";
+import { categoriesService } from "@/lib/categories.service";
 import { ProductFilter, SortOption } from "@/lib/types";
 
 export const dynamic = 'force-dynamic';
@@ -24,8 +24,8 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   }
 
   const [products, allCategories] = await Promise.all([
-    getProducts(filters),
-    getAllCategories()
+    productsService.getAll(filters),
+    categoriesService.getAll()
   ]);
   
   const categoryNames = allCategories.map(c => c.name);

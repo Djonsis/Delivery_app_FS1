@@ -1,7 +1,7 @@
 
 import CategoryGrid from "@/components/category-grid";
 import SiteHeader from "@/components/site-header";
-import { getAllCategories } from "@/lib/categories.service";
+import { categoriesService } from "@/lib/categories.service";
 
 // Эта строка критически важна. Она заставляет Next.js генерировать эту страницу
 // динамически при каждом запросе, а не один раз во время сборки.
@@ -9,7 +9,7 @@ import { getAllCategories } from "@/lib/categories.service";
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const categories = await getAllCategories();
+  const categories = await categoriesService.getAll();
 
   return (
     <div className="relative flex min-h-screen w-full flex-col">

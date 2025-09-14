@@ -31,8 +31,8 @@ import { createProductAction, updateProductAction } from "../_actions/product.ac
 import { useRouter } from "next/navigation";
 import { Combobox } from "@/components/ui/combobox";
 import { uploadImageAction } from "@/lib/actions/storage.actions";
-import { getAllCategories } from "@/lib/categories.service";
-import { getActiveWeightTemplates } from "@/lib/weight-templates.service";
+import { categoriesService } from "@/lib/categories.service";
+import { weightTemplatesService } from "@/lib/weight-templates.service";
 
 const productFormSchema = z.object({
   title: z.string().min(3, "Название должно содержать не менее 3 символов."),
@@ -90,8 +90,8 @@ export default function ProductForm({ product }: ProductFormProps) {
     async function fetchData() {
       try {
         const [fetchedCategories, fetchedTemplates] = await Promise.all([
-          getAllCategories(),
-          getActiveWeightTemplates()
+          categoriesService.getAll(),
+          weightTemplatesService.getActive()
         ]);
         setCategories(fetchedCategories);
         setWeightTemplates(fetchedTemplates);
