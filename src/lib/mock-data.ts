@@ -1,4 +1,4 @@
-import type { Product, Category, Order } from './types';
+import type { Product, Category, Order, WeightTemplate } from './types';
 
 // Используем фиксированную дату для консистентности моковых данных
 const MOCK_DATE = new Date('2024-08-28T10:00:00Z').toISOString();
@@ -51,6 +51,8 @@ export const mockProduct: Product = {
   },
 };
 
+export const mockProducts: Product[] = [mockProduct];
+
 
 export const mockOrder: Order = {
     id: 'mock-order-01',
@@ -62,3 +64,28 @@ export const mockOrder: Order = {
     created_at: MOCK_DATE,
     updated_at: MOCK_DATE,
 }
+
+export const mockTemplates: WeightTemplate[] = [
+    {
+        id: 'mock-template-kg',
+        name: 'Овощи (кг)',
+        description: 'Шаблон для овощей, продаваемых на килограммы',
+        unit: 'kg',
+        min_order_quantity: 0.5,
+        step_quantity: 0.1,
+        is_active: true,
+        created_at: MOCK_DATE,
+        updated_at: MOCK_DATE,
+    },
+    {
+        id: 'mock-template-pcs',
+        name: 'Штучные товары',
+        description: 'Шаблон для товаров, продаваемых поштучно',
+        unit: 'pcs',
+        min_order_quantity: 1,
+        step_quantity: 1,
+        is_active: true,
+        created_at: MOCK_DATE,
+        updated_at: MOCK_DATE,
+    },
+];
