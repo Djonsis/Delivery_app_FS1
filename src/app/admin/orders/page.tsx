@@ -8,7 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { ordersService } from "@/lib/orders.service";
 import OrderStatusSelector from "./_components/order-status-selector";
 
@@ -42,9 +41,13 @@ export default async function OrdersPage() {
           ))}
         </TableBody>
        {orders.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Пока нет ни одного заказа.</p>
-          </div>
+          <tbody className="w-full">
+            <tr>
+              <td colSpan={5} className="text-center py-12">
+                <p className="text-muted-foreground">Пока нет ни одного заказа.</p>
+              </td>
+            </tr>
+          </tbody>
         )}
     </div>
   );

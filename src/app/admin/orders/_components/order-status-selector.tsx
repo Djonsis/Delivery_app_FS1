@@ -19,6 +19,16 @@ interface OrderStatusSelectorProps {
   currentStatus: OrderStatus;
 }
 
+const statusColors: Record<OrderStatus, "default" | "secondary" | "destructive"> = {
+    "Новый заказ": "secondary",
+    "Собирается": "secondary",
+    "Ожидает курьера": "secondary",
+    "Передан в доставку": "secondary",
+    "Выполнен": "default",
+    "Отменен": "destructive",
+};
+
+
 export default function OrderStatusSelector({ orderId, currentStatus }: OrderStatusSelectorProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -44,19 +54,18 @@ export default function OrderStatusSelector({ orderId, currentStatus }: OrderSta
     });
   };
 
+  const isFinalStatus = currentStatus === 'Выполнен' || currentStatus === 'Отменен';
+
   return (
     <Select
       defaultValue={currentStatus}
       onValueChange={(newStatus: OrderStatus) => handleStatusChange(newStatus)}
-      disabled={isPending}
+      disabled={isPending || isFinalStatus}
     >
       <SelectTrigger className="w-[180px]">
         <SelectValue>
           <Badge
-            variant={
-              currentStatus === 'Выполнен' ? 'default' :
-              currentStatus === 'Отменен' ? 'destructive' : 'secondary'
-            }
+            variant={statusColors[currentStatus]}
             className="mr-2"
           >
             {currentStatus}

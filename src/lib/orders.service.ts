@@ -1,7 +1,7 @@
 
 import { getClient, query } from "@/lib/db";
 import { serverLogger } from "@/lib/server-logger";
-import { Order, OrderStatus, CreateOrderPayload } from "@/lib/types";
+import { Order, OrderStatus, CreateOrderPayload, ORDER_STATUSES } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { mockOrder } from "./mock-data";
 import { runLocalOrDb, isLocal } from "./env";
@@ -9,7 +9,7 @@ import { runLocalOrDb, isLocal } from "./env";
 const ordersServiceLogger = serverLogger.withCategory("ORDERS_SERVICE");
 
 export const ordersService = {
-    async getOrders(): Promise<Order[]> {
+    getOrders: async function(): Promise<Order[]> {
         return runLocalOrDb(
             () => [mockOrder],
             async () => {
@@ -21,28 +21,34 @@ export const ordersService = {
         );
     },
 
-    async updateOrderStatus(orderId: string, newStatus: OrderStatus): Promise<void> {
+    updateOrderStatus: async function(orderId: string, newStatus: OrderStatus): Promise<Order> {
         if (isLocal()) {
             ordersServiceLogger.warn(`Running in local/studio environment. Mocking updateOrderStatus for order: ${orderId}`);
-            return;
+            return { ...mockOrder, status: newStatus };
         }
         ordersServiceLogger.info(`Service: Updating status for order ${orderId} to "${newStatus}"`);
+        
+        if (!ORDER_STATUSES.includes(newStatus)) {
+            throw new Error(`Недопустимый статус заказа: ${newStatus}`);
+        }
+        
         try {
             const result = await query(
-                'UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2',
+                'UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
                 [newStatus, orderId]
             );
             if (result.rowCount === 0) {
-                throw new Error(`Order with ID ${orderId} not found.`);
+                throw new Error(`Заказ с ID ${orderId} не найден.`);
             }
             revalidatePath('/admin/orders');
+            return result.rows[0];
         } catch (error) {
             ordersServiceLogger.error(`Failed to update order status ${orderId} in DB`, error as Error);
-            throw new Error(`Database error. Could not update order status ${orderId}.`);
+            throw new Error(`Database error. Could not update order status.`);
         }
     },
 
-    async createOrder(payload: CreateOrderPayload): Promise<{ orderId: string }> {
+    createOrder: async function(payload: CreateOrderPayload): Promise<{ orderId: string }> {
         return runLocalOrDb(
             () => {
                 ordersServiceLogger.warn(`Running in local/studio environment. Mocking createOrder.`);
