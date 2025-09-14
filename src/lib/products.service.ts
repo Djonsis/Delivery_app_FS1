@@ -352,7 +352,7 @@ export async function updateProduct(id: string, productData: any): Promise<Produ
         price_unit = COALESCE($16, price_unit),
         min_order_quantity = COALESCE($17, min_order_quantity),
         step_quantity = COALESCE($18, step_quantity),
-        weight_template_id = COALESCE($19, weight_template_id),
+        weight_template_id = $19,
         updated_at = NOW()
       WHERE id = $1 AND deleted_at IS NULL
       RETURNING *
@@ -375,7 +375,7 @@ export async function updateProduct(id: string, productData: any): Promise<Produ
       productData.price_unit,
       productData.min_order_quantity,
       productData.step_quantity,
-      productData.weight_template_id || null
+      productData.weight_template_id
     ]);
 
     if (rows.length === 0) {

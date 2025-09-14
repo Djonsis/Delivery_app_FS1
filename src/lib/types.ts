@@ -57,7 +57,7 @@ export interface Product {
     carbs: number;
   } | null;
 
-  weight_template_id?: string;
+  weight_template_id?: string | null;
 }
 
 export interface CartItem {
@@ -79,7 +79,7 @@ export interface Category {
 export interface WeightTemplate {
   id: string;
   name: string;
-  description?: string;
+  description?: string | null;
   unit: UnitType;
   min_order_quantity: number;
   step_quantity: number;

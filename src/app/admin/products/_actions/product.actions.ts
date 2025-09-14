@@ -30,7 +30,6 @@ const productSchema = z.object({
   }
   
   // If a template is selected, we assume it will provide the necessary fields.
-  // The backend logic will handle applying the template.
   if (data.weight_template_id) {
     return true;
   }

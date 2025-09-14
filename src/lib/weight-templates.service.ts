@@ -63,7 +63,7 @@ const mockTemplates: WeightTemplate[] = [
 export async function getActiveWeightTemplates(): Promise<WeightTemplate[]> {
     if (isLocal()) {
         serviceLogger.warn("Running in local/studio environment. Returning mock weight templates.");
-        return mockTemplates;
+        return mockTemplates.filter(t => t.is_active);
     }
    
     serviceLogger.info("Fetching all active weight templates from DB.");
@@ -155,8 +155,16 @@ export interface CreateWeightTemplateInput {
  */
 export async function createWeightTemplate(data: CreateWeightTemplateInput): Promise<WeightTemplate> {
     if (isLocal()) {
-        serviceLogger.warn("Running in local mode. Cannot create weight template in mock data.");
-        throw new Error("Cannot create templates in local mode");
+        const newTemplate: WeightTemplate = {
+            id: uuidv4(),
+            ...data,
+            is_active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        };
+        mockTemplates.push(newTemplate);
+        serviceLogger.warn("Running in local mode. Created mock weight template.", { newTemplate });
+        return newTemplate;
     }
    
     serviceLogger.info("Creating new weight template.", { name: data.name });
@@ -190,8 +198,13 @@ export interface UpdateWeightTemplateInput extends Partial<CreateWeightTemplateI
  */
 export async function updateWeightTemplate(id: string, data: UpdateWeightTemplateInput): Promise<WeightTemplate> {
     if (isLocal()) {
-        serviceLogger.warn("Running in local mode. Cannot update weight template in mock data.");
-        throw new Error("Cannot update templates in local mode");
+       serviceLogger.warn("Running in local mode. Simulating template update.");
+        const templateIndex = mockTemplates.findIndex(t => t.id === id);
+        if (templateIndex === -1) {
+            throw new Error("Template not found in mock data");
+        }
+        mockTemplates[templateIndex] = { ...mockTemplates[templateIndex], ...data, updated_at: new Date().toISOString() };
+        return mockTemplates[templateIndex];
     }
    
     serviceLogger.info("Updating weight template.", { id });
@@ -200,45 +213,25 @@ export async function updateWeightTemplate(id: string, data: UpdateWeightTemplat
     const values = [];
     let paramCounter = 1;
     
-    if (data.name !== undefined) {
-        fields.push(`name = $${paramCounter}`);
-        values.push(data.name);
-        paramCounter++;
+    const updatableFields: (keyof UpdateWeightTemplateInput)[] = ['name', 'description', 'unit', 'min_order_quantity', 'step_quantity', 'is_active'];
+    
+    for (const field of updatableFields) {
+        if (data[field] !== undefined) {
+            fields.push(`${field} = $${paramCounter}`);
+            values.push(data[field]);
+            paramCounter++;
+        }
     }
     
-    if (data.description !== undefined) {
-        fields.push(`description = $${paramCounter}`);
-        values.push(data.description);
-        paramCounter++;
+    if (fields.length === 0) {
+        serviceLogger.warn("Update called with no fields to update for template", { id });
+        return getWeightTemplateById(id).then(t => {
+            if (!t) throw new Error("Template not found");
+            return t;
+        });
     }
-    
-    if (data.unit !== undefined) {
-        fields.push(`unit = $${paramCounter}`);
-        values.push(data.unit);
-        paramCounter++;
-    }
-    
-    if (data.min_order_quantity !== undefined) {
-        fields.push(`min_order_quantity = $${paramCounter}`);
-        values.push(data.min_order_quantity);
-        paramCounter++;
-    }
-    
-    if (data.step_quantity !== undefined) {
-        fields.push(`step_quantity = $${paramCounter}`);
-        values.push(data.step_quantity);
-        paramCounter++;
-    }
-    
-    if (data.is_active !== undefined) {
-        fields.push(`is_active = $${paramCounter}`);
-        values.push(data.is_active);
-        paramCounter++;
-    }
-    
-    fields.push(`updated_at = $${paramCounter}`);
-    values.push(new Date().toISOString());
-    paramCounter++;
+
+    fields.push(`updated_at = NOW()`);
     
     values.push(id); // ID для WHERE условия
     
@@ -266,12 +259,4 @@ export async function updateWeightTemplate(id: string, data: UpdateWeightTemplat
         serviceLogger.error("Error updating weight template", error as Error, { id });
         throw new Error("Could not update weight template.");
     }
-}
-
-/**
- * Деактивировать шаблон (мягкое удаление)
- */
-export async function deactivateWeightTemplate(id: string): Promise<void> {
-    await updateWeightTemplate(id, { is_active: false });
-    serviceLogger.info("Weight template deactivated.", { id });
 }
