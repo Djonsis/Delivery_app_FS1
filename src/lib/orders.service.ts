@@ -41,7 +41,7 @@ export const ordersService = {
             if (result.rowCount === 0) {
                 throw new Error(`Заказ с ID ${orderId} не найден.`);
             }
-            revalidatePath('/admin/orders');
+            
             return result.rows[0];
         } catch (error) {
             ordersServiceLogger.error(`Failed to update order status ${orderId} in DB`, error as Error);

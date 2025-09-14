@@ -14,23 +14,6 @@ import OrderStatusSelector from "./_components/order-status-selector";
 export default async function OrdersPage() {
   const orders = await ordersService.getOrders();
 
-  if (orders.length === 0) {
-    return (
-        <div className="border rounded-lg p-2">
-            <Table>
-                <TableCaption>Список последних заказов.</TableCaption>
-                 <tbody className="w-full">
-                    <tr>
-                    <td colSpan={5} className="text-center py-12">
-                        <p className="text-muted-foreground">Пока нет ни одного заказа.</p>
-                    </td>
-                    </tr>
-                </tbody>
-            </Table>
-        </div>
-    );
-  }
-
   return (
     <div className="border rounded-lg p-2">
       <Table>
@@ -45,17 +28,25 @@ export default async function OrdersPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order) => (
-            <TableRow key={order.id}>
-              <TableCell className="font-medium">#{order.id.substring(0, 6)}</TableCell>
-              <TableCell>{order.customer_name}</TableCell>
-              <TableCell>{new Date(order.created_at).toLocaleDateString("ru-RU")}</TableCell>
-              <TableCell>{Number(order.total_amount).toFixed(2)} ₽</TableCell>
-              <TableCell>
-                <OrderStatusSelector orderId={order.id} currentStatus={order.status} />
-              </TableCell>
-            </TableRow>
-          ))}
+          {orders.length > 0 ? (
+            orders.map((order) => (
+              <TableRow key={order.id}>
+                <TableCell className="font-medium">#{order.id.substring(0, 6)}</TableCell>
+                <TableCell>{order.customer_name}</TableCell>
+                <TableCell>{new Date(order.created_at).toLocaleDateString("ru-RU")}</TableCell>
+                <TableCell>{Number(order.total_amount).toFixed(2)} ₽</TableCell>
+                <TableCell>
+                  <OrderStatusSelector orderId={order.id} currentStatus={order.status} />
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+             <TableRow>
+                <TableCell colSpan={5} className="text-center py-12">
+                  <p className="text-muted-foreground">Пока нет ни одного заказа.</p>
+                </TableCell>
+              </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>
