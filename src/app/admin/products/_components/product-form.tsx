@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -25,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Product, Category } from "@/lib/types";
+import { Product, Category, WeightTemplate } from "@/lib/types";
 import { useTransition, useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { createProductAction, updateProductAction } from "../_actions/product.actions";
@@ -33,6 +32,7 @@ import { useRouter } from "next/navigation";
 import { Combobox } from "@/components/ui/combobox";
 import { uploadImageAction } from "@/lib/actions/storage.actions";
 import { getAllCategories } from "@/lib/categories.service";
+import { getActiveWeightTemplates } from "@/lib/weight-templates.service";
 
 const productFormSchema = z.object({
   title: z.string().min(3, "Название должно содержать не менее 3 символов."),
@@ -43,20 +43,25 @@ const productFormSchema = z.object({
   imageUrl: z.string().optional(),
   
   is_weighted: z.boolean().default(false),
+  weight_template_id: z.string().optional().nullable(),
   unit: z.enum(["kg", "g", "pcs"]).default("pcs"),
   price_per_unit: z.coerce.number().min(0).optional(),
   price_unit: z.enum(["kg", "g", "pcs"]).optional(),
   min_order_quantity: z.coerce.number().min(0).default(1),
   step_quantity: z.coerce.number().min(0).default(1),
-}).refine(data => {
-  if (data.is_weighted) {
-    return data.price_per_unit !== undefined && data.price_per_unit > 0;
+}).refine((data) => {
+  if (data.is_weighted && !data.weight_template_id) {
+    const hasRequiredFields = data.unit && 
+                             data.min_order_quantity !== undefined && 
+                             data.step_quantity !== undefined;
+    return hasRequiredFields;
   }
   return true;
 }, {
-  message: "Цена за единицу обязательна для весовых товаров.",
-  path: ["price_per_unit"],
+  message: "При ручной настройке весового товара необходимо заполнить все поля: ед. изм., мин. заказ, шаг.",
+  path: ["weight_template_id"]
 });
+
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
@@ -69,27 +74,30 @@ export default function ProductForm({ product }: ProductFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [weightTemplates, setWeightTemplates] = useState<WeightTemplate[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-
-   useEffect(() => {
-    async function fetchCategories() {
+  useEffect(() => {
+    async function fetchData() {
       try {
-        const fetchedCategories = await getAllCategories();
+        const [fetchedCategories, fetchedTemplates] = await Promise.all([
+          getAllCategories(),
+          getActiveWeightTemplates()
+        ]);
         setCategories(fetchedCategories);
+        setWeightTemplates(fetchedTemplates);
       } catch (error) {
         console.error(error);
         toast({
-            title: "Ошибка",
-            description: "Не удалось загрузить список категорий.",
-            variant: "destructive"
-        })
+          title: "Ошибка",
+          description: "Не удалось загрузить данные для формы.",
+          variant: "destructive"
+        });
       }
     }
-    fetchCategories();
+    fetchData();
   }, [toast]);
-
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -101,6 +109,7 @@ export default function ProductForm({ product }: ProductFormProps) {
       tags: product.tags?.join(", "),
       imageUrl: product.imageUrl || "",
       is_weighted: product.is_weighted,
+      weight_template_id: product.weight_template_id || "",
       unit: product.unit,
       price_per_unit: product.price_per_unit || undefined,
       price_unit: product.price_unit || undefined,
@@ -113,12 +122,12 @@ export default function ProductForm({ product }: ProductFormProps) {
       tags: "",
       imageUrl: "",
       is_weighted: false,
+      weight_template_id: "",
       unit: "pcs",
       min_order_quantity: 1,
       step_quantity: 1,
     },
   });
-
 
   const onSubmit = (values: ProductFormValues) => {
     startTransition(async () => {
@@ -156,7 +165,6 @@ export default function ProductForm({ product }: ProductFormProps) {
             toast({ title: "Успешно", description: result.message });
             router.push("/admin/products");
         } else {
-            // Check if there are specific field errors from the server action
             if (result.errors) {
               for (const [field, messages] of Object.entries(result.errors)) {
                  if (messages && messages.length > 0) {
@@ -169,7 +177,6 @@ export default function ProductForm({ product }: ProductFormProps) {
             }
             throw new Error(result.message || "Не удалось сохранить товар.");
         }
-
       } catch (error) {
         setIsUploading(false);
         toast({
@@ -181,7 +188,26 @@ export default function ProductForm({ product }: ProductFormProps) {
     });
   };
   
+  const handleTemplateChange = (templateId: string) => {
+    const newTemplateId = templateId === "manual" ? "" : templateId;
+    form.setValue("weight_template_id", newTemplateId);
+    
+    if (newTemplateId) {
+      const template = weightTemplates.find(t => t.id === newTemplateId);
+      if (template) {
+        form.setValue('unit', template.unit);
+        form.setValue('min_order_quantity', template.min_order_quantity);
+        form.setValue('step_quantity', template.step_quantity);
+        toast({
+          title: "Шаблон применен",
+          description: `Настройки из шаблона "${template.name}" применены.`,
+        });
+      }
+    }
+  };
+
   const isWeighted = form.watch("is_weighted");
+  const selectedTemplateId = form.watch("weight_template_id");
   const isSubmitDisabled = isPending || isUploading;
   const categoryOptions = categories.map(c => ({ value: c.id, label: c.name }));
 
@@ -323,70 +349,138 @@ export default function ProductForm({ product }: ProductFormProps) {
         />
 
         {isWeighted && (
+          <>
+            <FormField
+              control={form.control}
+              name="weight_template_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Шаблон весового товара</FormLabel>
+                  <Select onValueChange={(value) => handleTemplateChange(value)} defaultValue={field.value ?? ""}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите шаблон или настройте вручную" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="manual">Настроить вручную</SelectItem>
+                      {weightTemplates.map((template) => (
+                        <SelectItem key={template.id} value={template.id}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{template.name}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {template.unit} • мин: {template.min_order_quantity} • шаг: {template.step_quantity}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Выберите готовый шаблон для быстрой настройки или оставьте пустым для ручной настройки.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-2 gap-8 p-4 border rounded-md">
-                <FormField
+              {selectedTemplateId && (
+                <div className="col-span-2 mb-4">
+                  <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                    <span className="text-sm text-muted-foreground">
+                      Используется шаблон: <span className="font-medium">
+                        {weightTemplates.find(t => t.id === selectedTemplateId)?.name}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              )}
+              
+              <FormField
                 control={form.control}
                 name="unit"
                 render={({ field }) => (
-                    <FormItem>
+                  <FormItem>
                     <FormLabel>Единица измерения</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Выберите единицу" />
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger disabled={!!selectedTemplateId}>
+                          <SelectValue placeholder="Выберите единицу" />
                         </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                            <SelectItem value="kg">кг</SelectItem>
-                            <SelectItem value="g">г</SelectItem>
-                            <SelectItem value="pcs">шт</SelectItem>
-                        </SelectContent>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="kg">кг</SelectItem>
+                        <SelectItem value="g">г</SelectItem>
+                        <SelectItem value="pcs">шт</SelectItem>
+                      </SelectContent>
                     </Select>
                     <FormMessage />
-                    </FormItem>
+                  </FormItem>
                 )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="price_per_unit"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Цена за единицу</FormLabel>
-                        <FormControl>
-                            <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                <FormField
+              />
+              
+              <FormField
+                control={form.control}
+                name="price_per_unit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Цена за единицу</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
                 control={form.control}
                 name="min_order_quantity"
                 render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Мин. заказ</FormLabel>
+                  <FormItem>
+                    <FormLabel>Минимальный заказ</FormLabel>
                     <FormControl>
-                        <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value))}/>
+                      <Input 
+                        type="number" 
+                        step="any" 
+                        {...field}
+                        disabled={!!selectedTemplateId}
+                        onChange={e => field.onChange(parseFloat(e.target.value) || 1)}
+                      />
                     </FormControl>
                     <FormMessage />
-                    </FormItem>
+                  </FormItem>
                 )}
-                />
+              />
 
-                <FormField
+              <FormField
                 control={form.control}
                 name="step_quantity"
                 render={({ field }) => (
-                    <FormItem>
+                  <FormItem>
                     <FormLabel>Шаг количества</FormLabel>
                     <FormControl>
-                        <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value))}/>
+                      <Input 
+                        type="number" 
+                        step="any" 
+                        {...field}
+                        disabled={!!selectedTemplateId}
+                        onChange={e => field.onChange(parseFloat(e.target.value) || 1)}
+                      />
                     </FormControl>
                     <FormMessage />
-                    </FormItem>
+                  </FormItem>
                 )}
-                />
+              />
             </div>
+          </>
         )}
         
         <Button type="submit" disabled={isSubmitDisabled}>
