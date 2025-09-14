@@ -44,24 +44,30 @@ const productFormSchema = z.object({
   
   is_weighted: z.boolean().default(false),
   weight_template_id: z.string().uuid().optional().nullable(),
-  unit: z.enum(["kg", "g", "pcs"]).default("pcs"),
+  unit: z.enum(["kg", "g", "pcs"]),
   price_per_unit: z.coerce.number().min(0).optional(),
   price_unit: z.enum(["kg", "g", "pcs"]).optional(),
   min_order_quantity: z.coerce.number().min(0).default(1),
   step_quantity: z.coerce.number().min(0).default(1),
 }).refine((data) => {
-  if (data.is_weighted) {
-    const hasManualFields = data.unit && 
-                             data.min_order_quantity !== undefined && 
-                             data.step_quantity !== undefined;
-    if (!hasManualFields) {
-      return false;
-    }
+  if (!data.is_weighted) {
+    return true; // Not a weighted product, no need for further checks
   }
-  return true;
+  
+  // If a template is selected, we assume it will provide the necessary fields.
+  if (data.weight_template_id) {
+    return true;
+  }
+  
+  // For manual configuration, all fields are required.
+  const hasManualFields = data.unit && 
+                           data.min_order_quantity !== undefined && 
+                           data.step_quantity !== undefined;
+
+  return hasManualFields;
 }, {
-  message: "При ручной настройке весового товара необходимо заполнить все поля: ед. изм., мин. заказ, шаг.",
-  path: ["unit"] // Attach error to a relevant field
+  message: "При ручной настройке весового товара необходимо заполнить все поля: ед. изм., мин. заказ и шаг.",
+  path: ["weight_template_id"] // Attach error to a relevant field for better UX
 });
 
 
@@ -89,6 +95,16 @@ export default function ProductForm({ product }: ProductFormProps) {
         ]);
         setCategories(fetchedCategories);
         setWeightTemplates(fetchedTemplates);
+
+        // Check for deactivated template
+        if (product?.weight_template_id && !fetchedTemplates.some(t => t.id === product.weight_template_id)) {
+            toast({
+                title: "Шаблон неактивен",
+                description: "Шаблон, ранее примененный к этому товару, был деактивирован. Все настройки сохранены в товаре.",
+                variant: "destructive"
+            });
+        }
+
       } catch (error) {
         console.error(error);
         toast({
@@ -99,7 +115,7 @@ export default function ProductForm({ product }: ProductFormProps) {
       }
     }
     fetchData();
-  }, [toast]);
+  }, [toast, product]);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
