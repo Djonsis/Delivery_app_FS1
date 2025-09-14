@@ -10,18 +10,17 @@ const LOG_LEVELS: Record<LogLevel, number> = {
     error: 3,
 };
 
-// Robustly get the log level, safe for any environment.
-// This incorporates the user's excellent suggestion.
 const getLogLevel = () => {
     try {
-        if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_LOG_LEVEL) {
-            return LOG_LEVELS[process.env.NEXT_PUBLIC_LOG_LEVEL as LogLevel] ?? LOG_LEVELS.debug;
+        const levelFromEnv = process.env.NEXT_PUBLIC_LOG_LEVEL;
+        if (levelFromEnv && levelFromEnv in LOG_LEVELS) {
+            return LOG_LEVELS[levelFromEnv as LogLevel];
         }
     } catch (e) {
-        // In some environments, accessing process.env can throw.
-        // Fallback to default.
+        // process is not defined in some environments.
     }
-    return LOG_LEVELS.debug;
+    // Default to 'info' if not specified, to avoid overly verbose logs in production.
+    return LOG_LEVELS.info; 
 }
 
 const configuredLevel = getLogLevel();
@@ -41,8 +40,9 @@ class Logger {
     private log(level: LogLevel, message: string, data?: any) {
         if (LOG_LEVELS[level] < configuredLevel) return;
 
-        // All logs go to the console. The hosting environment (like Cloud Logging) will handle them.
         const consoleMessage = `[${level.toUpperCase()}] [${this.category}] ${message}`;
+        
+        // Avoid logging empty objects or undefined data.
         const dataToLog = data ? data : '';
 
         switch(level) {
@@ -85,17 +85,31 @@ class Logger {
     }
     
     public time(label: string) {
-        performanceTimers.set(label, Date.now());
+        if (typeof window !== "undefined" && window.performance) {
+            performance.mark(`${label}-start`);
+        } else {
+            performanceTimers.set(label, Date.now());
+        }
     }
 
     public timeEnd(label: string) {
-        const startTime = performanceTimers.get(label);
-        if (startTime) {
-            const duration = Date.now() - startTime;
-            this.debug(`${label} took ${duration}ms`);
-            performanceTimers.delete(label);
+        if (typeof window !== "undefined" && window.performance) {
+            try {
+                performance.mark(`${label}-end`);
+                const measure = performance.measure(label, `${label}-start`, `${label}-end`);
+                this.debug(`${label} took ${measure.duration.toFixed(2)}ms`);
+            } catch (e) {
+                // If marks don't exist, just ignore.
+            }
         } else {
-            this.warn(`Timer with label "${label}" was ended but never started.`);
+            const startTime = performanceTimers.get(label);
+            if (startTime) {
+                const duration = Date.now() - startTime;
+                this.debug(`${label} took ${duration}ms`);
+                performanceTimers.delete(label);
+            } else {
+                this.warn(`Timer with label "${label}" was ended but never started.`);
+            }
         }
     }
 }
