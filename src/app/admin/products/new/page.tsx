@@ -6,8 +6,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { categoriesService } from "@/lib/categories.service";
+import { weightTemplatesService } from "@/lib/weight-templates.service";
 
-export default function NewProductPage() {
+export default async function NewProductPage() {
+  const [categories, weightTemplates] = await Promise.all([
+    categoriesService.getAll(),
+    weightTemplatesService.getActive(),
+  ]);
+
   return (
     <Card>
       <CardHeader>
@@ -17,7 +24,10 @@ export default function NewProductPage() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ProductForm />
+        <ProductForm 
+          categories={categories}
+          weightTemplates={weightTemplates}
+        />
       </CardContent>
     </Card>
   );

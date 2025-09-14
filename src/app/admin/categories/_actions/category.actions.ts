@@ -4,6 +4,7 @@
 import { z } from "zod";
 import { categoriesService } from "@/lib/categories.service";
 import { serverLogger } from "@/lib/server-logger";
+import { revalidatePath } from "next/cache";
 
 const categoryActionLogger = serverLogger.withCategory("CATEGORY_ACTION");
 
@@ -13,6 +14,12 @@ const categorySchema = z.object({
   description: z.string().optional(),
 });
 
+function revalidateCategoryPaths() {
+    revalidatePath('/admin/categories');
+    revalidatePath('/admin/products');
+    revalidatePath('/catalog');
+    revalidatePath('/');
+}
 
 export async function createCategoryAction(values: unknown) {
     const validatedFields = categorySchema.safeParse(values);
@@ -26,6 +33,7 @@ export async function createCategoryAction(values: unknown) {
 
     if (result.success) {
         categoryActionLogger.info("Successfully created category.", { name: validatedFields.data.name });
+        revalidateCategoryPaths();
     } else {
         categoryActionLogger.error("Failed to create category", { message: result.message });
     }
@@ -48,6 +56,7 @@ export async function updateCategoryAction(id: string, values: unknown) {
 
     if (result.success) {
         categoryActionLogger.info(`Successfully updated category ${id}.`);
+        revalidateCategoryPaths();
     } else {
         categoryActionLogger.error(`Failed to update category ${id}`, { message: result.message });
     }
@@ -66,6 +75,7 @@ export async function deleteCategoryAction(id: string) {
     
     if (result.success) {
         categoryActionLogger.info(`Successfully deleted category ${id}.`);
+        revalidateCategoryPaths();
     } else {
         categoryActionLogger.error(`Failed to delete category ${id}`, { message: result.message });
     }

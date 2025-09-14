@@ -2,7 +2,6 @@
 import { query } from "./db";
 import { serverLogger } from "./server-logger";
 import { Category } from "./types";
-import { revalidatePath } from "next/cache";
 import { mockCategory } from "./mock-data";
 import { runLocalOrDb } from "./env";
 
@@ -53,8 +52,6 @@ export const categoriesService = {
                 'INSERT INTO categories (name, slug, sku_prefix, description) VALUES ($1, $2, $3, $4)',
                 [name, slug, sku_prefix, description || null]
             );
-            revalidatePath('/admin/categories');
-            revalidatePath('/admin/products');
             return { success: true, message: "Категория успешно создана." };
         } catch (error) {
             const dbError = error as any;
@@ -92,8 +89,6 @@ export const categoriesService = {
                 'UPDATE categories SET name = $1, slug = $2, sku_prefix = $3, description = $4, updated_at = NOW() WHERE id = $5',
                 [newData.name, newData.slug, newData.sku_prefix, newData.description || null, id]
             );
-            revalidatePath('/admin/categories');
-            revalidatePath('/admin/products');
             return { success: true, message: "Категория успешно обновлена." };
         } catch (error) {
             const dbError = error as any;
@@ -123,8 +118,6 @@ export const categoriesService = {
             }
 
             await query('DELETE FROM categories WHERE id = $1', [id]);
-            revalidatePath('/admin/categories');
-            revalidatePath('/admin/products');
             return { success: true, message: "Категория успешно удалена." };
         } catch (error) {
             serviceLogger.error(`Failed to delete category ${id} from DB`, error as Error);

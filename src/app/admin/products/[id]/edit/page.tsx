@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/card";
 import { productsService } from "@/lib/products.service";
 import { notFound } from "next/navigation";
+import { categoriesService } from "@/lib/categories.service";
+import { weightTemplatesService } from "@/lib/weight-templates.service";
 
 interface EditProductPageProps {
     params: {
@@ -17,7 +19,11 @@ interface EditProductPageProps {
 }
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
-  const product = await productsService.getById(params.id);
+  const [product, categories, weightTemplates] = await Promise.all([
+    productsService.getById(params.id),
+    categoriesService.getAll(),
+    weightTemplatesService.getActive(),
+  ]);
 
   if (!product) {
     notFound();
@@ -32,7 +38,11 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ProductForm product={product} />
+        <ProductForm 
+          product={product}
+          categories={categories}
+          weightTemplates={weightTemplates}
+        />
       </CardContent>
     </Card>
   );

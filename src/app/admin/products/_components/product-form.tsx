@@ -31,8 +31,6 @@ import { createProductAction, updateProductAction } from "../_actions/product.ac
 import { useRouter } from "next/navigation";
 import { Combobox } from "@/components/ui/combobox";
 import { uploadImageAction } from "@/lib/actions/storage.actions";
-import { categoriesService } from "@/lib/categories.service";
-import { weightTemplatesService } from "@/lib/weight-templates.service";
 
 const productFormSchema = z.object({
   title: z.string().min(3, "Название должно содержать не менее 3 символов."),
@@ -51,15 +49,13 @@ const productFormSchema = z.object({
   step_quantity: z.coerce.number().min(0).default(1),
 }).refine((data) => {
   if (!data.is_weighted) {
-    return true; // Not a weighted product, no need for further checks
+    return true; 
   }
   
-  // If a template is selected, we assume it will provide the necessary fields.
   if (data.weight_template_id) {
     return true;
   }
   
-  // For manual configuration, all fields are required.
   const hasManualFields = data.unit && 
                            data.min_order_quantity !== undefined && 
                            data.step_quantity !== undefined;
@@ -67,7 +63,7 @@ const productFormSchema = z.object({
   return hasManualFields;
 }, {
   message: "При ручной настройке весового товара необходимо заполнить все поля: ед. изм., мин. заказ и шаг.",
-  path: ["weight_template_id"] // Attach error to a relevant field for better UX
+  path: ["weight_template_id"] 
 });
 
 
@@ -75,47 +71,27 @@ type ProductFormValues = z.infer<typeof productFormSchema>;
 
 interface ProductFormProps {
   product?: Product;
+  categories: Category[];
+  weightTemplates: WeightTemplate[];
 }
 
-export default function ProductForm({ product }: ProductFormProps) {
+export default function ProductForm({ product, categories, weightTemplates }: ProductFormProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const router = useRouter();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [weightTemplates, setWeightTemplates] = useState<WeightTemplate[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const [fetchedCategories, fetchedTemplates] = await Promise.all([
-          categoriesService.getAll(),
-          weightTemplatesService.getActive()
-        ]);
-        setCategories(fetchedCategories);
-        setWeightTemplates(fetchedTemplates);
-
-        // Check for deactivated template
-        if (product?.weight_template_id && !fetchedTemplates.some(t => t.id === product.weight_template_id)) {
-            toast({
-                title: "Шаблон неактивен",
-                description: "Шаблон, ранее примененный к этому товару, был деактивирован. Все настройки сохранены в товаре.",
-                variant: "destructive"
-            });
-        }
-
-      } catch (error) {
-        console.error(error);
+    // Check for deactivated template
+    if (product?.weight_template_id && !weightTemplates.some(t => t.id === product.weight_template_id)) {
         toast({
-          title: "Ошибка",
-          description: "Не удалось загрузить данные для формы.",
-          variant: "destructive"
+            title: "Шаблон неактивен",
+            description: "Шаблон, ранее примененный к этому товару, был деактивирован. Все настройки сохранены в товаре.",
+            variant: "destructive"
         });
-      }
     }
-    fetchData();
-  }, [toast, product]);
+  }, [toast, product, weightTemplates]);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
