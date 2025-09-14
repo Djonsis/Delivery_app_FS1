@@ -9,8 +9,9 @@ import { weightTemplatesService } from "@/lib/weight-templates.service";
 
 const productActionLogger = serverLogger.withCategory("PRODUCT_ACTION");
 
+// Схема валидации Zod остается той же, она надежна.
 const productSchema = z.object({
-  title: z.string().min(3, "Название должно быть не менее 3 символов."),
+  title: z.string().min(3, "Название должно содержать не менее 3 символов."),
   description: z.string().optional(),
   price: z.coerce.number().min(0, "Цена должна быть положительным числом."),
   categoryId: z.string({ required_error: "Необходимо выбрать категорию." }).uuid("Необходимо выбрать категорию."),
@@ -26,15 +27,13 @@ const productSchema = z.object({
   step_quantity: z.coerce.number().min(0).default(1),
 }).refine((data) => {
   if (!data.is_weighted) {
-    return true; // Not a weighted product, no need for further checks
+    return true; 
   }
   
-  // If a template is selected, we assume it will provide the necessary fields.
   if (data.weight_template_id) {
     return true;
   }
   
-  // For manual configuration, all fields are required.
   const hasManualFields = data.unit && 
                            data.min_order_quantity !== undefined && 
                            data.step_quantity !== undefined;
@@ -42,7 +41,7 @@ const productSchema = z.object({
   return hasManualFields;
 }, {
   message: "При ручной настройке весового товара необходимо заполнить все поля: ед. изм., мин. заказ и шаг.",
-  path: ["weight_template_id"] // Attach error to a relevant field for better UX
+  path: ["weight_template_id"] 
 });
 
 function revalidateProductPaths(id?: string) {
@@ -64,28 +63,18 @@ export async function createProductAction(values: unknown) {
   try {
     let productData = { ...validatedFields.data };
     
-    // Snapshot approach: Apply template values but allow overrides
     if (productData.weight_template_id && productData.is_weighted) {
-      productActionLogger.info("Loading weight template for product creation", { templateId: productData.weight_template_id });
-      
       const template = await weightTemplatesService.getById(productData.weight_template_id);
       if (template) {
-        // Values from form take precedence, otherwise use template values
         productData.unit = productData.unit || template.unit;
         productData.min_order_quantity = productData.min_order_quantity ?? template.min_order_quantity;
         productData.step_quantity = productData.step_quantity ?? template.step_quantity;
-
-        productActionLogger.info("Applied template snapshot to product data", { 
-          templateName: template.name,
-        });
-      } else {
-        productActionLogger.warn("Weight template not found, proceeding without template", { templateId: productData.weight_template_id });
       }
     }
     
     productActionLogger.info("Attempting to create product via service", { data: productData });
-    await productsService.create(productData);
-    productActionLogger.info("Successfully created product.", { title: productData.title });
+    const newProduct = await productsService.create(productData);
+    productActionLogger.info("Successfully created product.", { title: newProduct.title, id: newProduct.id });
     
     revalidateProductPaths();
 
@@ -113,21 +102,14 @@ export async function updateProductAction(id: string, values: unknown) {
   try {
     let productData = { ...validatedFields.data };
     
-    // Snapshot approach: Apply template values but allow overrides
     if (productData.weight_template_id && productData.is_weighted) {
-      productActionLogger.info("Loading weight template for product update", { id, templateId: productData.weight_template_id });
-      
       const template = await weightTemplatesService.getById(productData.weight_template_id);
       if (template) {
-        // Values from form take precedence, otherwise use template values
         productData.unit = productData.unit || template.unit;
         productData.min_order_quantity = productData.min_order_quantity ?? template.min_order_quantity;
         productData.step_quantity = productData.step_quantity ?? template.step_quantity;
-        
-        productActionLogger.info("Applied template snapshot to product update", { id, templateName: template.name });
       }
     } else if (!productData.is_weighted) {
-        // If product is no longer weighted, clear template ID
         productData.weight_template_id = null;
     }
     

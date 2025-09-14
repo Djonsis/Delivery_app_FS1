@@ -14,6 +14,7 @@ function toPostgresArray(arr: string[] | undefined | null): string | null {
     if (!arr || arr.length === 0) {
         return null;
     }
+    // Correctly escape quotes and backslashes
     const escapedElements = arr.map(el => `"${el.replace(/\\/g, '\\\\').replace(/"/g, '""')}"`);
     return `{${escapedElements.join(',')}}`;
 }
@@ -59,6 +60,8 @@ async function generateSkuForCategory(categoryId: string): Promise<string> {
         throw new Error("Категория или префикс для артикула не найдены.");
     }
     
+    // In a real-world scenario, this might have a race condition.
+    // A database sequence would be a more robust solution.
     const countResult = await query(
         'SELECT COUNT(*) FROM products WHERE category_id = $1',
         [categoryId]
@@ -66,6 +69,7 @@ async function generateSkuForCategory(categoryId: string): Promise<string> {
     const productCount = parseInt(countResult.rows[0].count, 10);
     const nextNumber = productCount + 1;
     
+    // Pad with leading zeros, e.g., 1 -> 001, 12 -> 012, 123 -> 123
     const paddedNumber = nextNumber.toString().padStart(3, '0');
     
     const sku = `${category.sku_prefix}-${paddedNumber}`;
@@ -285,7 +289,9 @@ export const productsService = {
         return runLocalOrDb(
             () => {
                 const productIndex = mockProducts.findIndex(p => p.id === id);
-                if (productIndex !== -1) mockProducts[productIndex].deleted_at = new Date().toISOString();
+                if (productIndex !== -1) {
+                    mockProducts[productIndex].deleted_at = new Date().toISOString();
+                }
                 return Promise.resolve();
             },
             async () => {
