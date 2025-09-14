@@ -83,7 +83,10 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-        <Command>
+        <Command filter={(value, search) => {
+            if (options.find(o => o.label === value)?.label.toLowerCase().includes(search.toLowerCase())) return 1
+            return 0
+        }}>
           <CommandInput 
             placeholder="Искать или создать..."
             value={inputValue}

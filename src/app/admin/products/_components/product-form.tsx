@@ -52,10 +52,12 @@ const productFormSchema = z.object({
     return true; 
   }
   
+  // If a template is selected, validation is less strict because the action will fill in the details.
   if (data.weight_template_id) {
     return true;
   }
   
+  // For manual configuration, require all fields.
   const hasManualFields = data.unit && 
                            data.min_order_quantity !== undefined && 
                            data.step_quantity !== undefined;
@@ -81,17 +83,6 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    // Check for deactivated template
-    if (product?.weight_template_id && !weightTemplates.some(t => t.id === product.weight_template_id)) {
-        toast({
-            title: "Шаблон неактивен",
-            description: "Шаблон, ранее примененный к этому товару, был деактивирован. Все настройки сохранены в товаре.",
-            variant: "destructive"
-        });
-    }
-  }, [toast, product, weightTemplates]);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -122,6 +113,18 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
       step_quantity: 1,
     },
   });
+
+  useEffect(() => {
+    // Check for deactivated template
+    if (product?.weight_template_id && !weightTemplates.some(t => t.id === product.weight_template_id)) {
+        toast({
+            title: "Шаблон неактивен",
+            description: "Шаблон, ранее примененный к этому товару, был деактивирован. Все настройки сохранены в товаре.",
+            variant: "destructive"
+        });
+    }
+  }, [toast, product, weightTemplates]);
+
 
   const onSubmit = (values: ProductFormValues) => {
     startTransition(async () => {
@@ -350,7 +353,7 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Шаблон весового товара</FormLabel>
-                  <Select onValueChange={(value) => handleTemplateChange(value)} defaultValue={field.value ?? ""}>
+                  <Select onValueChange={(value) => handleTemplateChange(value)} value={field.value ?? ""}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Выберите шаблон или настройте вручную" />
