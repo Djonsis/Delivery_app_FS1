@@ -1,46 +1,100 @@
+'use server';
 
-"use server";
-
-import fs from 'fs/promises';
+import { promises as fs } from 'fs';
 import path from 'path';
-import { revalidatePath } from 'next/cache';
-import { serverLogger } from '../server-logger';
+import { Logging, LogEntry } from '@google-cloud/logging';
+import { isCloud, getProjectId, loggingConfig } from '@/lib/config';
 
-const logFileLogger = serverLogger.withCategory("LOG_FILE_ACTION");
-const logFilePath = path.join(process.cwd(), 'public', 'debug.log');
+const LOG_FILE_PATH = path.join(
+  process.cwd(),
+  loggingConfig.logDir,
+  loggingConfig.logFile
+);
 
+/**
+ * Форматирует запись из Cloud Logging в читаемую строку.
+ */
+const formatLogEntry = (entry: LogEntry): string => {
+  const timestamp = entry.metadata?.timestamp ?? new Date();
+  const severity = entry.metadata?.severity ?? 'INFO';
 
-// Ensure the file exists before trying to read it
-async function ensureLogFile() {
-    try {
-        await fs.access(logFilePath);
-    } catch {
-        logFileLogger.info("Log file not found, creating a new one.");
-        await fs.writeFile(logFilePath, '', { flag: 'a' });
+  let message = '';
+  const { data } = entry;
+
+  if (typeof data === 'string') {
+    message = data;
+  } else if (data && typeof data === 'object') {
+    if ('message' in data && data.message) {
+      message = String(data.message);
+    } else {
+      message = JSON.stringify(data);
     }
+  }
+
+  const date = new Date(timestamp as string | Date);
+
+  return `${date.toISOString()} [${severity}]: ${message}`;
+};
+
+/**
+ * Получает логи из Cloud Logging (prod) или локального файла (dev).
+ * 
+ * ⚠️ TODO: Добавить проверку авторизации (только для администраторов)
+ */
+export async function getLogsAction(): Promise<string> {
+  if (isCloud()) {
+    try {
+      const projectId = getProjectId();
+      const logging = new Logging({ projectId });
+      
+      const logName = `projects/${projectId}/logs/winston_log`;
+      const log = logging.log(logName);
+
+      const [entries] = await log.getEntries({
+        pageSize: 100, 
+        orderBy: 'timestamp desc',
+      });
+
+      if (entries.length === 0) {
+        return 'No logs found in Google Cloud Logging for this service.';
+      }
+
+      return entries.map(formatLogEntry).join('\n');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error fetching logs from Google Cloud:', errorMessage);
+      return `Error: Could not fetch logs from Google Cloud Logging. Details: ${errorMessage}`;
+    }
+  }
+
+  // Local development fallback
+  try {
+    const data = await fs.readFile(LOG_FILE_PATH, 'utf8');
+    return data.trim() ? data : 'Log file is empty.';
+  } catch {
+    // ✅ Не объявляем переменную - ESLint доволен
+    return 'Log file not found. This is expected if no logs have been written yet.';
+  }
 }
 
-export async function getLogsAction(): Promise<{ logs: string, size: number }> {
-    try {
-        await ensureLogFile();
-        const stats = await fs.stat(logFilePath);
-        const logs = await fs.readFile(logFilePath, 'utf-8');
-        logFileLogger.debug("Successfully read log file.", { size: stats.size });
-        return { logs, size: stats.size };
-    } catch (error) {
-        logFileLogger.error("Failed to read log file", error as Error);
-        return { logs: `Error reading logs: ${(error as Error).message}`, size: 0 };
-    }
-}
+/**
+ * Очищает логи.
+ * В Cloud окружении - только логирует запрос (управление через Console).
+ * В dev окружении - очищает локальный файл.
+ * 
+ * ⚠️ TODO: Добавить проверку авторизации
+ */
+export async function clearLogsAction(): Promise<void> {
+  if (isCloud()) {
+    console.log('Request to clear logs received in a cloud environment. No action taken due to retention policies.');
+    return;
+  }
 
-export async function clearLogsAction(): Promise<{ success: boolean, message: string }> {
-    try {
-        await fs.writeFile(logFilePath, ''); // Overwrite with empty content
-        logFileLogger.info("Log file has been cleared.");
-        revalidatePath('/admin/logs'); // Revalidate the logs page
-        return { success: true, message: "Логи успешно очищены." };
-    } catch (error) {
-        logFileLogger.error("Failed to clear log file", error as Error);
-        return { success: false, message: `Ошибка при очистке логов: ${(error as Error).message}` };
-    }
+  try {
+    await fs.writeFile(LOG_FILE_PATH, '');
+    console.log(`Log file cleared at: ${LOG_FILE_PATH}`);
+  } catch (error) {
+    // ✅ Здесь используем error, поэтому можно объявить
+    console.error('Failed to clear log file:', error);
+  }
 }
