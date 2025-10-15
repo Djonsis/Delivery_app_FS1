@@ -6,10 +6,10 @@ import { revalidatePath } from "next/cache";
 import { productsService } from "@/lib/products.service";
 import { serverLogger } from "@/lib/server-logger";
 import { weightTemplatesService } from "@/lib/weight-templates.service";
+import { ProductCreateInput, ProductUpdateInput } from "@/lib/types";
 
 const productActionLogger = serverLogger.withCategory("PRODUCT_ACTION");
 
-// Схема валидации Zod остается той же, она надежна.
 const productSchema = z.object({
   title: z.string().min(3, "Название должно содержать не менее 3 символов."),
   description: z.string().optional(),
@@ -61,10 +61,23 @@ export async function createProductAction(values: unknown) {
   }
   
   try {
-    let productData = { ...validatedFields.data };
+    const { categoryId, tags, ...rest } = validatedFields.data;
+
+    const productData: ProductCreateInput = {
+        ...rest,
+        category_id: categoryId,
+        tags: tags ? tags.split(',').map(t => t.trim()) : [],
+        description: rest.description ?? null,
+        imageUrl: rest.imageUrl ?? null,
+        weight_template_id: rest.weight_template_id ?? null,
+        price_per_unit: rest.price_per_unit ?? null,
+        price_unit: rest.price_unit ?? null,
+        currency: 'RUB', // Default value
+        rating: 0, // Default value
+        reviews: 0, // Default value
+    };
     
     if (productData.weight_template_id && productData.is_weighted) {
-      // FIX: Added await here
       const template = await weightTemplatesService.getById(productData.weight_template_id);
       if (template) {
         productData.unit = productData.unit || template.unit;
@@ -101,10 +114,20 @@ export async function updateProductAction(id: string, values: unknown) {
   }
   
   try {
-    let productData = { ...validatedFields.data };
+    const { categoryId, tags, ...rest } = validatedFields.data;
+
+    const productData: ProductUpdateInput = {
+        ...rest,
+        category_id: categoryId,
+        tags: tags ? tags.split(',').map(t => t.trim()) : undefined, // Allow undefined for updates
+        description: rest.description ?? null,
+        imageUrl: rest.imageUrl ?? null,
+        weight_template_id: rest.weight_template_id ?? null,
+        price_per_unit: rest.price_per_unit ?? null,
+        price_unit: rest.price_unit ?? null,
+    };
     
     if (productData.weight_template_id && productData.is_weighted) {
-      // FIX: Added await here
       const template = await weightTemplatesService.getById(productData.weight_template_id);
       if (template) {
         productData.unit = productData.unit || template.unit;

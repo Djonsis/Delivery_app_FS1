@@ -17,13 +17,23 @@ export const readProjectLogs = ai.defineTool(
     name: 'readProjectLogs',
     description: 'Читает последние записи из файла логов проекта. Используй, когда пользователь спрашивает о логах, ошибках или о том, что происходит в системе.',
     inputSchema: z.object({}), // Инструмент не требует входных данных
-    outputSchema: z.string().describe('Содержимое файла логов.'),
+    outputSchema: z.string().describe('Содержимое файла логов или сообщение об ошибке.'),
   },
   async () => {
     console.log(`[Tool] Вызван инструмент readProjectLogs`);
-    const {logs} = await getLogsAction();
+    const result = await getLogsAction();
+
+    if (result.error) {
+      return `Ошибка при получении логов: ${result.error}`;
+    }
+
+    if (!result.logs || result.logs.length === 0) {
+      return 'Логи пусты или отсутствуют.';
+    }
+
+    const logsText = result.logs.join('\n');
     // Возвращаем только последние 2000 символов, чтобы не перегружать контекст LLM
-    return logs.slice(-2000);
+    return logsText.slice(-2000);
   }
 );
 
@@ -44,7 +54,7 @@ export const askQuestionFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (question) => {
-    const llmResponse = await questionAnsweringPrompt(question);
-    return llmResponse.text;
+    const llmResponse = await questionAnsweringPrompt.generate({ body: question });
+    return llmResponse.text();
   }
 );

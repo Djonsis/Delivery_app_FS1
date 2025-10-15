@@ -8,6 +8,9 @@ import { z } from "zod";
 import { StorageStatus } from "../types";
 import { publicConfig } from "../public-config";
 
+// Re-exporting the type to be used in client components
+export type { StorageStatus } from "../types";
+
 const storageActionLogger = serverLogger.withCategory("STORAGE_ACTION");
 
 export async function getStorageStatusAction(): Promise<StorageStatus> {

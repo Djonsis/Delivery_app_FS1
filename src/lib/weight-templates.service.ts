@@ -2,16 +2,22 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from "./db";
 import { serverLogger } from "./server-logger";
-import { WeightTemplate } from "./types";
+import { WeightTemplate, WeightTemplateCreateInput, WeightTemplateUpdateInput } from "./types";
 import { runLocalOrDb } from "./env";
 import { mockTemplates } from './mock-data';
 
 const serviceLogger = serverLogger.withCategory("WEIGHT_TEMPLATES_SERVICE");
 
-const mapDbRowToWeightTemplate = (row: any): WeightTemplate => ({
-    ...row,
-    min_order_quantity: parseFloat(row.min_order_quantity),
-    step_quantity: parseFloat(row.step_quantity),
+const mapDbRowToWeightTemplate = (row: Record<string, unknown>): WeightTemplate => ({
+    id: row.id as string,
+    name: row.name as string,
+    description: row.description as string | null | undefined,
+    unit: row.unit as WeightTemplate['unit'],
+    min_order_quantity: parseFloat(row.min_order_quantity as string),
+    step_quantity: parseFloat(row.step_quantity as string),
+    is_active: row.is_active as boolean,
+    created_at: row.created_at as string,
+    updated_at: row.updated_at as string,
 });
 
 async function getActive(): Promise<WeightTemplate[]> {
@@ -56,7 +62,7 @@ async function getById(id: string): Promise<WeightTemplate | null> {
     );
 }
 
-async function create(data: Omit<WeightTemplate, 'id' | 'created_at' | 'updated_at' | 'is_active'>): Promise<WeightTemplate> {
+async function create(data: WeightTemplateCreateInput): Promise<WeightTemplate> {
     return runLocalOrDb(
         () => {
             const newTemplate: WeightTemplate = {
@@ -84,7 +90,7 @@ async function create(data: Omit<WeightTemplate, 'id' | 'created_at' | 'updated_
     );
 }
 
-async function update(id: string, data: Partial<Omit<WeightTemplate, 'id' | 'created_at' | 'updated_at'>>): Promise<WeightTemplate> {
+async function update(id: string, data: WeightTemplateUpdateInput): Promise<WeightTemplate> {
     return runLocalOrDb(
         () => {
             const templateIndex = mockTemplates.findIndex(t => t.id === id);
@@ -95,11 +101,11 @@ async function update(id: string, data: Partial<Omit<WeightTemplate, 'id' | 'cre
         async () => {
             serviceLogger.info("Updating weight template.", { id });
             
-            const fields = [];
-            const values = [];
+            const fields: string[] = [];
+            const values: unknown[] = [];
             let paramCounter = 1;
             
-            const updatableFields: (keyof typeof data)[] = ['name', 'description', 'unit', 'min_order_quantity', 'step_quantity', 'is_active'];
+            const updatableFields: (keyof WeightTemplateUpdateInput)[] = ['name', 'description', 'unit', 'min_order_quantity', 'step_quantity', 'is_active'];
             
             for (const field of updatableFields) {
                 if (data[field] !== undefined) {

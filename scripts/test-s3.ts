@@ -1,8 +1,8 @@
 import 'dotenv/config'
 import { S3Client, HeadBucketCommand } from '@aws-sdk/client-s3';
-import { serverConfig } from '../src/lib/config';
+import { s3Config } from '../src/lib/config';
 
-const { bucketName, endpoint, region, accessKeyId, secretAccessKey } = serverConfig.s3;
+const { bucketName, endpoint, region, accessKeyId, secretAccessKey } = s3Config;
 
 console.log('--- S3/GCS Connection Test ---');
 console.log('Attempting to connect with the following configuration:');

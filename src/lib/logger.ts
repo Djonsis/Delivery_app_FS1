@@ -37,7 +37,7 @@ class Logger {
         return new Logger(category);
     }
     
-    private log(level: LogLevel, message: string, data?: any) {
+    private log(level: LogLevel, message: string, data?: unknown) {
         if (LOG_LEVELS[level] < configuredLevel) return;
 
         const consoleMessage = `[${level.toUpperCase()}] [${this.category}] ${message}`;
@@ -53,20 +53,20 @@ class Logger {
         }
     }
 
-    public debug(message: string, data?: any) {
+    public debug(message: string, data?: unknown) {
         this.log('debug', message, data);
     }
 
-    public info(message: string, data?: any) {
+    public info(message: string, data?: unknown) {
         this.log('info', message, data);
     }
 
-    public warn(message: string, data?: any) {
+    public warn(message: string, data?: unknown) {
         this.log('warn', message, data);
     }
 
-    public error(message: string, error: any) {
-        let errorData: any;
+    public error(message: string, error: unknown) {
+        let errorData: unknown;
 
         if (error instanceof Error) {
             errorData = {

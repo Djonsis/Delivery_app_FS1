@@ -27,12 +27,18 @@ export async function createCategoryAction(values: unknown) {
     if (!validatedFields.success) {
         return { success: false, message: "Неверные данные формы.", errors: validatedFields.error.flatten().fieldErrors };
     }
+    
+    const { description, ...rest } = validatedFields.data;
+    const categoryData = {
+        ...rest,
+        description: description ?? null,
+    };
 
-    categoryActionLogger.info("Attempting to create category", { data: validatedFields.data });
-    const result = await categoriesService.create(validatedFields.data);
+    categoryActionLogger.info("Attempting to create category", { data: categoryData });
+    const result = await categoriesService.create(categoryData);
 
     if (result.success) {
-        categoryActionLogger.info("Successfully created category.", { name: validatedFields.data.name });
+        categoryActionLogger.info("Successfully created category.", { name: categoryData.name });
         revalidateCategoryPaths();
     } else {
         categoryActionLogger.error("Failed to create category", { message: result.message });
@@ -50,9 +56,15 @@ export async function updateCategoryAction(id: string, values: unknown) {
     if (!validatedFields.success) {
         return { success: false, message: "Неверные данные формы.", errors: validatedFields.error.flatten().fieldErrors };
     }
+    
+    const { description, ...rest } = validatedFields.data;
+    const categoryData = {
+        ...rest,
+        description: description ?? null,
+    };
 
-    categoryActionLogger.info(`Attempting to update category ${id}`, { data: validatedFields.data });
-    const result = await categoriesService.update(id, validatedFields.data);
+    categoryActionLogger.info(`Attempting to update category ${id}`, { data: categoryData });
+    const result = await categoriesService.update(id, categoryData);
 
     if (result.success) {
         categoryActionLogger.info(`Successfully updated category ${id}.`);

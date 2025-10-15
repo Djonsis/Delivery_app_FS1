@@ -1,18 +1,18 @@
 import 'dotenv/config'
 import { Pool } from 'pg';
-import { serverConfig } from '../src/lib/config';
+import { dbConfig } from '../src/lib/config';
 
 console.log('--- Database Connection Test ---');
 console.log('Attempting to connect with the following configuration:');
-console.log(`Host (PG_HOST): ${serverConfig.db.host}`);
-console.log(`Port (PG_PORT): ${serverConfig.db.port}`);
-console.log(`User (PG_USER): ${serverConfig.db.user}`);
-console.log(`Database (PG_DATABASE): ${serverConfig.db.database}`);
+console.log(`Host (PG_HOST): ${dbConfig.host}`);
+console.log(`Port (PG_PORT): ${dbConfig.port}`);
+console.log(`User (PG_USER): ${dbConfig.user}`);
+console.log(`Database (PG_DATABASE): ${dbConfig.database}`);
 console.log('Password (PG_PASSWORD): [HIDDEN]');
 console.log('---------------------------------');
 
 const pool = new Pool({
-    ...serverConfig.db,
+    ...dbConfig,
     connectionTimeoutMillis: 10000,
 });
 

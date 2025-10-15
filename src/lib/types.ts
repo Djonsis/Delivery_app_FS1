@@ -1,4 +1,18 @@
 
+export type Role = {
+  id: number;
+  name: string;
+};
+
+export type User = {
+  id: string;
+  email: string;
+  display_name: string | null;
+  auth_provider: string;
+  created_at: string;
+  updated_at: string;
+  roles?: Role[];
+};
 
 export type WeightCategory = 'light' | 'middle' | 'heavy' | 'none';
 
@@ -60,6 +74,9 @@ export interface Product {
   weight_template_id?: string | null;
 }
 
+export type ProductCreateInput = Omit<Product, 'id' | 'created_at' | 'updated_at' | 'deleted_at' | 'category' | 'sku'> & { categoryId: string };
+export type ProductUpdateInput = Partial<ProductCreateInput>;
+
 export interface CartItem {
   product: Product;
   quantity: number;
@@ -76,6 +93,9 @@ export interface Category {
   updated_at: string;
 }
 
+export type CategoryCreateInput = Omit<Category, 'id' | 'created_at' | 'updated_at' | 'slug'>;
+export type CategoryUpdateInput = Partial<CategoryCreateInput>;
+
 export interface WeightTemplate {
   id: string;
   name: string;
@@ -87,6 +107,9 @@ export interface WeightTemplate {
   created_at: string;
   updated_at: string;
 }
+
+export type WeightTemplateCreateInput = Omit<WeightTemplate, 'id' | 'created_at' | 'updated_at' | 'is_active'>;
+export type WeightTemplateUpdateInput = Partial<WeightTemplateCreateInput> & { is_active?: boolean };
 
 
 export const ORDER_STATUSES = [

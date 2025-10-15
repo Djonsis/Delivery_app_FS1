@@ -1,13 +1,13 @@
 
 import { s3Client } from "@/lib/s3-client";
-import { serverConfig } from "@/lib/config";
+import { s3Config } from "@/lib/config";
 import { HeadBucketCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import crypto from "crypto";
 import { StorageStatus } from "./types";
 
 export async function getStorageStatus(): Promise<StorageStatus> {
-    const { bucketName, endpoint, region, accessKeyId } = serverConfig.s3;
+    const { bucketName, endpoint, region, accessKeyId } = s3Config;
     
     const status: StorageStatus = {
         bucketName,
@@ -34,7 +34,7 @@ interface PresignedUrlInput {
 }
 
 export async function getSignedUrlForUpload({ filename, contentType }: PresignedUrlInput): Promise<{ url: string; objectKey: string }> {
-    const { bucketName } = serverConfig.s3;
+    const { bucketName } = s3Config;
 
     // Generate a unique object key to avoid filename collisions
     const uniqueSuffix = crypto.randomBytes(8).toString('hex');
@@ -62,7 +62,7 @@ interface UploadFileInput {
 }
 
 export async function uploadFile({ file, contentType }: UploadFileInput): Promise<{ objectKey: string }> {
-  const { bucketName } = serverConfig.s3;
+  const { bucketName } = s3Config;
   const uniqueSuffix = crypto.randomBytes(8).toString('hex');
   const objectKey = `products/${uniqueSuffix}-${file.name}`;
 

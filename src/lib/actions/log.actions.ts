@@ -11,6 +11,20 @@ const LOG_FILE_PATH = path.join(
   loggingConfig.logFile
 );
 
+// Определяем типы для возвращаемых значений
+export type GetLogsResult = {
+  logs?: string[];
+  error?: string;
+  logFilePath?: string;
+  logFileExists?: boolean;
+};
+
+export type ClearLogsResult = {
+  success: boolean;
+  message: string;
+};
+
+
 /**
  * Форматирует запись из Cloud Logging в читаемую строку.
  */
@@ -19,16 +33,25 @@ const formatLogEntry = (entry: LogEntry): string => {
   const severity = entry.metadata?.severity ?? 'INFO';
 
   let message = '';
-  const { data } = entry;
+  // data может быть любым типом, поэтому используем unknown
+  const data: unknown = entry.data;
 
   if (typeof data === 'string') {
     message = data;
   } else if (data && typeof data === 'object') {
-    if ('message' in data && data.message) {
-      message = String(data.message);
+    // Проверяем, есть ли свойство message в объекте
+    if ('message' in data && typeof (data as { message: unknown }).message === 'string') {
+      message = (data as { message: string }).message;
     } else {
-      message = JSON.stringify(data);
+      // Безопасно сериализуем объект
+      try {
+        message = JSON.stringify(data);
+      } catch {
+        message = '[Unserializable object]';
+      }
     }
+  } else if (data !== undefined && data !== null) {
+    message = String(data);
   }
 
   const date = new Date(timestamp as string | Date);
@@ -41,7 +64,7 @@ const formatLogEntry = (entry: LogEntry): string => {
  * 
  * ⚠️ TODO: Добавить проверку авторизации (только для администраторов)
  */
-export async function getLogsAction(): Promise<string> {
+export async function getLogsAction(): Promise<GetLogsResult> {
   if (isCloud()) {
     try {
       const projectId = getProjectId();
@@ -56,24 +79,35 @@ export async function getLogsAction(): Promise<string> {
       });
 
       if (entries.length === 0) {
-        return 'No logs found in Google Cloud Logging for this service.';
+        return { logs: [], message: 'No logs found in Google Cloud Logging for this service.' };
       }
 
-      return entries.map(formatLogEntry).join('\n');
+      return { logs: entries.map(formatLogEntry) };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error fetching logs from Google Cloud:', errorMessage);
-      return `Error: Could not fetch logs from Google Cloud Logging. Details: ${errorMessage}`;
+      return { error: `Error: Could not fetch logs from Google Cloud Logging. Details: ${errorMessage}` };
     }
   }
 
   // Local development fallback
   try {
     const data = await fs.readFile(LOG_FILE_PATH, 'utf8');
-    return data.trim() ? data : 'Log file is empty.';
-  } catch {
-    // ✅ Не объявляем переменную - ESLint доволен
-    return 'Log file not found. This is expected if no logs have been written yet.';
+    const logs = data.trim() ? data.split('\n') : [];
+    return { logs, logFilePath: LOG_FILE_PATH, logFileExists: true };
+  } catch (error) {
+    // ENOENT = File Not Found
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as {code: string}).code === 'ENOENT') {
+        return {
+            logs: [],
+            message: "Log file not found. This is expected if no logs have been written yet.",
+            logFilePath: LOG_FILE_PATH,
+            logFileExists: false
+        };
+    }
+     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+     console.error('Error reading log file:', errorMessage);
+     return { error: `Failed to read log file: ${errorMessage}` };
   }
 }
 
@@ -84,17 +118,21 @@ export async function getLogsAction(): Promise<string> {
  * 
  * ⚠️ TODO: Добавить проверку авторизации
  */
-export async function clearLogsAction(): Promise<void> {
+export async function clearLogsAction(): Promise<ClearLogsResult> {
   if (isCloud()) {
-    console.log('Request to clear logs received in a cloud environment. No action taken due to retention policies.');
-    return;
+    const message = 'Request to clear logs received in a cloud environment. No action taken due to retention policies.';
+    console.log(message);
+    return { success: true, message };
   }
 
   try {
     await fs.writeFile(LOG_FILE_PATH, '');
-    console.log(`Log file cleared at: ${LOG_FILE_PATH}`);
+    const message = `Log file cleared at: ${LOG_FILE_PATH}`;
+    console.log(message);
+    return { success: true, message };
   } catch (error) {
-    // ✅ Здесь используем error, поэтому можно объявить
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Failed to clear log file:', error);
+    return { success: false, message: `Failed to clear log file: ${errorMessage}` };
   }
 }

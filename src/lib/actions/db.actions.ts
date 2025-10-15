@@ -7,6 +7,9 @@ import { logger } from "../logger";
 import { DbStatus } from "../types";
 import { query } from "../db";
 
+// Re-exporting the type to be used in client components
+export type { DbStatus } from "../types";
+
 const dbActionLogger = logger.withCategory("DB_ACTION");
 
 export async function getDbStatusAction(): Promise<DbStatus> {

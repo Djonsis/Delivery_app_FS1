@@ -12,6 +12,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ProductsTable } from "./_components/products-table";
 
+export const dynamic = 'force-dynamic';
 
 export default async function ProductsPage() {
   const products = await productsService.getAll();

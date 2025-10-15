@@ -32,7 +32,7 @@
 -- Включаем расширение для генерации UUID, если его еще нет
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Таблица пользователей (для будущего использования)
+-- Таблица пользователей
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email TEXT UNIQUE NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Таблица ролей (для будущего использования)
+-- Таблица ролей
 CREATE TABLE IF NOT EXISTS roles (
   id SERIAL PRIMARY KEY,
   name TEXT UNIQUE NOT NULL -- например, 'admin', 'editor'

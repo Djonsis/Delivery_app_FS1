@@ -1,7 +1,7 @@
 
 import { query } from "./db";
 import { serverLogger } from "./server-logger";
-import { Category } from "./types";
+import { Category, CategoryCreateInput, CategoryUpdateInput } from "./types";
 import { mockCategory } from "./mock-data";
 import { runLocalOrDb } from "./env";
 
@@ -11,7 +11,15 @@ const generateSlug = (name: string) => {
     return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 };
 
-const mapDbRowToCategory = (row: any): Category => row;
+const mapDbRowToCategory = (row: Record<string, unknown>): Category => ({
+    id: row.id as string,
+    name: row.name as string,
+    slug: row.slug as string,
+    sku_prefix: row.sku_prefix as string,
+    description: row.description as string | null,
+    created_at: row.created_at as string,
+    updated_at: row.updated_at as string,
+});
 
 async function getAll(): Promise<Category[]> {
     return runLocalOrDb(
@@ -41,7 +49,12 @@ async function getById(id: string): Promise<Category | null> {
     );
 }
 
-async function create(data: Omit<Category, 'id' | 'created_at' | 'updated_at' | 'slug'>): Promise<{ success: boolean; message: string }> {
+// Type guard for database errors
+function isDbError(error: unknown): error is { code: string; constraint: string } {
+    return typeof error === 'object' && error !== null && 'code' in error && 'constraint' in error;
+}
+
+async function create(data: CategoryCreateInput): Promise<{ success: boolean; message: string }> {
     const { name, sku_prefix, description } = data;
     const slug = generateSlug(name);
     serviceLogger.info("Creating a new category in DB", { name, slug });
@@ -56,16 +69,15 @@ async function create(data: Omit<Category, 'id' | 'created_at' | 'updated_at' | 
                 );
                 return { success: true, message: "Категория успешно создана." };
             } catch (error) {
-                const dbError = error as any;
-                serviceLogger.error("Failed to create category in DB", dbError);
-                if (dbError.code === '23505') {
-                    if (dbError.constraint?.includes('name')) {
+                serviceLogger.error("Failed to create category in DB", error);
+                if (isDbError(error) && error.code === '23505') {
+                    if (error.constraint?.includes('name')) {
                         return { success: false, message: "Категория с таким названием уже существует." };
                     }
-                    if (dbError.constraint?.includes('slug')) {
+                    if (error.constraint?.includes('slug')) {
                         return { success: false, message: "Категория с таким slug уже существует." };
                     }
-                    if (dbError.constraint?.includes('sku_prefix')) {
+                    if (error.constraint?.includes('sku_prefix')) {
                         return { success: false, message: "Категория с таким префиксом артикула уже существует." };
                     }
                 }
@@ -75,7 +87,7 @@ async function create(data: Omit<Category, 'id' | 'created_at' | 'updated_at' | 
     );
 }
 
-async function update(id: string, data: Partial<Omit<Category, 'id' | 'created_at' | 'updated_at'>>): Promise<{ success: boolean; message: string }> {
+async function update(id: string, data: CategoryUpdateInput): Promise<{ success: boolean; message: string }> {
     serviceLogger.info(`Updating category in DB: ${id}`, { data });
     
     return runLocalOrDb(
@@ -98,16 +110,15 @@ async function update(id: string, data: Partial<Omit<Category, 'id' | 'created_a
                 );
                 return { success: true, message: "Категория успешно обновлена." };
             } catch (error) {
-                const dbError = error as any;
-                serviceLogger.error(`Failed to update category ${id} in DB`, dbError);
-                if (dbError.code === '23505') {
-                    if (dbError.constraint?.includes('name')) {
+                serviceLogger.error(`Failed to update category ${id} in DB`, error);
+                if (isDbError(error) && error.code === '23505') {
+                    if (error.constraint?.includes('name')) {
                         return { success: false, message: "Категория с таким названием уже существует." };
                     }
-                    if (dbError.constraint?.includes('slug')) {
+                    if (error.constraint?.includes('slug')) {
                         return { success: false, message: "Категория с таким slug уже существует." };
                     }
-                    if (dbError.constraint?.includes('sku_prefix')) {
+                    if (error.constraint?.includes('sku_prefix')) {
                         return { success: false, message: "Категория с таким префиксом артикула уже существует." };
                     }
                 }
