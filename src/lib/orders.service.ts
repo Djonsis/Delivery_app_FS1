@@ -4,8 +4,9 @@ import { serverLogger } from "@/lib/server-logger";
 import { Order, OrderStatus, CreateOrderPayload } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { mockOrder } from "./mock-data";
-import { runLocalOrDb, isLocal } from "./env";
+import { runLocalOrDb } from "./env";
 import { validateOrderStatus } from "./orders.utils";
+import { isCloud } from "./config";
 
 const ordersServiceLogger = serverLogger.withCategory("ORDERS_SERVICE");
 
@@ -23,7 +24,7 @@ export const ordersService = {
     },
 
     async updateOrderStatus(orderId: string, newStatus: OrderStatus): Promise<Order> {
-        if (isLocal()) {
+        if (!isCloud()) {
             ordersServiceLogger.warn(`Running in local/studio environment. Mocking updateOrderStatus for order: ${orderId}`);
             return { ...mockOrder, status: newStatus };
         }

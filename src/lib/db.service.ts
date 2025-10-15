@@ -1,10 +1,10 @@
 
 import { getPoolStatus as getRawPoolStatus } from "@/lib/db";
-import { serverConfig } from "@/lib/config";
+import { dbConfig } from "@/lib/config";
 import type { DbStatus } from "./types";
 
 export async function getDbStatus(): Promise<DbStatus> {
-    const { host, port, user, database } = serverConfig.db;
+    const { host, port, user, database } = dbConfig;
 
     const poolStats = getRawPoolStatus();
 
