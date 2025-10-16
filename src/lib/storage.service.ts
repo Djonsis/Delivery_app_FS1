@@ -49,7 +49,7 @@ export async function getSignedUrlForUpload({ filename, contentType }: Presigned
     try {
         const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // URL is valid for 1 hour
         return { url, objectKey };
-    } catch (error) {
+    } catch {
         // In a service, we prefer to throw the error to let the caller handle it.
         throw new Error("Failed to generate presigned URL from service.");
     }

@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { productsService } from "@/lib/products.service";
+import { productsService } from "@/lib/products";
 import { serverLogger } from "@/lib/server-logger";
 import { weightTemplatesService } from "@/lib/weight-templates.service";
 import { ProductCreateInput, ProductUpdateInput } from "@/lib/types";
@@ -48,7 +48,7 @@ function revalidateProductPaths(id?: string) {
   revalidatePath("/admin/products");
   revalidatePath("/catalog");
   if (id) revalidatePath(`/admin/products/${id}/edit`);
-  revalidatePath("/admin/products/new");
+    else revalidatePath("/admin/products/new");
 }
 
 export async function createProductAction(values: unknown) {
@@ -72,30 +72,33 @@ export async function createProductAction(values: unknown) {
         weight_template_id: rest.weight_template_id ?? null,
         price_per_unit: rest.price_per_unit ?? null,
         price_unit: rest.price_unit ?? null,
-        currency: 'RUB', // Default value
-        rating: 0, // Default value
-        reviews: 0, // Default value
+        currency: 'RUB', 
+        rating: 0, 
+        reviews: 0, 
     };
     
-    if (productData.weight_template_id && productData.is_weighted) {
-      const template = await weightTemplatesService.getById(productData.weight_template_id);
-      if (template) {
-        productData.unit = productData.unit || template.unit;
-        productData.min_order_quantity = productData.min_order_quantity ?? template.min_order_quantity;
-        productData.step_quantity = productData.step_quantity ?? template.step_quantity;
+    if (productData.is_weighted && productData.weight_template_id) {
+      const templateResult = await weightTemplatesService.getById(productData.weight_template_id);
+      if (templateResult) {
+        productData.unit = productData.unit || templateResult.unit;
+        productData.min_order_quantity = productData.min_order_quantity ?? templateResult.min_order_quantity;
+        productData.step_quantity = productData.step_quantity ?? templateResult.step_quantity;
       }
     }
     
     productActionLogger.info("Attempting to create product via service", { data: productData });
-    const newProduct = await productsService.create(productData);
-    productActionLogger.info("Successfully created product.", { title: newProduct.title, id: newProduct.id });
-    
-    revalidateProductPaths();
+    const result = await productsService.create(productData);
 
-    return { success: true, message: "Товар успешно создан." };
+    if (result.success) {
+        productActionLogger.info("Successfully created product.", { title: result.product?.title, id: result.product?.id });
+        revalidateProductPaths();
+    }
+
+    return result;
+
   } catch (error) {
-    productActionLogger.error("Failed to create product via service", error as Error);
-    return { success: false, message: "Ошибка базы данных. Не удалось создать товар." };
+    productActionLogger.error("An unexpected error occurred in createProductAction", error as Error);
+    return { success: false, message: "Произошла непредвиденная ошибка. Не удалось создать товар." };
   }
 }
 
@@ -119,7 +122,7 @@ export async function updateProductAction(id: string, values: unknown) {
     const productData: ProductUpdateInput = {
         ...rest,
         category_id: categoryId,
-        tags: tags ? tags.split(',').map(t => t.trim()) : undefined, // Allow undefined for updates
+        tags: tags ? tags.split(',').map(t => t.trim()) : undefined, 
         description: rest.description ?? null,
         imageUrl: rest.imageUrl ?? null,
         weight_template_id: rest.weight_template_id ?? null,
@@ -127,27 +130,30 @@ export async function updateProductAction(id: string, values: unknown) {
         price_unit: rest.price_unit ?? null,
     };
     
-    if (productData.weight_template_id && productData.is_weighted) {
-      const template = await weightTemplatesService.getById(productData.weight_template_id);
-      if (template) {
-        productData.unit = productData.unit || template.unit;
-        productData.min_order_quantity = productData.min_order_quantity ?? template.min_order_quantity;
-        productData.step_quantity = productData.step_quantity ?? template.step_quantity;
+    if (productData.is_weighted && productData.weight_template_id) {
+      const templateResult = await weightTemplatesService.getById(productData.weight_template_id);
+      if (templateResult) {
+        productData.unit = productData.unit || templateResult.unit;
+        productData.min_order_quantity = productData.min_order_quantity ?? templateResult.min_order_quantity;
+        productData.step_quantity = productData.step_quantity ?? templateResult.step_quantity;
       }
-    } else if (!productData.is_weighted) {
+    } else if (productData.is_weighted === false) {
         productData.weight_template_id = null;
     }
     
     productActionLogger.info("Attempting to update product via service", { id, data: productData });
-    await productsService.update(id, productData);
-    productActionLogger.info("Successfully updated product.", { id });
-    
-    revalidateProductPaths(id);
+    const result = await productsService.update(id, productData);
 
-    return { success: true, message: "Товар успешно обновлен." };
+    if(result.success) {
+        productActionLogger.info("Successfully updated product.", { id });
+        revalidateProductPaths(id);
+    }
+    
+    return result;
+
   } catch (error) {
-    productActionLogger.error("Failed to update product via service", error as Error, { id });
-    return { success: false, message: "Ошибка базы данных. Не удалось обновить товар." };
+    productActionLogger.error("An unexpected error occurred in updateProductAction", error as Error, { id });
+    return { success: false, message: "Произошла непредвиденная ошибка. Не удалось обновить товар." };
   }
 }
 
@@ -159,14 +165,17 @@ export async function deleteProductAction(id: string) {
   
   try {
     productActionLogger.info("Attempting to delete product via service", { id });
-    await productsService.delete(id);
-    productActionLogger.info("Successfully deleted product.", { id });
+    const result = await productsService.delete(id);
 
-    revalidateProductPaths();
+    if(result.success) {
+        productActionLogger.info("Successfully deleted product.", { id });
+        revalidateProductPaths();
+    }
 
-    return { success: true, message: "Товар успешно удален." };
+    return result;
+    
   } catch (error) {
-    productActionLogger.error("Failed to delete product via service", error as Error, { id });
-    return { success: false, message: "Ошибка базы данных. Не удалось удалить товар." };
+    productActionLogger.error("An unexpected error occurred in deleteProductAction", error as Error, { id });
+    return { success: false, message: "Произошла непредвиденная ошибка. Не удалось удалить товар." };
   }
 }

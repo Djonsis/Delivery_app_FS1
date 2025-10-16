@@ -74,7 +74,7 @@ export interface Product {
   weight_template_id?: string | null;
 }
 
-export type ProductCreateInput = Omit<Product, 'id' | 'created_at' | 'updated_at' | 'deleted_at' | 'category' | 'sku'> & { categoryId: string };
+export type ProductCreateInput = Omit<Product, 'id' | 'created_at' | 'updated_at' | 'deleted_at' | 'category' | 'sku'> & { category_id: string };
 export type ProductUpdateInput = Partial<ProductCreateInput>;
 
 export interface CartItem {
@@ -189,8 +189,10 @@ export type SortOption = "popularity" | "price_desc" | "price_asc" | "rating_des
 
 export interface ProductFilter {
     query?: string;
-    category?: string;
+    categoryId?: string; 
     minPrice?: number;
     maxPrice?: number;
     sort?: SortOption;
+    limit?: number;
+    offset?: number;
 }

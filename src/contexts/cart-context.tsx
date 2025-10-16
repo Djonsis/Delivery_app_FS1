@@ -144,7 +144,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   
   const getCartItem = (id: string) => state.cartItems.find(item => item.product.id === id);
 
-  const itemCount = state.cartItems.reduce((sum, item) => sum + 1, 0);
+  const itemCount = state.cartItems.reduce((sum, _item) => sum + 1, 0);
   const cartTotal = state.cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
   return (

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, useCallback } from 'react';
 import { getLogsAction, clearLogsAction } from '@/lib/actions/log.actions';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -36,27 +36,15 @@ export default function LogsPage() {
   const [isClearing, startClearing] = useTransition();
   const { toast } = useToast();
 
-  const fetchLogs = () => {
+  const fetchLogs = useCallback(() => {
     startLoading(async () => {
       const { logs, size } = await getLogsAction();
       setLogs(logs);
       setLogSize(size);
-
-      if (isAutoClearEnabled && size > AUTO_CLEAR_LIMIT_BYTES) {
-        toast({
-          title: "Автоматическая очистка",
-          description: `Размер логов превысил ${AUTO_CLEAR_LIMIT_BYTES / 1024 / 1024}MB. Запускаю очистку.`,
-        });
-        handleClearLogs();
-      }
     });
-  };
+  }, [startLoading]);
 
-  useEffect(() => {
-    fetchLogs();
-  }, []);
-
-  const handleClearLogs = () => {
+  const handleClearLogs = useCallback(() => {
     startClearing(async () => {
       const result = await clearLogsAction();
       if (result.success) {
@@ -73,7 +61,21 @@ export default function LogsPage() {
         });
       }
     });
-  };
+  }, [startClearing, toast, fetchLogs]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
+
+  useEffect(() => {
+    if (isAutoClearEnabled && logSize > AUTO_CLEAR_LIMIT_BYTES) {
+      toast({
+        title: "Автоматическая очистка",
+        description: `Размер логов превысил ${AUTO_CLEAR_LIMIT_BYTES / 1024 / 1024}MB. Запускаю очистку.`,
+      });
+      handleClearLogs();
+    }
+  }, [logSize, isAutoClearEnabled, handleClearLogs, toast]);
 
   const filteredLogs = logs
     .split('\n')

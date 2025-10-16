@@ -59,7 +59,7 @@ export const ordersService = {
             async () => {
                 const { customerName, items, totalAmount } = payload;
                 ordersServiceLogger.info("Attempting to create a new order in DB", { customerName, itemCount: items.length });
-                const client = await query('BEGIN');
+                await query('BEGIN');
 
                 try {
                     const orderInsertQuery = `

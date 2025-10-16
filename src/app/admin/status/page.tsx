@@ -6,7 +6,7 @@ import { getDbStatusAction, type DbStatus, checkTablesAction, initializeDbAction
 import { getStorageStatusAction, type StorageStatus } from '@/lib/actions/storage.actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, AlertTriangle, CheckCircle2, Clipboard, Package, Database, Table, HelpCircle, HardHat } from 'lucide-react';
+import { RefreshCw, AlertTriangle, CheckCircle2, Clipboard, Package, Database, Table, HardHat } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import {

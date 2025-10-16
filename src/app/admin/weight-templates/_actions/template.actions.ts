@@ -1,94 +1,89 @@
-
-"use server";
+'use server';
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { serverLogger } from "@/lib/server-logger";
 import { weightTemplatesService } from "@/lib/weight-templates.service";
+import { serverLogger } from "@/lib/server-logger";
 
-const templateActionLogger = serverLogger.withCategory("TEMPLATE_ACTION");
+const templateLogger = serverLogger.withCategory("WEIGHT_TEMPLATE_ACTION");
 
 const templateSchema = z.object({
-  name: z.string().min(3, "Название должно быть не менее 3 символов.").max(100, "Название не должно превышать 100 символов."),
-  description: z.string().optional(),
+  name: z.string().min(2, "Название шаблона должно содержать не менее 2 символов."),
   unit: z.enum(["kg", "g", "pcs"]),
-  min_order_quantity: z.coerce.number().min(0.001, "Мин. заказ должен быть больше 0.").max(1000),
-  step_quantity: z.coerce.number().min(0.001, "Шаг должен быть больше 0.").max(100),
-  is_active: z.boolean().default(true),
-}).refine(data => data.step_quantity <= data.min_order_quantity, {
-  message: "Шаг количества не может быть больше минимального заказа.",
-  path: ["step_quantity"],
+  min_order_quantity: z.number().min(0),
+  step_quantity: z.number().min(0),
 });
 
+function revalidateTemplatePaths(id?: string) {
+  revalidatePath("/admin/weight-templates");
+  if (id) revalidatePath(`/admin/weight-templates/${id}/edit`);
+    else revalidatePath("/admin/weight-templates/new");
+}
 
-export async function createTemplateAction(values: unknown) {
-  const validatedFields = templateSchema.safeParse(values);
+export async function createWeightTemplateAction(values: unknown) {
+  const validated = templateSchema.safeParse(values);
 
-  if (!validatedFields.success) {
-    const errorMessages = validatedFields.error.flatten().fieldErrors;
-    templateActionLogger.error("Template creation failed due to validation errors", { errors: errorMessages });
-    return { success: false, message: "Неверные данные формы.", errors: errorMessages };
+  if (!validated.success) {
+    const errors = validated.error.flatten().fieldErrors;
+    templateLogger.error("Weight template creation failed due to validation errors", { errors });
+    return { success: false, message: "Неверные данные формы.", errors };
   }
 
   try {
-    templateActionLogger.info("Attempting to create template via service", { data: validatedFields.data });
-    await weightTemplatesService.create(validatedFields.data);
-    templateActionLogger.info("Successfully created template.", { name: validatedFields.data.name });
+    const result = await weightTemplatesService.create(validated.data);
 
-    revalidatePath("/admin/weight-templates");
-    revalidatePath("/admin/products/new");
-    revalidatePath("/admin/products");
+    if (result.success) {
+      templateLogger.info("Weight template created successfully", { id: result.template?.id, name: result.template?.name });
+      revalidateTemplatePaths();
+    }
 
-    return { success: true, message: "Шаблон успешно создан." };
+    return result;
   } catch (error) {
-    templateActionLogger.error("Failed to create template via service", error as Error);
-    return { success: false, message: "Ошибка базы данных. Не удалось создать шаблон." };
+    templateLogger.error("Unexpected error in createWeightTemplateAction", error as Error);
+    return { success: false, message: "Произошла непредвиденная ошибка. Не удалось создать шаблон." };
   }
 }
 
-export async function updateTemplateAction(id: string, values: unknown) {
-  if (!id) {
-    return { success: false, message: "ID шаблона не предоставлен." };
-  }
+export async function updateWeightTemplateAction(id: string, values: unknown) {
+  if (!id) return { success: false, message: "ID шаблона не предоставлен." };
 
-  const validatedFields = templateSchema.safeParse(values);
+  const validated = templateSchema.safeParse(values);
 
-  if (!validatedFields.success) {
-    const errorMessages = validatedFields.error.flatten().fieldErrors;
-    templateActionLogger.error("Template update failed due to validation errors", { id, errors: errorMessages });
-    return { success: false, message: "Неверные данные формы.", errors: errorMessages };
+  if (!validated.success) {
+    const errors = validated.error.flatten().fieldErrors;
+    templateLogger.error("Weight template update failed due to validation errors", { id, errors });
+    return { success: false, message: "Неверные данные формы.", errors };
   }
 
   try {
-    templateActionLogger.info("Attempting to update template via service", { id, data: validatedFields.data });
-    await weightTemplatesService.update(id, validatedFields.data);
-    templateActionLogger.info("Successfully updated template.", { id });
-    
-    revalidatePath("/admin/weight-templates");
-    revalidatePath("/admin/products");
+    const result = await weightTemplatesService.update(id, validated.data);
 
-    return { success: true, message: "Шаблон успешно обновлен." };
+    if (result.success) {
+      templateLogger.info("Weight template updated successfully", { id });
+      revalidateTemplatePaths(id);
+    }
+
+    return result;
   } catch (error) {
-    templateActionLogger.error("Failed to update template via service", error as Error, { id });
-    return { success: false, message: "Ошибка базы данных. Не удалось обновить шаблон." };
+    templateLogger.error("Unexpected error in updateWeightTemplateAction", error as Error, { id });
+    return { success: false, message: "Произошла непредвиденная ошибка. Не удалось обновить шаблон." };
   }
 }
 
-export async function toggleTemplateStatusAction(id: string, currentStatus: boolean) {
-    if (!id) {
-        return { success: false, message: "ID шаблона не предоставлен." };
+export async function deleteWeightTemplateAction(id: string) {
+  if (!id) return { success: false, message: "ID шаблона не предоставлен." };
+
+  try {
+    const result = await weightTemplatesService.delete(id);
+
+    if (result.success) {
+      templateLogger.info("Weight template deleted successfully", { id });
+      revalidateTemplatePaths();
     }
 
-    try {
-        await weightTemplatesService.update(id, { is_active: !currentStatus });
-        const message = `Шаблон успешно ${!currentStatus ? 'активирован' : 'деактивирован'}.`;
-        templateActionLogger.info(message, { id });
-        
-        revalidatePath("/admin/weight-templates");
-        return { success: true, message };
-
-    } catch (error) {
-        templateActionLogger.error("Failed to toggle template status", error as Error, { id });
-        return { success: false, message: "Не удалось изменить статус шаблона." };
-    }
+    return result;
+  } catch (error) {
+    templateLogger.error("Unexpected error in deleteWeightTemplateAction", error as Error, { id });
+    return { success: false, message: "Произошла непредвиденная ошибка. Не удалось удалить шаблон." };
+  }
 }

@@ -1,118 +1,120 @@
-// This logger is safe for use on both the client and server.
-// It does not contain any server-side dependencies like 'fs'.
+import { inspect } from 'util';
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+// Типы уровней логирования
+type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 
+// Уровни логирования для фильтрации
 const LOG_LEVELS: Record<LogLevel, number> = {
-    debug: 0,
-    info: 1,
-    warn: 2,
-    error: 3,
+    DEBUG: 1,
+    INFO: 2,
+    WARN: 3,
+    ERROR: 4,
 };
 
-const getLogLevel = () => {
+// Уровень логирования по умолчанию
+let currentLogLevel: LogLevel = 'INFO';
+
+/**
+ * Устанавливает уровень логирования, основываясь на переменных окружения.
+ * Должен быть вызван один раз при старте приложения.
+ */
+function initializeLogLevel() {
     try {
         const levelFromEnv = process.env.NEXT_PUBLIC_LOG_LEVEL;
-        if (levelFromEnv && levelFromEnv in LOG_LEVELS) {
-            return LOG_LEVELS[levelFromEnv as LogLevel];
+        if (levelFromEnv && LOG_LEVELS[levelFromEnv as LogLevel]) {
+            currentLogLevel = levelFromEnv as LogLevel;
         }
-    } catch (e) {
-        // process is not defined in some environments.
+    } catch { // ✅ Исправлено: удалено 'e', чтобы избежать Warning: '_e' is defined but never used
+        // process is not defined in some environments (e.g., in a browser context).
     }
-    // Default to 'info' if not specified, to avoid overly verbose logs in production.
-    return LOG_LEVELS.info; 
 }
 
-const configuredLevel = getLogLevel();
-const performanceTimers = new Map<string, number>();
+// Инициализация при загрузке модуля
+initializeLogLevel();
 
-class Logger {
-    private category: string;
+/**
+ * Проверяет, должен ли данный лог-уровень быть выведен.
+ * @param level Уровень сообщения
+ * @returns true, если сообщение должно быть выведено.
+ */
+function shouldLog(level: LogLevel): boolean {
+    return LOG_LEVELS[level] >= LOG_LEVELS[currentLogLevel];
+}
 
-    constructor(category: string = 'APP') {
-        this.category = category;
+// Определяем, куда выводить логи
+const logOutput = console;
+
+/**
+ * Базовая функция логирования.
+ */
+function logMessage(level: LogLevel, category: string, message: string, data?: unknown) {
+    if (!shouldLog(level)) {
+        return;
     }
 
-    public withCategory(category: string): Logger {
-        return new Logger(category);
-    }
-    
-    private log(level: LogLevel, message: string, data?: unknown) {
-        if (LOG_LEVELS[level] < configuredLevel) return;
+    // Форматируем время в ISO
+    const timestamp = new Date().toISOString();
+    let logEntry = `${timestamp} [${level}] [${category}] ${message}`;
 
-        const consoleMessage = `[${level.toUpperCase()}] [${this.category}] ${message}`;
-        
-        // Avoid logging empty objects or undefined data.
-        const dataToLog = data ? data : '';
-
-        switch(level) {
-            case 'error': console.error(consoleMessage, dataToLog); break;
-            case 'warn': console.warn(consoleMessage, dataToLog); break;
-            case 'info': console.info(consoleMessage, dataToLog); break;
-            default: console.debug(consoleMessage, dataToLog); break;
-        }
+    if (data) {
+        // Добавляем дополнительные данные, форматируя их как JSON или inspect (для сложных объектов)
+        const details = typeof data === 'string' ? data : inspect(data, { depth: 5, colors: false });
+        logEntry += ` - Details: ${details}`;
     }
 
-    public debug(message: string, data?: unknown) {
-        this.log('debug', message, data);
+    // Используем соответствующий метод console
+    switch (level) {
+        case 'ERROR':
+            logOutput.error(logEntry);
+            break;
+        case 'WARN':
+            logOutput.warn(logEntry);
+            break;
+        case 'INFO':
+            logOutput.info(logEntry);
+            break;
+        case 'DEBUG':
+            logOutput.log(logEntry); // console.debug часто скрыт
+            break;
     }
+}
 
-    public info(message: string, data?: unknown) {
-        this.log('info', message, data);
-    }
-
-    public warn(message: string, data?: unknown) {
-        this.log('warn', message, data);
-    }
-
-    public error(message: string, error: unknown) {
-        let errorData: unknown;
-
-        if (error instanceof Error) {
-            errorData = {
-                message: error.message,
-                stack: error.stack,
-                name: error.name,
-                ...error
-            };
-        } else if (typeof error === 'object' && error !== null) {
-            errorData = error;
-        } else {
-            errorData = { rawError: error };
-        }
-        
-        this.log('error', message, { error: errorData });
-    }
-    
-    public time(label: string) {
-        if (typeof window !== "undefined" && window.performance) {
-            performance.mark(`${label}-start`);
-        } else {
-            performanceTimers.set(label, Date.now());
-        }
-    }
-
-    public timeEnd(label: string) {
-        if (typeof window !== "undefined" && window.performance) {
+/**
+ * Создает обертку для логирования, привязанную к определенной категории.
+ * @param category Название категории (например, 'DATABASE', 'AUTH', 'API/PRODUCTS')
+ */
+export function logger(category: string) {
+    return {
+        debug: (message: string, data?: unknown) => logMessage('DEBUG', category, message, data),
+        info: (message: string, data?: unknown) => logMessage('INFO', category, message, data),
+        warn: (message: string, data?: unknown) => logMessage('WARN', category, message, data),
+        error: (message: string, data?: unknown) => logMessage('ERROR', category, message, data),
+        withCategory: (subCategory: string) => logger(`${category}/${subCategory}`),
+        // Вспомогательная функция для логирования времени выполнения
+        time: (label: string, data?: unknown) => {
+            if (!shouldLog('DEBUG')) return;
             try {
-                performance.mark(`${label}-end`);
-                const measure = performance.measure(label, `${label}-start`, `${label}-end`);
-                this.debug(`${label} took ${measure.duration.toFixed(2)}ms`);
-            } catch (e) {
+                performance.mark(label);
+                logMessage('DEBUG', category, `Timer ${label} started.`, data);
+            } catch { // ✅ Исправлено: удалено 'e', чтобы избежать Warning: '_e' is defined but never used
                 // If marks don't exist, just ignore.
             }
-        } else {
-            const startTime = performanceTimers.get(label);
-            if (startTime) {
-                const duration = Date.now() - startTime;
-                this.debug(`${label} took ${duration}ms`);
-                performanceTimers.delete(label);
-            } else {
-                this.warn(`Timer with label "${label}" was ended but never started.`);
+        },
+        timeEnd: (label: string, message: string, data?: unknown) => {
+            if (!shouldLog('DEBUG')) return;
+            try {
+                performance.mark(`${label}-end`);
+                performance.measure(label, label, `${label}-end`);
+                const measurement = performance.getEntriesByName(label)[0];
+                logMessage('DEBUG', category, `${message} Time: ${measurement.duration.toFixed(2)}ms`, data);
+                // Очистка меток
+                performance.clearMarks(label);
+                performance.clearMarks(`${label}-end`);
+                performance.clearMeasures(label);
+            } catch { // ✅ Исправлено: удалено 'e', чтобы избежать Warning: '_e' is defined but never used
+                // If marks or measures don't exist, just ignore.
+                logMessage('DEBUG', category, `${message} (Timing failed)`);
             }
-        }
-    }
+        },
+    };
 }
-
-// --- Singleton Instance ---
-export const logger = new Logger();

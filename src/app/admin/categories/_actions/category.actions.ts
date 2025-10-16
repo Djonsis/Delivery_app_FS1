@@ -1,96 +1,87 @@
-
-"use server";
+'use server';
 
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { categoriesService } from "@/lib/categories.service";
 import { serverLogger } from "@/lib/server-logger";
-import { revalidatePath } from "next/cache";
 
-const categoryActionLogger = serverLogger.withCategory("CATEGORY_ACTION");
+const categoryLogger = serverLogger.withCategory("CATEGORY_ACTION");
 
 const categorySchema = z.object({
-  name: z.string().min(2, "Название должно быть не менее 2 символов."),
-  sku_prefix: z.string().min(1, "Префикс обязателен.").max(10, "Префикс не должен превышать 10 символов."),
+  name: z.string().min(2, "Название категории должно быть не менее 2 символов."),
   description: z.string().optional(),
 });
 
-function revalidateCategoryPaths() {
-    revalidatePath('/admin/categories');
-    revalidatePath('/admin/products');
-    revalidatePath('/catalog');
-    revalidatePath('/');
+function revalidateCategoryPaths(id?: string) {
+  revalidatePath("/admin/categories");
+  if (id) revalidatePath(`/admin/categories/${id}/edit`);
+    else revalidatePath("/admin/categories/new");
 }
 
 export async function createCategoryAction(values: unknown) {
-    const validatedFields = categorySchema.safeParse(values);
+  const validated = categorySchema.safeParse(values);
 
-    if (!validatedFields.success) {
-        return { success: false, message: "Неверные данные формы.", errors: validatedFields.error.flatten().fieldErrors };
-    }
-    
-    const { description, ...rest } = validatedFields.data;
-    const categoryData = {
-        ...rest,
-        description: description ?? null,
-    };
+  if (!validated.success) {
+    const errors = validated.error.flatten().fieldErrors;
+    categoryLogger.error("Category creation failed due to validation errors", { errors });
+    return { success: false, message: "Неверные данные формы.", errors };
+  }
 
-    categoryActionLogger.info("Attempting to create category", { data: categoryData });
-    const result = await categoriesService.create(categoryData);
+  try {
+    const result = await categoriesService.create(validated.data);
 
     if (result.success) {
-        categoryActionLogger.info("Successfully created category.", { name: categoryData.name });
-        revalidateCategoryPaths();
-    } else {
-        categoryActionLogger.error("Failed to create category", { message: result.message });
+      categoryLogger.info("Category created successfully", { id: result.category?.id, name: result.category?.name });
+      revalidateCategoryPaths();
     }
 
     return result;
+  } catch (error) {
+    categoryLogger.error("Unexpected error in createCategoryAction", error as Error);
+    return { success: false, message: "Произошла непредвиденная ошибка. Не удалось создать категорию." };
+  }
 }
 
 export async function updateCategoryAction(id: string, values: unknown) {
-    if (!id) {
-        return { success: false, message: "ID категории не предоставлен." };
-    }
-    const validatedFields = categorySchema.safeParse(values);
+  if (!id) return { success: false, message: "ID категории не предоставлен." };
 
-    if (!validatedFields.success) {
-        return { success: false, message: "Неверные данные формы.", errors: validatedFields.error.flatten().fieldErrors };
-    }
-    
-    const { description, ...rest } = validatedFields.data;
-    const categoryData = {
-        ...rest,
-        description: description ?? null,
-    };
+  const validated = categorySchema.safeParse(values);
 
-    categoryActionLogger.info(`Attempting to update category ${id}`, { data: categoryData });
-    const result = await categoriesService.update(id, categoryData);
+  if (!validated.success) {
+    const errors = validated.error.flatten().fieldErrors;
+    categoryLogger.error("Category update failed due to validation errors", { id, errors });
+    return { success: false, message: "Неверные данные формы.", errors };
+  }
+
+  try {
+    const result = await categoriesService.update(id, validated.data);
 
     if (result.success) {
-        categoryActionLogger.info(`Successfully updated category ${id}.`);
-        revalidateCategoryPaths();
-    } else {
-        categoryActionLogger.error(`Failed to update category ${id}`, { message: result.message });
+      categoryLogger.info("Category updated successfully", { id });
+      revalidateCategoryPaths(id);
     }
 
     return result;
+  } catch (error) {
+    categoryLogger.error("Unexpected error in updateCategoryAction", error as Error, { id });
+    return { success: false, message: "Произошла непредвиденная ошибка. Не удалось обновить категорию." };
+  }
 }
 
-
 export async function deleteCategoryAction(id: string) {
-    if (!id) {
-        return { success: false, message: "ID категории не предоставлен." };
-    }
+  if (!id) return { success: false, message: "ID категории не предоставлен." };
 
-    categoryActionLogger.info(`Attempting to delete category ${id}`);
+  try {
     const result = await categoriesService.delete(id);
-    
+
     if (result.success) {
-        categoryActionLogger.info(`Successfully deleted category ${id}.`);
-        revalidateCategoryPaths();
-    } else {
-        categoryActionLogger.error(`Failed to delete category ${id}`, { message: result.message });
+      categoryLogger.info("Category deleted successfully", { id });
+      revalidateCategoryPaths();
     }
 
     return result;
+  } catch (error) {
+    categoryLogger.error("Unexpected error in deleteCategoryAction", error as Error, { id });
+    return { success: false, message: "Произошла непредвиденная ошибка. Не удалось удалить категорию." };
+  }
 }

@@ -17,6 +17,7 @@ export type GetLogsResult = {
   error?: string;
   logFilePath?: string;
   logFileExists?: boolean;
+  message?: string;
 };
 
 export type ClearLogsResult = {
@@ -24,6 +25,18 @@ export type ClearLogsResult = {
   message: string;
 };
 
+/**
+ * Type guard to check if a value is an object with a string 'message' property.
+ * @param value The value to check.
+ */
+function hasMessage(value: unknown): value is { message: string } {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        'message' in value &&
+        typeof (value as { message: unknown }).message === 'string'
+    );
+}
 
 /**
  * Форматирует запись из Cloud Logging в читаемую строку.
@@ -33,24 +46,22 @@ const formatLogEntry = (entry: LogEntry): string => {
   const severity = entry.metadata?.severity ?? 'INFO';
 
   let message = '';
-  // data может быть любым типом, поэтому используем unknown
   const data: unknown = entry.data;
 
   if (typeof data === 'string') {
     message = data;
+  } else if (hasMessage(data)) {
+    // Safely access the message property thanks to the type guard
+    message = data.message;
   } else if (data && typeof data === 'object') {
-    // Проверяем, есть ли свойство message в объекте
-    if ('message' in data && typeof (data as { message: unknown }).message === 'string') {
-      message = (data as { message: string }).message;
-    } else {
-      // Безопасно сериализуем объект
-      try {
-        message = JSON.stringify(data);
-      } catch {
-        message = '[Unserializable object]';
-      }
+    // If it's another type of object, stringify it
+    try {
+      message = JSON.stringify(data);
+    } catch {
+      message = '[Unserializable object]';
     }
   } else if (data !== undefined && data !== null) {
+    // Handle other primitive types
     message = String(data);
   }
 

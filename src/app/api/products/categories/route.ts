@@ -9,7 +9,7 @@ import { categoriesService } from '@/lib/categories.service';
 
 const apiLogger = serverLogger.withCategory("API_CATEGORIES");
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
     apiLogger.info("Received request for product categories (from DB via service).");
     

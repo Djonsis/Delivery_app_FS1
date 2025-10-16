@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { ProductCard } from "@/components/product-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

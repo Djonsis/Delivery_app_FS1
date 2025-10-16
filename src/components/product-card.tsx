@@ -35,7 +35,7 @@ export function ProductCard({ product }: ProductCardProps) {
     productCardLogger.debug(`Handling quantity change for ${product.title}`, { newQuantity });
     if (newQuantity < 0) return;
     
-    let roundedQuantity = parseFloat(newQuantity.toFixed(precision));
+    const roundedQuantity = parseFloat(newQuantity.toFixed(precision));
 
     if (roundedQuantity > 0 && roundedQuantity < product.min_order_quantity) {
       productCardLogger.debug(`Quantity ${roundedQuantity} is below min order ${product.min_order_quantity}. Setting to 0.`, { productId: product.id });

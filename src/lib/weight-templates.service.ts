@@ -1,143 +1,176 @@
+import { query } from "@/lib/db";
+import { serverLogger } from "@/lib/server-logger";
+import type { WeightTemplate, WeightTemplateCreateInput, WeightTemplateUpdateInput } from "@/lib/types";
+import { validateDbRows, DbValidationError } from "@/lib/utils/validate-db-row";
+import { DbWeightTemplateSchema } from "@/lib/schemas/weight-template.schema";
+import { mapDbRowToWeightTemplate, prepareWeightTemplateUpdateParams } from "@/lib/weight-templates/helpers";
 
-import { v4 as uuidv4 } from 'uuid';
-import { query } from "./db";
-import { serverLogger } from "./server-logger";
-import { WeightTemplate, WeightTemplateCreateInput, WeightTemplateUpdateInput } from "./types";
-import { runLocalOrDb } from "./env";
-import { mockTemplates } from './mock-data';
+const log = serverLogger.withCategory("WEIGHT_TEMPLATES_SERVICE");
 
-const serviceLogger = serverLogger.withCategory("WEIGHT_TEMPLATES_SERVICE");
+// Type guard for PostgreSQL errors
+function isDbError(error: unknown): error is { code: string; constraint?: string } {
+    return typeof error === "object" && error !== null && "code" in error;
+}
 
-const mapDbRowToWeightTemplate = (row: Record<string, unknown>): WeightTemplate => ({
-    id: row.id as string,
-    name: row.name as string,
-    description: row.description as string | null | undefined,
-    unit: row.unit as WeightTemplate['unit'],
-    min_order_quantity: parseFloat(row.min_order_quantity as string),
-    step_quantity: parseFloat(row.step_quantity as string),
-    is_active: row.is_active as boolean,
-    created_at: row.created_at as string,
-    updated_at: row.updated_at as string,
-});
-
+/**
+ * Получение всех активных шаблонов веса.
+ */
 async function getActive(): Promise<WeightTemplate[]> {
-    return runLocalOrDb(
-        () => Promise.resolve(mockTemplates.filter(t => t.is_active)),
-        async () => {
-            serviceLogger.info("Fetching all active weight templates from DB.");
-            const { rows } = await query(
-                'SELECT * FROM weight_templates WHERE is_active = true ORDER BY name ASC'
-            );
-            serviceLogger.debug(`Found ${rows.length} active weight templates.`);
-            return rows.map(mapDbRowToWeightTemplate);
-        }
-    );
+    log.info("Fetching active weight templates from DB.");
+    try {
+        const { rows } = await query(`
+            SELECT * FROM weight_templates
+            WHERE is_active = true
+            ORDER BY name ASC
+        `);
+
+        const validatedRows = validateDbRows(rows, DbWeightTemplateSchema, "weight_templates", { skipInvalid: true });
+        return validatedRows.map(mapDbRowToWeightTemplate);
+    } catch (error: unknown) {
+        log.error("Database error in getActive()", { error });
+        throw error;
+    }
 }
 
+/**
+ * Получение всех шаблонов (для админки).
+ */
 async function getAll(): Promise<WeightTemplate[]> {
-    return runLocalOrDb(
-        () => Promise.resolve(mockTemplates),
-        async () => {
-            serviceLogger.info("Fetching all weight templates from DB for admin.");
-            const { rows } = await query(
-                'SELECT * FROM weight_templates ORDER BY is_active DESC, name ASC'
-            );
-            return rows.map(mapDbRowToWeightTemplate);
-        }
-    );
+    log.info("Fetching all weight templates from DB (admin).");
+    try {
+        const { rows } = await query(`
+            SELECT * FROM weight_templates
+            ORDER BY is_active DESC, name ASC
+        `);
+
+        const validatedRows = validateDbRows(rows, DbWeightTemplateSchema, "weight_templates", { skipInvalid: true });
+        return validatedRows.map(mapDbRowToWeightTemplate);
+    } catch (error: unknown) {
+        log.error("Database error in getAll()", { error });
+        throw error;
+    }
 }
 
+/**
+ * Получение шаблона по ID.
+ */
 async function getById(id: string): Promise<WeightTemplate | null> {
-    return runLocalOrDb(
-        () => Promise.resolve(mockTemplates.find(t => t.id === id) || null),
-        async () => {
-            serviceLogger.info("Fetching weight template by ID from DB.", { id });
-            const { rows } = await query(
-                'SELECT * FROM weight_templates WHERE id = $1',
-                [id]
-            );
-            if (rows.length === 0) return null;
-            return mapDbRowToWeightTemplate(rows[0]);
+    log.info("Fetching weight template by ID.", { id });
+    try {
+        const { rows } = await query(
+            `SELECT * FROM weight_templates WHERE id = $1`,
+            [id]
+        );
+
+        if (rows.length === 0) return null;
+        return mapDbRowToWeightTemplate(rows[0]);
+    } catch (error: unknown) {
+        if (error instanceof DbValidationError) {
+            log.warn("Weight template validation failed in getById()", { id, details: error.message });
+            return null;
         }
-    );
+        log.error("Database error in getById()", { id, error });
+        throw error;
+    }
 }
 
-async function create(data: WeightTemplateCreateInput): Promise<WeightTemplate> {
-    return runLocalOrDb(
-        () => {
-            const newTemplate: WeightTemplate = {
-                id: uuidv4(),
-                ...data,
-                is_active: true,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-            };
-            mockTemplates.push(newTemplate);
-            serviceLogger.warn("Running in local mode. Created mock weight template.", { newTemplate });
-            return Promise.resolve(newTemplate);
-        },
-        async () => {
-            serviceLogger.info("Creating new weight template.", { name: data.name });
-            const { rows } = await query(`
-                INSERT INTO weight_templates (name, description, unit, min_order_quantity, step_quantity, is_active)
-                VALUES ($1, $2, $3, $4, $5, true)
-                RETURNING *
-            `, [data.name, data.description, data.unit, data.min_order_quantity, data.step_quantity]);
-            
-            serviceLogger.info("Weight template created successfully.", { id: rows[0].id });
-            return mapDbRowToWeightTemplate(rows[0]);
+/**
+ * Создание нового шаблона веса.
+ */
+async function create(
+    data: WeightTemplateCreateInput
+): Promise<{ success: boolean; message: string; template?: WeightTemplate }> {
+    log.info("Creating new weight template.", { name: data.name });
+    try {
+        const { rows } = await query(
+            `
+            INSERT INTO weight_templates (name, description, unit, min_order_quantity, step_quantity, is_active)
+            VALUES ($1, $2, $3, $4, $5, true)
+            RETURNING *
+        `,
+            [data.name, data.description ?? null, data.unit, data.min_order_quantity, data.step_quantity]
+        );
+
+        const template = mapDbRowToWeightTemplate(rows[0]);
+        log.info("Weight template created successfully.", { id: template.id });
+        return { success: true, message: "Weight template created successfully.", template };
+    } catch (error: unknown) {
+        log.error("Database error in create()", { error, data });
+
+        if (isDbError(error) && error.code === "23505" && error.constraint === "weight_templates_name_key") {
+            return { success: false, message: "A weight template with this name already exists." };
         }
-    );
+
+        return { success: false, message: "An unexpected database error occurred." };
+    }
 }
 
-async function update(id: string, data: WeightTemplateUpdateInput): Promise<WeightTemplate> {
-    return runLocalOrDb(
-        () => {
-            const templateIndex = mockTemplates.findIndex(t => t.id === id);
-            if (templateIndex === -1) throw new Error("Template not found in mock data");
-            mockTemplates[templateIndex] = { ...mockTemplates[templateIndex], ...data, updated_at: new Date().toISOString() };
-            return Promise.resolve(mockTemplates[templateIndex]);
-        },
-        async () => {
-            serviceLogger.info("Updating weight template.", { id });
-            
-            const fields: string[] = [];
-            const values: unknown[] = [];
-            let paramCounter = 1;
-            
-            const updatableFields: (keyof WeightTemplateUpdateInput)[] = ['name', 'description', 'unit', 'min_order_quantity', 'step_quantity', 'is_active'];
-            
-            for (const field of updatableFields) {
-                if (data[field] !== undefined) {
-                    fields.push(`${field} = $${paramCounter}`);
-                    values.push(data[field]);
-                    paramCounter++;
-                }
-            }
-            
-            if (fields.length === 0) {
-                serviceLogger.warn("Update called with no fields to update for template", { id });
-                const template = await getById(id);
-                if (!template) throw new Error("Template not found");
-                return template;
-            }
+/**
+ * Обновление шаблона веса.
+ */
+async function update(
+    id: string,
+    data: Partial<WeightTemplateUpdateInput>
+): Promise<{ success: boolean; message: string; template?: WeightTemplate }> {
+    log.info("Updating weight template.", { id, changes: data });
 
-            fields.push(`updated_at = NOW()`);
-            values.push(id);
-            
-            const { rows } = await query(`
-                UPDATE weight_templates 
-                SET ${fields.join(', ')}
-                WHERE id = $${paramCounter}
-                RETURNING *
-            `, values);
-            
-            if (rows.length === 0) throw new Error("Weight template not found");
-            
-            serviceLogger.info("Weight template updated successfully.", { id });
-            return mapDbRowToWeightTemplate(rows[0]);
+    const { setClause, values } = prepareWeightTemplateUpdateParams(data);
+    if (values.length === 0) {
+        log.warn("Update called with no data.", { id });
+        return { success: true, message: "No changes were made." };
+    }
+
+    try {
+        const queryParams = [...values, id];
+        const { rows } = await query(
+            `
+            UPDATE weight_templates
+            SET ${setClause}
+            WHERE id = $${queryParams.length}
+            RETURNING *
+        `,
+            queryParams
+        );
+
+        if (rows.length === 0) {
+            return { success: false, message: "Weight template not found." };
         }
-    );
+
+        const template = mapDbRowToWeightTemplate(rows[0]);
+        log.info("Weight template updated successfully.", { id });
+        return { success: true, message: "Weight template updated successfully.", template };
+    } catch (error: unknown) {
+        log.error("Database error in update()", { error, id, data });
+
+        if (isDbError(error) && error.code === "23505" && error.constraint === "weight_templates_name_key") {
+            return { success: false, message: "A weight template with this name already exists." };
+        }
+
+        return { success: false, message: "An unexpected database error occurred." };
+    }
+}
+
+/**
+ * Мягкое удаление шаблона (soft delete).
+ */
+async function remove(id: string): Promise<{ success: boolean; message: string }> {
+    log.info("Soft-deleting weight template.", { id });
+    try {
+        const { rowCount } = await query(
+            `UPDATE weight_templates SET is_active = false, updated_at = NOW() WHERE id = $1`,
+            [id]
+        );
+
+        if (rowCount === 0) {
+            return { success: false, message: "Weight template not found or already inactive." };
+        }
+
+        log.info("Weight template soft-deleted successfully.", { id });
+        return { success: true, message: "Weight template deactivated successfully." };
+    } catch (error: unknown) {
+        log.error("Database error in remove()", { id, error });
+        return { success: false, message: "An unexpected database error occurred." };
+    }
 }
 
 export const weightTemplatesService = {
@@ -146,4 +179,7 @@ export const weightTemplatesService = {
     getById,
     create,
     update,
+    delete: remove,
 };
+
+export type WeightTemplatesService = typeof weightTemplatesService;

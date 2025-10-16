@@ -80,11 +80,38 @@
 
 ---
 
+*Архив завершенных чатов.*
+
+## Archive of completed chats.
+
+### Epic: Качество кода и техдолг (P1, P2)
+- **Chat ID:** [current-chat-id-quality-p1-p2]
+- **Started:** 2025-10-16
+- **Completed:** 2025-10-16
+- **Owner:** Gemini
+- **Status:** ✅ Completed
+- **Goal:** Устранить все предупреждения ESLint (P1 и P2) согласно `docs/architecture/03-technical-debt.md`.
+- **Modified Critical Files:**
+  - `src/lib/orders.service.ts`
+  - `src/lib/storage.service.ts`
+  - `src/lib/logger.ts`
+  - `src/app/admin/logs/page.tsx`
+  - `src/app/layout.tsx`
+  - `src/components/ui/combobox.tsx`
+  - `src/components/ui/command.tsx`
+  - ... и все остальные файлы из `03-technical-debt.md`
+- **Docs:** `docs/architecture/03-technical-debt.md`, `docs/process/02-tasklist.md`, `docs/process/04-changelog-ai.md`
+- **Key decisions (итог):** Полностью зачищена кодовая база от всех предупреждений линтера. Установлен новый стандарт качества кода. `npm run lint` проходит без ошибок.
+- **PR / Branch:** `refactor/lint-and-quality-fixes (#124)`
+
+---
+
 ### Epic: P0 Type Safety Raid
 - **Chat ID:** [firebase-chat-p0-type-safety]
 - **Started:** 2025-10-15
+- **Completed:** 2025-10-15
 - **Owner:** Djonsis
-- **Status:** In Progress
+- **Status:** ✅ Completed
 - **Goal:** Устранить все `any` в ядровых файлах согласно roadmap.
 - **Modified Critical Files:**
   - src/lib/db.ts
@@ -95,13 +122,9 @@
   - src/lib/actions/log.actions.ts
 - **Docs:** docs/architecture/03-technical-debt.md (раздел P0)
 - **Dependencies:** нет
-- **Key decisions:**
+- **Key decisions (итог):**
   - Любые изменения с типами фиксируются как Boy Scout (P0).
   - По завершении обновить roadmap и changelog.
-- **PR / Branch:** `refactor/p0-type-safety`
+- **PR / Branch:** `refactor/p0-type-safety (#123)`
 
 ---
-
-*Архив завершенных чатов.*
-
-## Archive of completed chats.

@@ -41,11 +41,11 @@ let pool: Pool;
 try {
     pool = new Pool(poolConfig);
 
-    pool.on('connect', (client) => {
+    pool.on('connect', (_client) => {
         dbLogger.info('A client has successfully connected to the database.');
     });
 
-    pool.on('error', (err, client) => {
+    pool.on('error', (err, _client) => {
         dbLogger.error('Unexpected error on idle client in the pool', err);
     });
 

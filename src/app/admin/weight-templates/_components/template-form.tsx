@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { WeightTemplate, UnitType } from "@/lib/types";
+import { WeightTemplate } from "@/lib/types";
 import { useTransition } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { createTemplateAction, updateTemplateAction } from "../_actions/template.actions";

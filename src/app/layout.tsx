@@ -1,7 +1,16 @@
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from '@/contexts/cart-context';
+
+// Настраиваем шрифт Inter с помощью next/font
+const inter = Inter({
+  subsets: ['latin', 'cyrillic'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-inter', // Создаем CSS-переменную
+});
 
 export const metadata: Metadata = {
   title: 'БыстраяКорзина',
@@ -15,12 +24,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
+      {/* Теги <link> для шрифтов удалены, так как next/font управляет этим */}
+      <body className={`${inter.variable} font-sans antialiased`}>
         <CartProvider>
           {children}
           <Toaster />

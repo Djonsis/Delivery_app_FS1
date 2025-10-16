@@ -119,7 +119,7 @@ export function Combobox({
                   onSelect={() => handleSelect(inputValue, true)}
                 >
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Создать "{inputValue}"
+                    Создать &quot;{inputValue}&quot;
                 </CommandItem>
               )}
             </CommandGroup>
