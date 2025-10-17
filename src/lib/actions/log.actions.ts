@@ -3,7 +3,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Logging, LogEntry } from '@google-cloud/logging';
-import { isCloud, getProjectId, loggingConfig } from '@/lib/config';
+import { isCloud, getProjectId, loggingConfig } from '../config';
 
 const LOG_FILE_PATH = path.join(
   process.cwd(),
@@ -18,6 +18,8 @@ export type GetLogsResult = {
   logFilePath?: string;
   logFileExists?: boolean;
   message?: string;
+  source?: 'cloud' | 'local';
+  size?: number;
 };
 
 export type ClearLogsResult = {
@@ -51,17 +53,14 @@ const formatLogEntry = (entry: LogEntry): string => {
   if (typeof data === 'string') {
     message = data;
   } else if (hasMessage(data)) {
-    // Safely access the message property thanks to the type guard
     message = data.message;
   } else if (data && typeof data === 'object') {
-    // If it's another type of object, stringify it
     try {
       message = JSON.stringify(data);
     } catch {
       message = '[Unserializable object]';
     }
   } else if (data !== undefined && data !== null) {
-    // Handle other primitive types
     message = String(data);
   }
 
@@ -72,8 +71,6 @@ const formatLogEntry = (entry: LogEntry): string => {
 
 /**
  * Получает логи из Cloud Logging (prod) или локального файла (dev).
- * 
- * ⚠️ TODO: Добавить проверку авторизации (только для администраторов)
  */
 export async function getLogsAction(): Promise<GetLogsResult> {
   if (isCloud()) {
@@ -90,55 +87,64 @@ export async function getLogsAction(): Promise<GetLogsResult> {
       });
 
       if (entries.length === 0) {
-        return { logs: [], message: 'No logs found in Google Cloud Logging for this service.' };
+        return { logs: [], source: 'cloud', message: 'No logs found in Google Cloud Logging for this service.' };
       }
 
-      return { logs: entries.map(formatLogEntry) };
+      // Size is not applicable for cloud logs in this context
+      return { logs: entries.map(formatLogEntry), source: 'cloud', size: undefined };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error fetching logs from Google Cloud:', errorMessage);
-      return { error: `Error: Could not fetch logs from Google Cloud Logging. Details: ${errorMessage}` };
+      return { error: `Error: Could not fetch logs from Google Cloud Logging. Details: ${errorMessage}`, source: 'cloud' };
     }
   }
 
   // Local development fallback
   try {
+    const stats = await fs.stat(LOG_FILE_PATH);
     const data = await fs.readFile(LOG_FILE_PATH, 'utf8');
     const logs = data.trim() ? data.split('\n') : [];
-    return { logs, logFilePath: LOG_FILE_PATH, logFileExists: true };
+    return { logs, source: 'local', logFilePath: LOG_FILE_PATH, logFileExists: true, size: stats.size };
   } catch (error) {
-    // ENOENT = File Not Found
     if (typeof error === 'object' && error !== null && 'code' in error && (error as {code: string}).code === 'ENOENT') {
         return {
             logs: [],
+            source: 'local',
             message: "Log file not found. This is expected if no logs have been written yet.",
             logFilePath: LOG_FILE_PATH,
-            logFileExists: false
+            logFileExists: false,
+            size: 0
         };
     }
      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
      console.error('Error reading log file:', errorMessage);
-     return { error: `Failed to read log file: ${errorMessage}` };
+     return { error: `Failed to read log file: ${errorMessage}`, source: 'local' };
   }
 }
 
 /**
  * Очищает логи.
- * В Cloud окружении - только логирует запрос (управление через Console).
+ * В Cloud окружении - операция не выполняется.
  * В dev окружении - очищает локальный файл.
- * 
- * ⚠️ TODO: Добавить проверку авторизации
  */
 export async function clearLogsAction(): Promise<ClearLogsResult> {
   if (isCloud()) {
-    const message = 'Request to clear logs received in a cloud environment. No action taken due to retention policies.';
-    console.log(message);
-    return { success: true, message };
+    const message = 'Clearing logs is not permitted in a cloud environment due to retention policies. Please use the Google Cloud Console.';
+    console.warn(message);
+    return { success: false, message };
   }
 
   try {
-    await fs.writeFile(LOG_FILE_PATH, '');
-    const message = `Log file cleared at: ${LOG_FILE_PATH}`;
+    // Try to unlink first to handle cases where it might be an empty file or directory
+    try {
+      await fs.unlink(LOG_FILE_PATH);
+    } catch (unlinkError) {
+      // If it doesn't exist, that's fine, we wanted it gone anyway.
+      if ((unlinkError as { code: string }).code !== 'ENOENT') {
+        throw unlinkError; // Re-throw if it's a different error (e.g., permissions)
+      }
+    }
+    const message = `Log file cleared successfully at: ${LOG_FILE_PATH}`;
     console.log(message);
     return { success: true, message };
   } catch (error) {

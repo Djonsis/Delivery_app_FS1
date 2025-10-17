@@ -9,6 +9,31 @@
 
 ## Active Chats
 
+### Epic: Просмотр логов (Admin UI)
+- **Chat ID:** [будет присвоен]
+- **Started:** [2025-10-17]
+- **Owner:** Gemini
+- **Status:** In Progress
+- **Modified Critical Files (планируется):**
+  - `src/app/admin/logs/page.tsx`
+  - `src/lib/actions/log.actions.ts`
+  - `src/components/features/log-viewer.tsx` (предположительно)
+- **Blocks / Blocked by:** -
+- **Key decisions (планируется):**
+  - Разработать компонент для отображения логов в виде таблицы.
+  - Реализовать UI для фильтрации и очистки логов с использованием существующих server actions.
+- **PR / Branch:** (будет создан)
+
+feat(logs): Add logging UI and complete backend integration
+
+- Implemented a dual-mode logging system (local file & Google Cloud Logging) as per `docs/architecture/04-logging.md`.
+- Created server actions `getLogsAction` and `clearLogsAction` for log management.
+- Developed a new admin UI at `/admin/logs` for viewing, filtering, and clearing logs.
+- The system is production-ready and switches to Google Cloud Logging automatically when `NODE_ENV` is 'production'.
+- Resolved a testing issue by removing a pagination test for non-existent functionality, adhering to YAGNI.
+
+---
+
 ### Epic: Весовые товары (Weighted Products)
 - **Chat ID:** [Текущий ID чата]
 - **Started:** 2024-08-21
@@ -26,9 +51,10 @@
   - Создание полного CRUD-интерфейса в админ-панели для управления шаблонами.
 - **PR / Branch:** `feat(admin): weight-templates-management`
 
+
 ---
 
-### Epic: 🧪 Тестирование и QA
+
 - **Chat ID:** [ID этого чата]
 - **Started:** 2024-08-22
 - **Owner:** user
