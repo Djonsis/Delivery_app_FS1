@@ -56,6 +56,14 @@ export function isCloud(): boolean {
 }
 
 /**
+ * Определяет, включен ли мок-режим для категорий.
+ * @returns {boolean}
+ */
+export function isMockCategories(): boolean {
+  return getEnvVar('MOCK_CATEGORIES', 'false') === 'true';
+}
+
+/**
  * Получает ID проекта Google Cloud.
  * В dev/test окружении возвращает 'local-project'.
  */

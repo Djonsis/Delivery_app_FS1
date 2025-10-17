@@ -1,9 +1,8 @@
-
 import { Pool } from 'pg';
 import { logger } from './logger';
 import { dbConfig, isCloud as isGoogleCloud } from './config';
 
-const dbLogger = logger.withCategory("DATABASE");
+const dbLogger = logger("DATABASE");
 
 const { user, password, database } = dbConfig;
 
