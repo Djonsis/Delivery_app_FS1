@@ -1,0 +1,130 @@
+@startuml FastBasket Architecture
+
+!theme vibrant
+
+' Styling
+skinparam componentStyle uml2
+skinparam rectangle {
+    roundCorner 20
+    backgroundColor<<UI>> LightSkyBlue
+    backgroundColor<<Action>> LightGreen
+    backgroundColor<<Service>> LightGoldenRodYellow
+    backgroundColor<<Data>> LightSalmon
+    backgroundColor<<AI>> LightPink
+    backgroundColor<<Config>> LightGray
+    backgroundColor<<External>> Technology
+    borderColor black
+    shadowing true
+}
+skinparam database {
+    backgroundColor LightYellow
+    borderColor black
+}
+skinparam cloud {
+    backgroundColor LightBlue
+    borderColor black
+}
+skinparam interface {
+    backgroundColor LightSteelBlue
+}
+
+package "Frontend (Next.js / React)" <<UI>> {
+    [UI: /app Pages] as Pages
+    [UI: Components] as Components
+    [UI: Hooks & Context] as Hooks
+}
+
+package "Backend Logic" {
+    package "1. Server Actions" <<Action>> {
+        [product.actions.ts]
+        [category.actions.ts]
+        [order.actions.ts]
+        [log.actions.ts]
+        [storage.actions.ts]
+        [db.actions.ts]
+    }
+
+    package "2. Service Layer" <<Service>> {
+        [products.service.ts]
+        [categories.service.ts]
+        [orders.service.ts]
+        [weight-templates.service.ts]
+        [db.service.ts]
+        [storage.service.ts]
+    }
+
+    package "3. Data Access Layer" <<Data>> {
+        [db.ts (PG Pool)] as PgPool
+        [s3-client.ts (S3 Client)] as S3Client
+    }
+}
+
+package "AI & Generative" <<AI>> {
+    [qa-flow.ts] as QaFlow
+    [genkit.ts] as GenkitConfig
+    [readProjectLogs (Tool)] as LogTool
+}
+
+package "Configuration & Core Lib" <<Config>> {
+    [config.ts]
+    [env.ts (Mock/Real)]
+    [logger.ts / server-logger.ts] as Loggers
+    [types.ts]
+    [schemas/*.ts]
+}
+
+database "PostgreSQL (Cloud SQL)" as Db
+cloud "Google Cloud Storage (S3)" as S3
+cloud "Google Cloud Logging" as GcLogging
+cloud "Google Vertex AI (Gemini)" as Gemini
+
+' Relationships
+Pages --> Components
+Components --> Hooks
+
+' UI -> Server Actions (The only way UI interacts with backend logic)
+Components --> [product.actions.ts] : "create/update/delete"
+Components --> [category.actions.ts] : "create/update/delete"
+Components --> [order.actions.ts] : "createOrder"
+Components --> [log.actions.ts] : "getLogs/clearLogs"
+Components --> [storage.actions.ts] : "uploadImage"
+
+' Actions -> Services
+[product.actions.ts] --> [products.service.ts]
+[category.actions.ts] --> [categories.service.ts]
+[order.actions.ts] --> [orders.service.ts]
+[db.actions.ts] --> [db.service.ts]
+[storage.actions.ts] --> [storage.service.ts]
+
+' Services -> Data Access Layer
+[products.service.ts] --> PgPool
+[categories.service.ts] --> PgPool
+[orders.service.ts] --> PgPool
+[weight-templates.service.ts] --> PgPool
+[db.service.ts] --> PgPool
+[storage.service.ts] --> S3Client
+
+' Data Access -> External Systems
+PgPool --> Db
+S3Client --> S3
+
+' AI Flow
+QaFlow --> Gemini : "generate()"
+QaFlow --> LogTool : "uses"
+LogTool --> [log.actions.ts] : "getLogsAction()"
+
+' Logging Flow
+[server-logger.ts] --> GcLogging : "logs (in cloud)"
+[server-logger.ts] --> [log.actions.ts] : "writes to file (local)"
+
+' Config and Env usage
+[products.service.ts] --> [env.ts (Mock/Real)] : "runMockOrReal()"
+[config.ts] --> [env.ts (Mock/Real)]
+Loggers --> [config.ts]
+
+' Shared Types and Schemas
+[product.actions.ts] --> [types.ts]
+[products.service.ts] --> [types.ts]
+[products.service.ts] --> [schemas/*.ts]
+
+@enduml
