@@ -1,4 +1,3 @@
-
 /**
  * Централизованная конфигурация приложения.
  * 
@@ -12,33 +11,22 @@
 /**
  * Приватная функция для чтения переменных окружения.
  * НЕ экспортируется - используется только внутри этого модуля.
- * 
- * @param key - Имя переменной окружения
- * @param fallback - Значение по умолчанию (делает переменную опциональной)
- * @returns Значение переменной или fallback
- * @throws Error в production если обязательная переменная не задана
  */
 function getEnvVar(key: string, fallback?: string): string {
   const value = process.env[key];
   
-  if (!value) {
+  if (value === undefined) {
     if (fallback !== undefined) {
-      // Не спамить в тестах
       if (process.env.NODE_ENV !== 'test') {
-        console.warn(`⚠️ Using fallback for ${key}=${fallback}`);
+        // Не логируем в тестах, чтобы не замусоривать вывод
       }
       return fallback;
     }
     
-    // Строгая проверка в production
     if (process.env.NODE_ENV === 'production') {
       throw new Error(`Missing required environment variable: ${key}`);
     }
     
-    // Не спамить в тестах
-    if (process.env.NODE_ENV !== 'test') {
-      console.warn(`⚠️ Missing env var: ${key}, using empty string`);
-    }
     return '';
   }
   
@@ -56,16 +44,27 @@ export function isCloud(): boolean {
 }
 
 /**
- * Определяет, включен ли мок-режим для категорий.
- * @returns {boolean}
+ * Определяет, нужно ли использовать mock данные.
+ * Логика:
+ * 1. Если MOCK_DATA=true явно установлена → ВСЕГДА моки
+ * 2. Если MOCK_DATA=false явно установлена → НИКОГДА моки
+ * 3. По умолчанию (не установлена) → моки, если не в облаке
  */
-export function isMockCategories(): boolean {
-  return getEnvVar('MOCK_CATEGORIES', 'false') === 'true';
+export function useMockData(): boolean {
+  const mockEnv = process.env.MOCK_DATA;
+  if (mockEnv === 'true') {
+    return true;
+  }
+  if (mockEnv === 'false') {
+    return false;
+  }
+  // По умолчанию: моки, если не в облаке
+  return !isCloud();
 }
+
 
 /**
  * Получает ID проекта Google Cloud.
- * В dev/test окружении возвращает 'local-project'.
  */
 export function getProjectId(): string {
   return getEnvVar('GCLOUD_PROJECT', 'local-project');
@@ -73,7 +72,6 @@ export function getProjectId(): string {
 
 /**
  * Получает уровень логирования.
- * По умолчанию 'info'.
  */
 export function getLogLevel(): string {
   return getEnvVar('LOG_LEVEL', 'info');
@@ -95,6 +93,8 @@ export const dbConfig = {
   user: getEnvVar('PG_USER'),
   password: getEnvVar('PG_PASSWORD'),
   database: getEnvVar('PG_DATABASE'),
+  // Используется для соединений через сокет в Cloud
+  connectionName: getEnvVar('CLOUD_SQL_CONNECTION_NAME'),
 } as const;
 
 /**

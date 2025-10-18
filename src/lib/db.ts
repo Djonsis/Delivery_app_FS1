@@ -1,3 +1,4 @@
+import 'server-only';
 import { Pool } from 'pg';
 import { logger } from './logger';
 import { dbConfig, isCloud as isGoogleCloud } from './config';

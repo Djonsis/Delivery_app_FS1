@@ -1,120 +1,166 @@
-import { inspect } from 'util';
+// This logger is safe for use on both the client and server.
+// It does not contain any server-side dependencies like 'fs'.
 
-// Типы уровней логирования
-type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
-// Уровни логирования для фильтрации
 const LOG_LEVELS: Record<LogLevel, number> = {
-    DEBUG: 1,
-    INFO: 2,
-    WARN: 3,
-    ERROR: 4,
+    debug: 0,
+    info: 1,
+    warn: 2,
+    error: 3,
 };
 
-// Уровень логирования по умолчанию
-let currentLogLevel: LogLevel = 'INFO';
-
-/**
- * Устанавливает уровень логирования, основываясь на переменных окружения.
- * Должен быть вызван один раз при старте приложения.
- */
-function initializeLogLevel() {
+const getLogLevel = () => {
     try {
         const levelFromEnv = process.env.NEXT_PUBLIC_LOG_LEVEL;
-        if (levelFromEnv && LOG_LEVELS[levelFromEnv as LogLevel]) {
-            currentLogLevel = levelFromEnv as LogLevel;
+        if (levelFromEnv && levelFromEnv in LOG_LEVELS) {
+            return LOG_LEVELS[levelFromEnv as LogLevel];
         }
-    } catch { // ✅ Исправлено: удалено 'e', чтобы избежать Warning: '_e' is defined but never used
-        // process is not defined in some environments (e.g., in a browser context).
+    } catch (e) {
+        // process is not defined in some environments.
     }
+    return LOG_LEVELS.info; 
 }
 
-// Инициализация при загрузке модуля
-initializeLogLevel();
+const configuredLevel = getLogLevel();
+const performanceTimers = new Map<string, number>();
 
 /**
- * Проверяет, должен ли данный лог-уровень быть выведен.
- * @param level Уровень сообщения
- * @returns true, если сообщение должно быть выведено.
+ * Universal logger class that works in both client and server environments.
  */
-function shouldLog(level: LogLevel): boolean {
-    return LOG_LEVELS[level] >= LOG_LEVELS[currentLogLevel];
-}
+class Logger {
+    private category: string;
 
-// Определяем, куда выводить логи
-const logOutput = console;
-
-/**
- * Базовая функция логирования.
- */
-function logMessage(level: LogLevel, category: string, message: string, data?: unknown) {
-    if (!shouldLog(level)) {
-        return;
+    constructor(category: string = 'APP') {
+        this.category = category;
     }
 
-    // Форматируем время в ISO
-    const timestamp = new Date().toISOString();
-    let logEntry = `${timestamp} [${level}] [${category}] ${message}`;
+    /**
+     * Creates a new logger instance with a specific category.
+     * Provides API compatibility with server-logger.ts
+     */
+    public withCategory(category: string): Logger {
+        return new Logger(category);
+    }
+    
+    private log(level: LogLevel, message: string, data?: unknown) {
+        if (LOG_LEVELS[level] < configuredLevel) return;
 
-    if (data) {
-        // Добавляем дополнительные данные, форматируя их как JSON или inspect (для сложных объектов)
-        const details = typeof data === 'string' ? data : inspect(data, { depth: 5, colors: false });
-        logEntry += ` - Details: ${details}`;
+        const consoleMessage = `[${level.toUpperCase()}] [${this.category}] ${message}`;
+        const dataToLog = data ? data : '';
+
+        switch(level) {
+            case 'error': console.error(consoleMessage, dataToLog); break;
+            case 'warn': console.warn(consoleMessage, dataToLog); break;
+            case 'info': console.info(consoleMessage, dataToLog); break;
+            default: console.debug(consoleMessage, dataToLog); break;
+        }
     }
 
-    // Используем соответствующий метод console
-    switch (level) {
-        case 'ERROR':
-            logOutput.error(logEntry);
-            break;
-        case 'WARN':
-            logOutput.warn(logEntry);
-            break;
-        case 'INFO':
-            logOutput.info(logEntry);
-            break;
-        case 'DEBUG':
-            logOutput.log(logEntry); // console.debug часто скрыт
-            break;
+    public debug(message: string, data?: unknown) {
+        this.log('debug', message, data);
     }
-}
 
-/**
- * Создает обертку для логирования, привязанную к определенной категории.
- * @param category Название категории (например, 'DATABASE', 'AUTH', 'API/PRODUCTS')
- */
-export function logger(category: string) {
-    return {
-        debug: (message: string, data?: unknown) => logMessage('DEBUG', category, message, data),
-        info: (message: string, data?: unknown) => logMessage('INFO', category, message, data),
-        warn: (message: string, data?: unknown) => logMessage('WARN', category, message, data),
-        error: (message: string, data?: unknown) => logMessage('ERROR', category, message, data),
-        withCategory: (subCategory: string) => logger(`${category}/${subCategory}`),
-        // Вспомогательная функция для логирования времени выполнения
-        time: (label: string, data?: unknown) => {
-            if (!shouldLog('DEBUG')) return;
-            try {
-                performance.mark(label);
-                logMessage('DEBUG', category, `Timer ${label} started.`, data);
-            } catch { // ✅ Исправлено: удалено 'e', чтобы избежать Warning: '_e' is defined but never used
-                // If marks don't exist, just ignore.
-            }
-        },
-        timeEnd: (label: string, message: string, data?: unknown) => {
-            if (!shouldLog('DEBUG')) return;
+    public info(message: string, data?: unknown) {
+        this.log('info', message, data);
+    }
+
+    public warn(message: string, data?: unknown) {
+        this.log('warn', message, data);
+    }
+
+    public error(message: string, error: unknown) {
+        let errorData: unknown;
+
+        if (error instanceof Error) {
+            // Extract essential Error properties without duplication
+            errorData = {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+            };
+        } else if (typeof error === 'object' && error !== null) {
+            errorData = error;
+        } else {
+            errorData = { rawError: error };
+        }
+        
+        this.log('error', message, { error: errorData });
+    }
+    
+    public time(label: string) {
+        if (typeof window !== "undefined" && window.performance) {
+            performance.mark(`${label}-start`);
+        } else {
+            performanceTimers.set(label, Date.now());
+        }
+    }
+
+    public timeEnd(label: string) {
+        if (typeof window !== "undefined" && window.performance) {
             try {
                 performance.mark(`${label}-end`);
-                performance.measure(label, label, `${label}-end`);
-                const measurement = performance.getEntriesByName(label)[0];
-                logMessage('DEBUG', category, `${message} Time: ${measurement.duration.toFixed(2)}ms`, data);
-                // Очистка меток
-                performance.clearMarks(label);
-                performance.clearMarks(`${label}-end`);
-                performance.clearMeasures(label);
-            } catch { // ✅ Исправлено: удалено 'e', чтобы избежать Warning: '_e' is defined but never used
-                // If marks or measures don't exist, just ignore.
-                logMessage('DEBUG', category, `${message} (Timing failed)`);
+                const measure = performance.measure(label, `${label}-start`, `${label}-end`);
+                this.debug(`${label} took ${measure.duration.toFixed(2)}ms`);
+            } catch (e) {
+                // If marks don't exist, just ignore.
             }
-        },
-    };
+        } else {
+            const startTime = performanceTimers.get(label);
+            if (startTime) {
+                const duration = Date.now() - startTime;
+                this.debug(`${label} took ${duration}ms`);
+                performanceTimers.delete(label);
+            } else {
+                this.warn(`Timer with label "${label}" was ended but never started.`);
+            }
+        }
+    }
 }
+
+// --- Create singleton instance ---
+const loggerInstance = new Logger();
+
+/**
+ * Universal logger that supports BOTH usage patterns:
+ * 
+ * Pattern 1 (function): logger("CATEGORY")
+ * Pattern 2 (method): logger.withCategory("CATEGORY")
+ */
+interface LoggerInterface extends Logger {
+    (category: string): Logger;
+}
+
+/**
+ * Factory function that creates a logger with the specified category.
+ * Also acts as an object with withCategory() method.
+ */
+const createLoggerProxy = (): LoggerInterface => {
+    const factory = (category: string): Logger => {
+        return new Logger(category);
+    };
+
+    // Copy all methods from Logger instance to the factory function
+    Object.setPrototypeOf(factory, Logger.prototype);
+    Object.assign(factory, loggerInstance);
+
+    return factory as LoggerInterface;
+};
+
+/**
+ * Universal logger export.
+ * 
+ * Usage:
+ * ```typescript
+ * // Pattern 1: Function (backward compatible)
+ * import { logger } from '@/lib/logger';
+ * const log = logger("MY_CATEGORY");
+ * log.info("Hello");
+ * 
+ * // Pattern 2: Method (server-logger compatible)
+ * import { logger } from '@/lib/logger';
+ * const log = logger.withCategory("MY_CATEGORY");
+ * log.info("Hello");
+ * ```
+ */
+export const logger = createLoggerProxy();

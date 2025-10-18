@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack -p 9003 --hostname 0.0.0.0",
-    "dev:mock": "MOCK_CATEGORIES=true next dev --turbopack -p 9003 --hostname 0.0.0.0",
-    "dev:real": "MOCK_CATEGORIES=false next dev --turbopack -p 9003 --hostname 0.0.0.0",
+    "dev:mock": "MOCK_DATA=true next dev --turbopack -p 9003 --hostname 0.0.0.0",
+    "dev:real": "MOCK_DATA=false next dev --turbopack -p 9003 --hostname 0.0.0.0",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
     "build": "next build",
@@ -59,6 +59,7 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
     "recharts": "^2.15.1",
+    "server-only": "^0.0.1",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^10.0.0",

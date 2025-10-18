@@ -1,3 +1,4 @@
+import 'server-only';
 import winston from 'winston';
 import { LoggingWinston } from '@google-cloud/logging-winston';
 import fs from 'fs';

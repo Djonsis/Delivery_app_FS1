@@ -1,64 +1,76 @@
-
 import { query } from "@/lib/db";
 import { serverLogger } from "@/lib/server-logger";
 import { Order, OrderStatus, CreateOrderPayload } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { mockOrder } from "./mock-data";
-import { runLocalOrDb } from "./env";
+import { runMockOrReal } from "./env";
 import { validateOrderStatus } from "./orders.utils";
-import { isCloud } from "./config";
 
-const ordersServiceLogger = serverLogger.withCategory("ORDERS_SERVICE");
+const log = serverLogger.withCategory("ORDERS_SERVICE");
 
 export const ordersService = {
     async getOrders(): Promise<Order[]> {
-        return runLocalOrDb(
-            () => [mockOrder],
+        return runMockOrReal(
+            // Mock path
+            () => {
+                log.info("🎭 MOCK MODE: Returning mock orders");
+                return Promise.resolve([mockOrder]);
+            },
+            // Real path
             async () => {
-                ordersServiceLogger.info("Fetching all orders from DB.");
+                log.info("💾 REAL MODE: Fetching orders from DB");
                 const { rows } = await query('SELECT * FROM orders ORDER BY created_at DESC');
-                ordersServiceLogger.debug(`Found ${rows.length} orders.`);
+                log.debug(`Fetched ${rows.length} orders from DB`);
                 return rows;
             }
         );
     },
 
     async updateOrderStatus(orderId: string, newStatus: OrderStatus): Promise<Order> {
-        if (!isCloud()) {
-            ordersServiceLogger.warn(`Running in local/studio environment. Mocking updateOrderStatus for order: ${orderId}`);
-            return { ...mockOrder, status: newStatus };
-        }
-        ordersServiceLogger.info(`Service: Updating status for order ${orderId} to "${newStatus}"`);
-        
-        if (!validateOrderStatus(newStatus)) {
-            throw new Error(`Недопустимый статус заказа: ${newStatus}`);
-        }
-        
-        try {
-            const result = await query(
-                'UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
-                [newStatus, orderId]
-            );
-            if (result.rowCount === 0) {
-                throw new Error(`Заказ с ID ${orderId} не найден.`);
+        return runMockOrReal(
+            // Mock path
+            () => {
+                log.info(`🎭 MOCK MODE: updateOrderStatus(${orderId}) to "${newStatus}"`);
+                return Promise.resolve({ ...mockOrder, id: orderId, status: newStatus });
+            },
+            // Real path
+            async () => {
+                log.info(`💾 REAL MODE: Updating order ${orderId} to "${newStatus}"`);
+                
+                if (!validateOrderStatus(newStatus)) {
+                    throw new Error(`Недопустимый статус заказа: ${newStatus}`);
+                }
+                
+                try {
+                    const result = await query(
+                        'UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+                        [newStatus, orderId]
+                    );
+                    if (result.rowCount === 0) {
+                        throw new Error(`Заказ с ID ${orderId} не найден.`);
+                    }
+                    
+                    return result.rows[0];
+                } catch (error) {
+                    log.error(`Failed to update order ${orderId}`, error as Error);
+                    throw new Error(`Database error. Could not update order status.`);
+                }
             }
-            
-            return result.rows[0];
-        } catch (error) {
-            ordersServiceLogger.error(`Failed to update order status ${orderId} in DB`, error as Error);
-            throw new Error(`Database error. Could not update order status.`);
-        }
+        );
     },
 
     async createOrder(payload: CreateOrderPayload): Promise<{ orderId: string }> {
-        return runLocalOrDb(
+        return runMockOrReal(
+            // Mock path
             () => {
-                ordersServiceLogger.warn(`Running in local/studio environment. Mocking createOrder.`);
-                return { orderId: 'mock-order-id-123' };
+                log.info("🎭 MOCK MODE: createOrder() - generating mock order ID");
+                return Promise.resolve({ orderId: `mock-order-${Date.now()}` });
             },
+            // Real path
             async () => {
                 const { customerName, items, totalAmount } = payload;
-                ordersServiceLogger.info("Attempting to create a new order in DB", { customerName, itemCount: items.length });
+                log.info("💾 REAL MODE: Creating order in DB", { customerName, itemCount: items.length });
+                
                 await query('BEGIN');
 
                 try {
@@ -68,7 +80,7 @@ export const ordersService = {
                         RETURNING id`;
                     const orderResult = await query(orderInsertQuery, [customerName, totalAmount, 'Новый заказ']);
                     const newOrderId = orderResult.rows[0].id;
-                    ordersServiceLogger.debug("Created entry in 'orders' table", { newOrderId });
+                    log.debug("Created entry in 'orders' table", { newOrderId });
 
                     const itemInsertQuery = `
                         INSERT INTO order_items (order_id, product_id, quantity, unit_price) 
@@ -77,10 +89,10 @@ export const ordersService = {
                     for (const item of items) {
                         await query(itemInsertQuery, [newOrderId, item.productId, item.quantity, item.unitPrice]);
                     }
-                    ordersServiceLogger.debug(`Inserted ${items.length} items into 'order_items' table`);
+                    log.debug(`Inserted ${items.length} items into 'order_items' table`);
 
                     await query('COMMIT');
-                    ordersServiceLogger.info("Successfully created new order and committed transaction.", { orderId: newOrderId });
+                    log.info("Successfully created order and committed transaction", { orderId: newOrderId });
 
                     revalidatePath('/admin/orders');
                     
@@ -88,7 +100,7 @@ export const ordersService = {
 
                 } catch (error) {
                     await query('ROLLBACK');
-                    ordersServiceLogger.error("Error creating order in DB transaction, rolling back.", error as Error);
+                    log.error("Error creating order, rolling back transaction", error as Error);
                     throw new Error("Не удалось сохранить заказ в базе данных.");
                 }
             }
