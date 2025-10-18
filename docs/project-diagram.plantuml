@@ -1,116 +1,168 @@
-@startuml "FastBasket Architecture"
+@startuml "FastBasket Delivery Platform Architecture"
 
 !theme vibrant
-skinparam shadowing false
-skinparam RoundCorner 7
-skinparam BackgroundColor FFFFFF
-skinparam componentStyle uml2
 
-skinparam package {
-  borderColor #555555
-  backgroundColor #F7F7F7
-  fontColor #333333
-  borderStyle solid
-}
+title "Архитектура Платформы 'БыстраяКорзина'"
+caption "Диаграмма компонентов и их взаимодействия"
 
-skinparam component {
-  borderColor #6C8EBF
-  backgroundColor #D8E6F3
-  fontColor #000000
-}
-
-skinparam database {
-  borderColor #996633
-  backgroundColor #F0E68C
-}
-
-skinparam cloud {
-  borderColor #4285F4
-  backgroundColor #E8F0FE
-}
-
-skinparam node {
-    borderColor #888888
-    backgroundColor #EEEEEE
-}
-
-' --- Components Definition ---
-
+' == 1. Слой Представления (UI) ==
 package "Presentation Layer (UI)" #LightBlue {
-  [React Components & Pages] as UI
-  [Next.js Pages] as Pages
+  
+  component "[Admin UI]" as AdminUI {
+    [admin/.../page.tsx]
+    [admin/.../_components/...]
+  }
+
+  component "[Catalog & Product UI]" as CatalogUI {
+    [catalog/page.tsx]
+    [product/[id]/page.tsx]
+  }
+
+  component "[Shared UI]" as SharedUI {
+    [components/site-header.tsx]
+    [components/cart.tsx]
+    [contexts/cart-context.tsx]
+  }
 }
 
-package "Server Actions Layer" #LightCoral {
-  [product.actions.ts] as ProductActions
-  [category.actions.ts] as CategoryActions
-  [order.actions.ts] as OrderActions
-  [log.actions.ts] as LogActions
+' == 2. Слой Серверных Действий ==
+package "Server Actions" #LightCoral {
+  [product.actions.ts]
+  [category.actions.ts]
+  [order.actions.ts]
+  [log.actions.ts]
+  [storage.actions.ts]
 }
 
-package "Service Layer" #LightGreen {
-  [products.service.ts] as ProductService
-  [categories.service.ts] as CategoryService
-  [orders.service.ts] as OrderService
-  [db.service.ts] as DbService
-  [storage.service.ts] as StorageService
+' == 3. Слой Сервисов (Бизнес-логика) ==
+package "Service Layer (Business Logic)" #LightGreen {
+  [products.service.ts]
+  [categories.service.ts]
+  [orders.service.ts]
+  [weight-templates.service.ts]
+  [storage.service.ts]
+  [db.service.ts]
 }
 
-package "AI Layer (Genkit)" #Thistle {
-    [qa-flow.ts] as QaFlow
+' == 4. Слой Утилит и Валидации ==
+package "Utility & Validation Layer" #WhiteSmoke {
+  
+  package "Helpers" {
+    [products/helpers.ts]
+    [categories/helpers.ts]
+    [weight-templates/helpers.ts]
+  }
+  
+  package "Validation" {
+    [schemas/product.schema.ts]
+    [schemas/category.schema.ts]
+    [schemas/weight-template.schema.ts]
+    [utils/validate-db-row.ts]
+  }
+  
+  package "Core Utils" {
+    [env.ts (runMockOrReal)]
+    [server-logger.ts]
+    [types.ts]
+  }
 }
 
-package "Data Access Layer" #LightGrey {
-  database "PostgreSQL" as Postgres
+' == 5. Слой Доступа к Данным ==
+package "Data Access Layer" #LightGray {
+  database "PostgreSQL" as PG
+  storage "Google Cloud Storage" as GCS
+  
+  package "Local Fallback" {
+    [lib/mock-data.ts] as MockData
+    [public/debug.log] as LogFile
+  }
+
+  [lib/db.ts]
 }
 
-package "Mock Data Layer" #LightYellow {
-  [mock-data.ts] as MockData
-  [env.ts (runMockOrReal)] as MockSwitch
+' == 6. Слой AI и Наблюдаемости ==
+package "AI & Observability Layer" #Thistle {
+  [ai/genkit.ts]
+  [ai/flows/qa-flow.ts]
 }
 
-cloud "Google Cloud Storage (S3)" as GCS
-node "Google Cloud Logging" as CloudLogging
-node "Local Log File (debug.log)" as LocalLogFile
+' == 7. Слой Инфраструктуры ==
+package "Infrastructure Layer" #LightSteelBlue {
+  [next.config.ts]
+  [apphosting.yaml]
+  [lib/config.ts] as EnvConfig
+}
 
-' --- Relationships ---
+' ===================================
+' Связи между компонентами
+' ===================================
 
-' UI Flow
-UI --> ProductActions : "(e.g., createProduct)"
-UI --> CategoryActions : "(e.g., createCategory)"
-UI --> OrderActions : "(e.g., createOrder)"
-UI --> LogActions : "(e.g., getLogs)"
-Pages ..> UI : "Renders"
+' UI Layer -> Server Actions
+AdminUI --> [product.actions.ts]
+AdminUI --> [category.actions.ts]
+AdminUI --> [log.actions.ts]
+SharedUI --> [order.actions.ts]
 
-' Actions to Services
-ProductActions --> ProductService
-CategoryActions --> CategoryService
-OrderActions --> OrderService
-LogActions --> QaFlow
+' Server Actions -> Service Layer (Делегирование)
+[product.actions.ts] ..> [products.service.ts]
+[category.actions.ts] ..> [categories.service.ts]
+[order.actions.ts] ..> [orders.service.ts]
+[log.actions.ts] ..> LogFile
+[log.actions.ts] ..> "Google Cloud Logging" #LightGray
+[storage.actions.ts] ..> [storage.service.ts]
 
-' Service Layer to Data Switch
-ProductService --> MockSwitch
-CategoryService --> MockSwitch
-OrderService --> MockSwitch
+' Service Layer -> Utility & Validation Layer
+[products.service.ts] --> [products/helpers.ts]
+[categories.service.ts] --> [categories/helpers.ts]
+[weight-templates.service.ts] --> [weight-templates/helpers.ts]
+[products.service.ts] --> [utils/validate-db-row.ts]
+[categories.service.ts] --> [utils/validate-db-row.ts]
+[products/helpers.ts] --> [schemas/product.schema.ts]
+[categories/helpers.ts] --> [schemas/category.schema.ts]
 
-' Conditional Data Flow (Corrected)
-MockSwitch ..> MockData : "if (MOCK_DATA=true)"
-MockSwitch --> Postgres : "if (MOCK_DATA=false)"
+' Service Layer -> Data Access Switcher
+[products.service.ts] --> [env.ts (runMockOrReal)]
+[categories.service.ts] --> [env.ts (runMockOrReal)]
+[orders.service.ts] --> [env.ts (runMockOrReal)]
 
-DbService --> Postgres
+' Data Access Switcher -> Data Access Layer
+[env.ts (runMockOrReal)] ..> [lib/db.ts] : "real mode"
+[env.ts (runMockOrReal)] ..> MockData : "mock mode"
 
-' Storage and Logging
-StorageService --> GCS
-QaFlow -> LogActions : "Uses tool readProjectLogs()"
+' Data Access Layer Connections
+[lib/db.ts] --> PG
+[storage.service.ts] --> GCS
 
-note right of LogActions
-  Uses AI Tool to read logs
-  via getLogsAction()
-end note
+' Logging Connections
+[server-logger.ts] --> LogFile
+[server-logger.ts] --> "Google Cloud Logging" #LightGray
 
-' Logging destinations
-LogActions ..> CloudLogging : "if (isCloud)"
-LogActions ..> LocalLogFile : "if (!isCloud)"
+' AI Layer Connections
+[ai/flows/qa-flow.ts] ..> [log.actions.ts] : "analyzes logs"
+[ai/flows/qa-flow.ts] ..> [ai/genkit.ts]
+
+' Infrastructure Connections
+[lib/db.ts] --> EnvConfig
+[apphosting.yaml] --> EnvConfig
+[server-logger.ts] --> EnvConfig
+
+' ===================================
+' Легенда
+' ===================================
+legend left
+  == **Кодировка Слоев** ==
+  <color:LightBlue>■</color> Presentation Layer (UI)
+  <color:LightCoral>■</color> Server Actions
+  <color:LightGreen>■</color> Service Layer (Business Logic)
+  <color:WhiteSmoke>■</color> Utility & Validation Layer
+  <color:LightGray>■</color> Data Access Layer
+  <color:Thistle>■</color> AI & Observability Layer
+  <color:LightSteelBlue>■</color> Infrastructure Layer
+  
+  == **Типы Связей** ==
+  **-->** : Прямая зависимость (импорт, вызов)
+  **..>** : Непрямая или опциональная связь
+end legend
 
 
 @enduml
