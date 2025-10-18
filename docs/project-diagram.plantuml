@@ -1,130 +1,84 @@
-@startuml FastBasket Architecture
-
+@startuml
 !theme vibrant
 
-' Styling
-skinparam componentStyle uml2
-skinparam rectangle {
-    roundCorner 20
-    backgroundColor<<UI>> LightSkyBlue
-    backgroundColor<<Action>> LightGreen
-    backgroundColor<<Service>> LightGoldenRodYellow
-    backgroundColor<<Data>> LightSalmon
-    backgroundColor<<AI>> LightPink
-    backgroundColor<<Config>> LightGray
-    backgroundColor<<External>> Technology
-    borderColor black
-    shadowing true
-}
-skinparam database {
-    backgroundColor LightYellow
-    borderColor black
-}
-skinparam cloud {
-    backgroundColor LightBlue
-    borderColor black
-}
-skinparam interface {
-    backgroundColor LightSteelBlue
+title FastBasket - Project Architecture
+
+package "Frontend Layer (UI)" {
+  [UI Components (React/ShadCN)] as UI
+  [Next.js Pages & Layouts] as Pages
 }
 
-package "Frontend (Next.js / React)" <<UI>> {
-    [UI: /app Pages] as Pages
-    [UI: Components] as Components
-    [UI: Hooks & Context] as Hooks
+package "Server Actions Layer" {
+  [Product Actions] as ProductActions
+  [Category Actions] as CategoryActions
+  [Order Actions] as OrderActions
+  [Log Actions] as LogActions
 }
 
-package "Backend Logic" {
-    package "1. Server Actions" <<Action>> {
-        [product.actions.ts]
-        [category.actions.ts]
-        [order.actions.ts]
-        [log.actions.ts]
-        [storage.actions.ts]
-        [db.actions.ts]
-    }
-
-    package "2. Service Layer" <<Service>> {
-        [products.service.ts]
-        [categories.service.ts]
-        [orders.service.ts]
-        [weight-templates.service.ts]
-        [db.service.ts]
-        [storage.service.ts]
-    }
-
-    package "3. Data Access Layer" <<Data>> {
-        [db.ts (PG Pool)] as PgPool
-        [s3-client.ts (S3 Client)] as S3Client
-    }
+package "Service Layer" {
+  [Products Service] as ProductService
+  [Categories Service] as CategoryService
+  [Orders Service] as OrderService
+  [Storage Service (S3)] as StorageService
+  [DB Status Service] as DbStatusService
 }
 
-package "AI & Generative" <<AI>> {
-    [qa-flow.ts] as QaFlow
-    [genkit.ts] as GenkitConfig
-    [readProjectLogs (Tool)] as LogTool
+package "AI Layer (Genkit)" {
+    [QA Flow] as QaFlow
+    [Read Logs Tool] as ReadLogsTool
 }
 
-package "Configuration & Core Lib" <<Config>> {
-    [config.ts]
-    [env.ts (Mock/Real)]
-    [logger.ts / server-logger.ts] as Loggers
-    [types.ts]
-    [schemas/*.ts]
+package "Data Access Layer" {
+    database "PostgreSQL (Cloud SQL)" as DB
+    cloud "Google Cloud Storage (S3)" as S3
 }
 
-database "PostgreSQL (Cloud SQL)" as Db
-cloud "Google Cloud Storage (S3)" as S3
-cloud "Google Cloud Logging" as GcLogging
-cloud "Google Vertex AI (Gemini)" as Gemini
+package "Mock Data Layer" #LightYellow {
+    [mock-data.ts] as MockData
+    [env.ts (runMockOrReal)] as MockSwitch
+}
 
-' Relationships
-Pages --> Components
-Components --> Hooks
+' --- Связи ---
 
-' UI -> Server Actions (The only way UI interacts with backend logic)
-Components --> [product.actions.ts] : "create/update/delete"
-Components --> [category.actions.ts] : "create/update/delete"
-Components --> [order.actions.ts] : "createOrder"
-Components --> [log.actions.ts] : "getLogs/clearLogs"
-Components --> [storage.actions.ts] : "uploadImage"
+' UI -> Server Actions
+UI --> ProductActions
+UI --> CategoryActions
+UI --> OrderActions
+UI --> LogActions
+Pages ..> UI
 
-' Actions -> Services
-[product.actions.ts] --> [products.service.ts]
-[category.actions.ts] --> [categories.service.ts]
-[order.actions.ts] --> [orders.service.ts]
-[db.actions.ts] --> [db.service.ts]
-[storage.actions.ts] --> [storage.service.ts]
+' Server Actions -> Services
+ProductActions --> ProductService
+CategoryActions --> CategoryService
+OrderActions --> OrderService
+LogActions --> QaFlow
 
-' Services -> Data Access Layer
-[products.service.ts] --> PgPool
-[categories.service.ts] --> PgPool
-[orders.service.ts] --> PgPool
-[weight-templates.service.ts] --> PgPool
-[db.service.ts] --> PgPool
-[storage.service.ts] --> S3Client
+' Services -> Data Access or Mocks
+alt MOCK_DATA=true
+    ProductService ..> MockSwitch
+    CategoryService ..> MockSwitch
+    OrderService ..> MockSwitch
+    MockSwitch ..> MockData
+else REAL_DATA
+    ProductService --> DB
+    CategoryService --> DB
+    OrderService --> DB
+    DbStatusService --> DB
+    StorageService --> S3
+end
 
-' Data Access -> External Systems
-PgPool --> Db
-S3Client --> S3
 
-' AI Flow
-QaFlow --> Gemini : "generate()"
-QaFlow --> LogTool : "uses"
-LogTool --> [log.actions.ts] : "getLogsAction()"
+' AI Layer Dependencies
+QaFlow -> ReadLogsTool
+ReadLogsTool ..> LogActions : "Uses action to read logs"
 
-' Logging Flow
-[server-logger.ts] --> GcLogging : "logs (in cloud)"
-[server-logger.ts] --> [log.actions.ts] : "writes to file (local)"
 
-' Config and Env usage
-[products.service.ts] --> [env.ts (Mock/Real)] : "runMockOrReal()"
-[config.ts] --> [env.ts (Mock/Real)]
-Loggers --> [config.ts]
-
-' Shared Types and Schemas
-[product.actions.ts] --> [types.ts]
-[products.service.ts] --> [types.ts]
-[products.service.ts] --> [schemas/*.ts]
+' Легенда
+legend left
+  == Legend ==
+  --- : Direct call
+  ... : Indirect or utility call
+  alt/else : Conditional logic
+end legend
 
 @enduml
