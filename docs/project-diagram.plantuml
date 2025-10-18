@@ -1,84 +1,116 @@
-@startuml
+@startuml "FastBasket Architecture"
+
 !theme vibrant
+skinparam shadowing false
+skinparam RoundCorner 7
+skinparam BackgroundColor FFFFFF
+skinparam componentStyle uml2
 
-title FastBasket - Project Architecture
-
-package "Frontend Layer (UI)" {
-  [UI Components (React/ShadCN)] as UI
-  [Next.js Pages & Layouts] as Pages
+skinparam package {
+  borderColor #555555
+  backgroundColor #F7F7F7
+  fontColor #333333
+  borderStyle solid
 }
 
-package "Server Actions Layer" {
-  [Product Actions] as ProductActions
-  [Category Actions] as CategoryActions
-  [Order Actions] as OrderActions
-  [Log Actions] as LogActions
+skinparam component {
+  borderColor #6C8EBF
+  backgroundColor #D8E6F3
+  fontColor #000000
 }
 
-package "Service Layer" {
-  [Products Service] as ProductService
-  [Categories Service] as CategoryService
-  [Orders Service] as OrderService
-  [Storage Service (S3)] as StorageService
-  [DB Status Service] as DbStatusService
+skinparam database {
+  borderColor #996633
+  backgroundColor #F0E68C
 }
 
-package "AI Layer (Genkit)" {
-    [QA Flow] as QaFlow
-    [Read Logs Tool] as ReadLogsTool
+skinparam cloud {
+  borderColor #4285F4
+  backgroundColor #E8F0FE
 }
 
-package "Data Access Layer" {
-    database "PostgreSQL (Cloud SQL)" as DB
-    cloud "Google Cloud Storage (S3)" as S3
+skinparam node {
+    borderColor #888888
+    backgroundColor #EEEEEE
+}
+
+' --- Components Definition ---
+
+package "Presentation Layer (UI)" #LightBlue {
+  [React Components & Pages] as UI
+  [Next.js Pages] as Pages
+}
+
+package "Server Actions Layer" #LightCoral {
+  [product.actions.ts] as ProductActions
+  [category.actions.ts] as CategoryActions
+  [order.actions.ts] as OrderActions
+  [log.actions.ts] as LogActions
+}
+
+package "Service Layer" #LightGreen {
+  [products.service.ts] as ProductService
+  [categories.service.ts] as CategoryService
+  [orders.service.ts] as OrderService
+  [db.service.ts] as DbService
+  [storage.service.ts] as StorageService
+}
+
+package "AI Layer (Genkit)" #Thistle {
+    [qa-flow.ts] as QaFlow
+}
+
+package "Data Access Layer" #LightGrey {
+  database "PostgreSQL" as Postgres
 }
 
 package "Mock Data Layer" #LightYellow {
-    [mock-data.ts] as MockData
-    [env.ts (runMockOrReal)] as MockSwitch
+  [mock-data.ts] as MockData
+  [env.ts (runMockOrReal)] as MockSwitch
 }
 
-' --- Связи ---
+cloud "Google Cloud Storage (S3)" as GCS
+node "Google Cloud Logging" as CloudLogging
+node "Local Log File (debug.log)" as LocalLogFile
 
-' UI -> Server Actions
-UI --> ProductActions
-UI --> CategoryActions
-UI --> OrderActions
-UI --> LogActions
-Pages ..> UI
+' --- Relationships ---
 
-' Server Actions -> Services
+' UI Flow
+UI --> ProductActions : "(e.g., createProduct)"
+UI --> CategoryActions : "(e.g., createCategory)"
+UI --> OrderActions : "(e.g., createOrder)"
+UI --> LogActions : "(e.g., getLogs)"
+Pages ..> UI : "Renders"
+
+' Actions to Services
 ProductActions --> ProductService
 CategoryActions --> CategoryService
 OrderActions --> OrderService
 LogActions --> QaFlow
 
-' Services -> Data Access or Mocks
-alt MOCK_DATA=true
-    ProductService ..> MockSwitch
-    CategoryService ..> MockSwitch
-    OrderService ..> MockSwitch
-    MockSwitch ..> MockData
-else REAL_DATA
-    ProductService --> DB
-    CategoryService --> DB
-    OrderService --> DB
-    DbStatusService --> DB
-    StorageService --> S3
-end
+' Service Layer to Data Switch
+ProductService --> MockSwitch
+CategoryService --> MockSwitch
+OrderService --> MockSwitch
 
+' Conditional Data Flow (Corrected)
+MockSwitch ..> MockData : "if (MOCK_DATA=true)"
+MockSwitch --> Postgres : "if (MOCK_DATA=false)"
 
-' AI Layer Dependencies
-QaFlow -> ReadLogsTool
-ReadLogsTool ..> LogActions : "Uses action to read logs"
+DbService --> Postgres
 
+' Storage and Logging
+StorageService --> GCS
+QaFlow -> LogActions : "Uses tool readProjectLogs()"
 
-' Легенда
-legend left
-  == Legend ==
-  --- : Direct call
-  ... : Indirect or utility call
-  alt/else : Conditional logic
-end legend
+note right of LogActions
+  Uses AI Tool to read logs
+  via getLogsAction()
+end note
+
+' Logging destinations
+LogActions ..> CloudLogging : "if (isCloud)"
+LogActions ..> LocalLogFile : "if (!isCloud)"
+
 
 @enduml
