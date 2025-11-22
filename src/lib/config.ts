@@ -52,14 +52,17 @@ export function isCloud(): boolean {
  */
 export function useMockData(): boolean {
   const mockEnv = process.env.MOCK_DATA;
-  if (mockEnv === 'true') {
-    return true;
-  }
-  if (mockEnv === 'false') {
+
+  // ✅ КРИТИЧНО: Если явно включен SQLite — отключаем моки
+  if (process.env.USE_SQLITE_DEV === 'true') {
     return false;
   }
-  // По умолчанию: моки, если не в облаке
-  return !isCloud();
+
+  if (mockEnv === 'true') return true;
+  if (mockEnv === 'false') return false;
+
+  // По умолчанию: моки выключены (SQLite — основной dev режим)
+  return false;
 }
 
 

@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Star, MessageCircle, ChevronLeft } from 'lucide-react';
 import SiteHeader from '@/components/site-header';
 import ProductCarousel from './_components/product-carousel';
-import { productsService } from '@/lib/products.service';
+import { productsService } from '@/lib/products';
 import AddToCartWidget from './_components/add-to-cart-widget';
 import type { Product } from '@/lib/types';
 

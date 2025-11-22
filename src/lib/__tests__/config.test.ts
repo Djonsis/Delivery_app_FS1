@@ -52,7 +52,6 @@ describe("config module", () => {
   });
 
   describe("getNodeEnv()", () => {
-    // FIXED: Added mocks for all required production variables
     it("should return current NODE_ENV", async () => {
       process.env.NODE_ENV = "production";
       // Add mocks for all other required env vars to prevent import from throwing
@@ -60,6 +59,7 @@ describe("config module", () => {
       process.env.PG_USER = "prod_user";
       process.env.PG_PASSWORD = "prod_pass";
       process.env.PG_DATABASE = "prod_db";
+      process.env.CLOUD_SQL_CONNECTION_NAME = "local-instance"; // <- FIX APPLIED
       process.env.S3_BUCKET_NAME = "prod_bucket";
       process.env.S3_ENDPOINT_URL = "https://s3.amazonaws.com";
       process.env.S3_REGION = "us-east-1";

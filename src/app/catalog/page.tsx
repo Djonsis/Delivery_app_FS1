@@ -4,7 +4,7 @@ import SiteHeader from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { productsService } from "@/lib/products.service";
+import { productsService } from "@/lib/products/products.service";
 import { categoriesService } from "@/lib/categories.service";
 import { ProductFilter, SortOption } from "@/lib/types";
 
@@ -14,7 +14,9 @@ interface CatalogPageProps {
     searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export default async function CatalogPage({ searchParams }: CatalogPageProps) {
+export default async function CatalogPage(props: CatalogPageProps) {
+  const searchParams = await props.searchParams;
+
   const filters: ProductFilter = {
       category: searchParams.category as string,
       query: searchParams.query as string,
