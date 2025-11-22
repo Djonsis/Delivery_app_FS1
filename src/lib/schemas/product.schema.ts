@@ -78,9 +78,9 @@ export const DbProductSchema = z.object({
 
     weight_category: z.string().nullable().optional().default(null),
 
-    // Использование z.union для явной обработки null (улучшение)
+    // ИСПРАВЛЕНО: Сначала проверяем на null, потом на число
     price_per_unit: z
-        .union([PortableNumber.nonnegative(), z.null()])
+        .union([z.null(), PortableNumber.nonnegative()])
         .optional()
         .default(null),
 
@@ -99,7 +99,7 @@ export const DbProductSchema = z.object({
     brand: z.string().nullable(),
     manufacturer: z.string().nullable(),
 
-    // Используем утилиту PortableJson (улучшение)
+    // Используем утилиту PortableJson (уличшение)
     nutrition: PortableJson,
 
     // --- Метаданные ---
