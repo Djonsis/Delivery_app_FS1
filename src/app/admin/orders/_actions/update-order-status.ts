@@ -19,7 +19,7 @@ export async function updateOrderStatusAction(orderId: string, newStatus: OrderS
     }
 
     try {
-        await ordersService.updateOrderStatus(orderId, newStatus);
+        await ordersService.updateStatus(orderId, newStatus);
         
         const message = `Статус заказа #${orderId} обновлен.`;
         orderStatusLogger.info(`Successfully updated status for order ${orderId} via service.`, { newStatus });

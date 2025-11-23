@@ -32,10 +32,10 @@ export async function createOrderAction(values: unknown) {
   
   try {
     orderActionLogger.info("Payload valid, calling createOrder service.", { data: validatedFields.data });
-    const { orderId } = await ordersService.createOrder(validatedFields.data);
-    orderActionLogger.info("Successfully created order via service.", { orderId });
+    const order = await ordersService.create(validatedFields.data);
+    orderActionLogger.info("Successfully created order via service.", { orderId: order.id });
     
-    return { success: true, message: "Заказ успешно создан.", orderId };
+    return { success: true, message: "Заказ успешно создан.", orderId: order.id };
   } catch (error) {
     orderActionLogger.error("Failed to create order via service", error as Error);
     return { success: false, message: (error as Error).message || "Ошибка сервера. Не удалось создать заказ." };

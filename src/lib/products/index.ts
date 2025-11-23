@@ -1,12 +1,8 @@
 // src/lib/products/index.ts
 
-// Основной сервис
 export { productsService } from "./products.service";
-export type { ProductsService } from "./products.service";
+export { mapDbRowToProduct } from "./helpers";
 
-// Вспомогательные функции (при необходимости их тоже можно использовать извне)
-export { 
-    mapDbProductToProduct, 
-    toPostgresArray, 
-    generateSkuForCategory 
-} from "./helpers";
+// ⚠️ Эти функции больше НЕ экспортируются, потому что:
+/// - mapDbProductToProduct переименована -> mapDbRowToProduct
+/// - toPostgresArray и generateSku… перенесены в products.service.ts

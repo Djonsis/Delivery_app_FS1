@@ -100,7 +100,7 @@ async function remove(id: string): Promise<{ success: boolean; message: string }
     try {
         // Проверяем, есть ли товары, связанные с этой категорией
         const checkRes = await query("SELECT 1 FROM products WHERE category_id = $1 LIMIT 1", [id]);
-        if (checkRes.rowCount > 0) {
+        if (checkRes.rowCount && checkRes.rowCount > 0) {
             log.warn(`Attempt to delete category with associated products`, { categoryId: id });
             return { success: false, message: "Нельзя удалить категорию, так как к ней привязаны товары." };
         }

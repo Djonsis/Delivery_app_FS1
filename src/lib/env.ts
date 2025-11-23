@@ -1,4 +1,4 @@
-import { useMockData } from "./config";
+
 import { serverLogger } from "./server-logger";
 
 const log = serverLogger.withCategory("ENV");
@@ -40,25 +40,3 @@ export const useSqliteDev = (): boolean => {
 
   return useSqlite;
 };
-
-
-/**
- * Универсальный helper для переключения между mock и real данными.
- * 
- * ⚠️ ВАЖНО: С внедрением SQLite adapter, этот метод становится УСТАРЕВШИМ
- * для работы с БД. Теперь query() сам решает, использовать SQLite или Postgres.
- * 
- * Используйте runMockOrReal() только для не-DB операций (например, внешние API).
- */
-export function runMockOrReal<T>(
-  mockFn: () => T | Promise<T>,
-  realFn: () => T | Promise<T>
-): T | Promise<T> {
-  if (useMockData()) {
-      log.info("🎭 Mock mode enabled. Running mock function.");
-      return mockFn();
-  }
-  
-  log.info("💾 Real mode enabled. Running real function.");
-  return realFn();
-}

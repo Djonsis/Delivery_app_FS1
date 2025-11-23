@@ -2,10 +2,16 @@ import { Pool, QueryResult, type QueryResultRow } from 'pg';
 import { performance } from 'perf_hooks';
 import fs from 'fs';
 import path from 'path';
-import { dbConfig, getNodeEnv, isCloud } from './config';
+import { dbConfig, isCloud as isGoogleCloud } from './config';
 import { logger } from './logger';
 import { randomUUID } from 'crypto';
-import Database, { Statement } from 'better-sqlite3';
+import Database from 'better-sqlite3';
+
+const dbLogger = logger("DATABASE");
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
 
 function parseReturningClause(sql: string): { cleanSql: string, returningCols: string[], hasReturning: boolean } {
   const match = sql.match(/RETURNING\s+(.*)/i);
@@ -33,6 +39,9 @@ function preprocessSqlForSqlite(sql: string, params: any[]): { sql: string, para
     uuidQueue.push(randomUUID());
     return '?';
   });
+  
+  // Handle NOW() for SQLite
+  processedSql = processedSql.replace(/NOW\(\)/gi, "datetime('now')");
 
   const placeholders = processedSql.match(/(\$[0-9]+)|\?/g);
 
@@ -86,7 +95,7 @@ function handleSqliteQuery<T extends QueryResultRow>(db: Database.Database, sql:
             rows: rows,
             rowCount: rows.length,
             command: 'SELECT',
-            oid: null,
+            oid: 0, // FIX: pg types expect number, not null
             fields: [],
         };
     }
@@ -120,27 +129,25 @@ function handleSqliteQuery<T extends QueryResultRow>(db: Database.Database, sql:
     return {
         rows: returnedRows,
         rowCount: info.changes,
-        command: sql.trim().split(' ')[0].toUpperCase(),
-        oid: null,
+        command: sql.trim().split(' ')[0].toUpperCase() as any,
+        oid: 0, // FIX: pg types expect number, not null
         fields: [],
     };
 }
 
-let pool: Pool;
-function getPool() {
-    // ... pg pool init ...
-}
+// ============================================================================
+// SQLITE CONNECTION
+// ============================================================================
 
-// FIX: Swapped to the recommended implementation
 let sqliteDb: Database.Database;
-let sqliteSchema: string; // Cache for the schema
+let sqliteSchema: string; 
 
 function getSqliteDb(): Database.Database {
     if (!sqliteDb) {
         const isTest = process.env.NODE_ENV === 'test';
         const dbPath = isTest ? ':memory:' : './dev.sqlite';
         
-        logger.info(`🗄️ Initializing SQLite connection: ${dbPath}`);
+        dbLogger.info(`🗄️ Initializing SQLite connection: ${dbPath}`);
         
         try {
             sqliteDb = new Database(dbPath);
@@ -153,46 +160,130 @@ function getSqliteDb(): Database.Database {
                 sqliteDb.exec(sqliteSchema);
             }
             
-            logger.info('✅ SQLite connection initialized');
+            // Enable WAL mode for concurrency
+            sqliteDb.pragma('journal_mode = WAL');
+            
+            dbLogger.info('✅ SQLite connection initialized');
 
         } catch (error) {
-            logger.error('❌ Failed to initialize SQLite database', { error });
+            dbLogger.error('❌ Failed to initialize SQLite database', { error });
             process.exit(1);
         }
     }
     return sqliteDb;
 }
 
+// ============================================================================
+// POSTGRES CONNECTION POOL
+// ============================================================================
+
+let pool: Pool;
+
+function getPool(): Pool {
+    if (!pool) {
+        const { user, password, database, host, port } = dbConfig;
+        
+        const poolConfig = {
+            user,
+            password,
+            database,
+            host: isGoogleCloud() ? `/cloudsql/${dbConfig.connectionName}` : host,
+            port: isGoogleCloud() ? undefined : port,
+            max: 20,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 10000,
+            ssl: isGoogleCloud() ? undefined : { rejectUnauthorized: false }, // Adjust SSL based on env
+        };
+
+        dbLogger.info('Initializing PostgreSQL connection pool', { 
+            host: poolConfig.host, 
+            database: poolConfig.database,
+            isCloud: isGoogleCloud() 
+        });
+
+        try {
+            pool = new Pool(poolConfig);
+            
+            pool.on('connect', () => {
+                dbLogger.info('✅ PostgreSQL client connected');
+            });
+
+            pool.on('error', (err) => {
+                dbLogger.error('❌ Unexpected PostgreSQL pool error', err);
+            });
+        } catch (error) {
+            dbLogger.error('Failed to initialize PostgreSQL pool', error as Error);
+            throw new Error('Database pool could not be initialized.');
+        }
+    }
+    return pool;
+}
+
+// ============================================================================
+// EXPORTS
+// ============================================================================
+
+/**
+ * Main query function that switches between SQLite and PostgreSQL
+ */
 export async function query<T extends QueryResultRow>(
   sql: string,
   params: any[] = []
 ): Promise<QueryResult<T>> {
   const startTime = performance.now();
   
+  // --- SQLite Branch ---
   if (process.env.USE_SQLITE_DEV === 'true') {
       const db = getSqliteDb();
       try {
           const result = handleSqliteQuery<T>(db, sql, params);
           const duration = performance.now() - startTime;
-          logger.debug(`[SQLITE] ✅ Query executed in ${duration.toFixed(2)}ms`, { sql, params });
+          dbLogger.debug(`[SQLITE] ✅ Query executed in ${duration.toFixed(2)}ms`, { sql: sql.substring(0, 50) });
           return result;
       } catch (error) {
           const duration = performance.now() - startTime;
-          logger.error(`[SQLITE] ❌ Query failed after ${duration.toFixed(2)}ms`, { error });
+          dbLogger.error(`[SQLITE] ❌ Query failed after ${duration.toFixed(2)}ms`, { error });
           throw error;
       }
   }
 
-  // ... (PostgreSQL logic)
+  // --- PostgreSQL Branch ---
   const pgPool = getPool();
   try {
     const result = await pgPool.query<T>(sql, params);
     const duration = performance.now() - startTime;
-    logger.debug(`[PG] ✅ Query executed in ${duration.toFixed(2)}ms`, { sql, params });
+    dbLogger.debug(`[PG] ✅ Query executed in ${duration.toFixed(2)}ms`, { sql: sql.substring(0, 50) });
     return result;
   } catch (error) {
     const duration = performance.now() - startTime;
-    logger.error(`[PG] ❌ Query failed after ${duration.toFixed(2)}ms`, { error });
+    dbLogger.error(`[PG] ❌ Query failed after ${duration.toFixed(2)}ms`, { error });
     throw error;
   }
+}
+
+/**
+ * Exported for db.service.ts to check connection status
+ */
+export function getPoolStatus() {
+    if (process.env.USE_SQLITE_DEV === 'true') {
+        return {
+            totalCount: 1,
+            idleCount: 1,
+            waitingCount: 0,
+        };
+    }
+
+    if (!pool) {
+        return {
+            totalCount: 0,
+            idleCount: 0,
+            waitingCount: 0,
+        };
+    }
+    
+    return {
+        totalCount: pool.totalCount,
+        idleCount: pool.idleCount,
+        waitingCount: pool.waitingCount,
+    };
 }

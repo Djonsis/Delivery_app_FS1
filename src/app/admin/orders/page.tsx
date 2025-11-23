@@ -9,10 +9,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ordersService } from "@/lib/orders.service";
+import { Order } from "@/lib/types";
 import OrderStatusSelector from "./_components/order-status-selector";
 
 export default async function OrdersPage() {
-  const orders = await ordersService.getOrders();
+  const orders = await ordersService.getAll();
 
   return (
     <div className="border rounded-lg p-2">
@@ -29,7 +30,7 @@ export default async function OrdersPage() {
         </TableHeader>
         <TableBody>
           {orders.length > 0 ? (
-            orders.map((order) => (
+            orders.map((order: Order) => (
               <TableRow key={order.id}>
                 <TableCell className="font-medium">#{order.id.substring(0, 6)}</TableCell>
                 <TableCell>{order.customer_name}</TableCell>

@@ -18,7 +18,7 @@ export default async function CatalogPage(props: CatalogPageProps) {
   const searchParams = await props.searchParams;
 
   const filters: ProductFilter = {
-      category: searchParams.category as string,
+      categoryId: searchParams.category as string,
       query: searchParams.query as string,
       sort: searchParams.sort as SortOption,
       minPrice: searchParams.minPrice ? Number(searchParams.minPrice) : undefined,

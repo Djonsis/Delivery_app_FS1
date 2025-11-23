@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { WeightTemplate } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { toggleTemplateStatusAction } from "../_actions/template.actions";
+import { toggleWeightTemplateStatusAction } from "../_actions/template.actions";
 
 interface TemplatesTableProps {
   templates: WeightTemplate[];
@@ -47,7 +47,7 @@ export default function TemplatesTable({ templates }: TemplatesTableProps) {
 
   const handleToggleStatus = (id: string, currentStatus: boolean) => {
     startTransition(async () => {
-      const result = await toggleTemplateStatusAction(id, currentStatus);
+      const result = await toggleWeightTemplateStatusAction(id, currentStatus);
       if (result.success) {
         toast({ title: "Успех!", description: result.message });
       } else {

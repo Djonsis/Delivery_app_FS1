@@ -1,34 +1,6 @@
 
-// src/lib/schemas/product.schema.ts
-
 import { z } from "zod";
-
-/**
- * Универсальные утилиты для PostgreSQL и SQLite.
- */
-
-// number или строка → число
-const PortableNumber = z.coerce.number();
-
-// boolean или 0/1 → boolean (Предпочтительно для JS-модели)
-const PortableBoolean = z.union([z.boolean(), z.number()]).transform(v => Boolean(v));
-
-// JSON-объект или строка → объект/null
-const PortableJson = z
-    .union([
-        z.record(z.union([z.string(), z.number()])).nullable(),
-        z.string().nullable()
-    ])
-    .transform(val => {
-        if (typeof val === "string") {
-            try {
-                return JSON.parse(val);
-            } catch {
-                return null;
-            }
-        }
-        return val;
-    });
+import { PortableNumber, PortableBoolean, PortableJson } from "./schema-helpers";
 
 /**
  * Финальная схема продукта из базы данных.
@@ -41,65 +13,42 @@ export const DbProductSchema = z.object({
     title: z.string().min(1),
     description: z.string().nullable(),
 
-    price: PortableNumber.nonnegative(),
+    price: PortableNumber.refine(val => val >= 0),
     currency: z.string().length(3),
 
     category_id: z.string().uuid().nullable(),
 
-    rating: PortableNumber.gte(0).lte(5),
-    // Использование PortableNumber для reviews (улучшение)
-    reviews: PortableNumber.int().nonnegative(),
+    rating: PortableNumber.refine(val => val >= 0 && val <= 5),
+    reviews: PortableNumber.refine(val => val >= 0).transform(val => Math.round(val)), // Ensure integer
 
     image_url: z.string().url().nullable(),
 
-    // tags: JSON array (PG) или JSON-string (SQLite)
-    tags: z
-        .union([z.array(z.string()), z.string()])
-        .nullable()
-        .transform(val => {
-            if (typeof val === "string") {
-                try {
-                    return JSON.parse(val);
-                } catch {
-                    return [];
-                }
-            }
-            return val ?? [];
-        }),
+    tags: PortableJson, // Handles both array (PG) and string (SQLite)
 
     // --- Присоединённая информация о категории ---
     category_name: z.string().min(1).optional(),
 
     // --- Весовые товары ---
-    // Используем PortableBoolean для вывода типа 'boolean' (Ваше оригинальное, более чистое решение)
     is_weighted: PortableBoolean,
 
     unit: z.enum(["kg", "g", "pcs"]),
 
-    weight_category: z.string().nullable().optional().default(null),
+    weight_category: z.enum(['light', 'middle', 'heavy', 'none']).nullable().optional(),
 
-    // ИСПРАВЛЕНО: Сначала проверяем на null, потом на число
-    price_per_unit: z
-        .union([z.null(), PortableNumber.nonnegative()])
-        .optional()
-        .default(null),
+    price_per_unit: PortableNumber.nullable().optional().default(null),
 
-    price_unit: z
-        .union([z.enum(["kg", "g", "pcs"]), z.null()])
-        .optional()
-        .default(null),
+    price_unit: z.enum(["kg", "g", "pcs"]).nullable().optional().default(null),
 
     weight_template_id: z.string().uuid().nullable().optional().default(null),
 
     // --- Количество ---
-    min_order_quantity: PortableNumber.positive(),
-    step_quantity: PortableNumber.positive(),
+    min_order_quantity: PortableNumber.refine(val => val > 0),
+    step_quantity: PortableNumber.refine(val => val > 0),
 
     // --- Доп. инфо ---
     brand: z.string().nullable(),
     manufacturer: z.string().nullable(),
 
-    // Используем утилиту PortableJson (уличшение)
     nutrition: PortableJson,
 
     // --- Метаданные ---

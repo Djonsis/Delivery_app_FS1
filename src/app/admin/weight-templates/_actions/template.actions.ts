@@ -25,7 +25,7 @@ export async function createWeightTemplateAction(values: unknown) {
 
   if (!validated.success) {
     const errors = validated.error.flatten().fieldErrors;
-    templateLogger.error("Weight template creation failed due to validation errors", { errors });
+    templateLogger.error("Weight template creation failed: validation errors", { errors });
     return { success: false, message: "Неверные данные формы.", errors };
   }
 
@@ -39,7 +39,7 @@ export async function createWeightTemplateAction(values: unknown) {
 
     return result;
   } catch (error) {
-    templateLogger.error("Unexpected error in createWeightTemplateAction", error as Error);
+    templateLogger.error("Unexpected error in createWeightTemplateAction", { error: error as Error });
     return { success: false, message: "Произошла непредвиденная ошибка. Не удалось создать шаблон." };
   }
 }
@@ -47,11 +47,11 @@ export async function createWeightTemplateAction(values: unknown) {
 export async function updateWeightTemplateAction(id: string, values: unknown) {
   if (!id) return { success: false, message: "ID шаблона не предоставлен." };
 
-  const validated = templateSchema.safeParse(values);
+  const validated = templateSchema.partial().safeParse(values);
 
   if (!validated.success) {
     const errors = validated.error.flatten().fieldErrors;
-    templateLogger.error("Weight template update failed due to validation errors", { id, errors });
+    templateLogger.error("Weight template update failed: validation errors", { id, errors });
     return { success: false, message: "Неверные данные формы.", errors };
   }
 
@@ -65,7 +65,7 @@ export async function updateWeightTemplateAction(id: string, values: unknown) {
 
     return result;
   } catch (error) {
-    templateLogger.error("Unexpected error in updateWeightTemplateAction", error as Error, { id });
+    templateLogger.error("Unexpected error in updateWeightTemplateAction", { error: error as Error, id });
     return { success: false, message: "Произошла непредвиденная ошибка. Не удалось обновить шаблон." };
   }
 }
@@ -83,7 +83,28 @@ export async function deleteWeightTemplateAction(id: string) {
 
     return result;
   } catch (error) {
-    templateLogger.error("Unexpected error in deleteWeightTemplateAction", error as Error, { id });
+    templateLogger.error("Unexpected error in deleteWeightTemplateAction", { error: error as Error, id });
     return { success: false, message: "Произошла непредвиденная ошибка. Не удалось удалить шаблон." };
   }
 }
+
+export async function toggleWeightTemplateStatusAction(id: string, currentStatus: boolean) {
+    if (!id) return { success: false, message: "ID шаблона не предоставлен." };
+  
+    try {
+      const result = await weightTemplatesService.update(id, { is_active: !currentStatus });
+  
+      if (result.success) {
+        const status = !currentStatus ? "activated" : "deactivated";
+        templateLogger.info(`Weight template ${status} successfully`, { id });
+        revalidateTemplatePaths(id);
+        return { success: true, message: `Шаблон успешно ${!currentStatus ? 'активирован' : 'деактивирован'}.` };
+      }
+  
+      return result;
+    } catch (error) {
+      templateLogger.error("Unexpected error in toggleWeightTemplateStatusAction", { error: error as Error, id });
+      return { success: false, message: "Произошла непредвиденная ошибка. Не удалось изменить статус шаблона." };
+    }
+  }
+  

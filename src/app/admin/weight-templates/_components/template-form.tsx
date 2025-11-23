@@ -27,7 +27,7 @@ import {
 import { WeightTemplate } from "@/lib/types";
 import { useTransition } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { createTemplateAction, updateTemplateAction } from "../_actions/template.actions";
+import { createWeightTemplateAction, updateWeightTemplateAction } from "../_actions/template.actions";
 import { useRouter } from "next/navigation";
 
 
@@ -71,12 +71,12 @@ export default function TemplateForm({ template }: TemplateFormProps) {
 
   const onSubmit = (values: TemplateFormValues) => {
     startTransition(async () => {
+      let result;
       try {
-        let result;
         if (template) {
-          result = await updateTemplateAction(template.id, values);
+          result = await updateWeightTemplateAction(template.id, values);
         } else {
-          result = await createTemplateAction(values);
+          result = await createWeightTemplateAction(values);
         }
 
         if (result.success) {
@@ -84,8 +84,10 @@ export default function TemplateForm({ template }: TemplateFormProps) {
           router.push("/admin/weight-templates");
           router.refresh();
         } else {
-          if (result.errors) {
-            for (const [field, messages] of Object.entries(result.errors)) {
+          toast({ title: "Ошибка сохранения", description: result.message, variant: "destructive" });
+          if ("errors" in result && result.errors) {
+            const formErrors = result.errors as unknown as { [K in keyof TemplateFormValues]: string[] };
+            for (const [field, messages] of Object.entries(formErrors)) {
               if (messages && messages.length > 0) {
                 form.setError(field as keyof TemplateFormValues, {
                   type: "server",
@@ -94,11 +96,10 @@ export default function TemplateForm({ template }: TemplateFormProps) {
               }
             }
           }
-          throw new Error(result.message || "Не удалось сохранить шаблон.");
         }
       } catch (error) {
         toast({
-          title: "Ошибка",
+          title: "Непредвиденная ошибка",
           description: (error as Error).message,
           variant: "destructive",
         });

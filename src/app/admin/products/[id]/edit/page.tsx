@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { productsService } from "@/lib/products.service";
+import { productsService } from "@/lib/products/products.service";
 import { notFound } from "next/navigation";
 import { categoriesService } from "@/lib/categories.service";
 import { weightTemplatesService } from "@/lib/weight-templates.service";

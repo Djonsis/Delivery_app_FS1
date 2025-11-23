@@ -48,24 +48,13 @@ const productFormSchema = z.object({
   min_order_quantity: z.coerce.number().min(0).default(1),
   step_quantity: z.coerce.number().min(0).default(1),
 }).refine((data) => {
-  if (!data.is_weighted) {
-    return true; 
-  }
-  
-  if (data.weight_template_id) {
-    return true;
-  }
-  
-  const hasManualFields = data.unit && 
-                           data.min_order_quantity !== undefined && 
-                           data.step_quantity !== undefined;
-
-  return hasManualFields;
+  if (!data.is_weighted) return true; 
+  if (data.weight_template_id) return true;
+  return data.unit && data.min_order_quantity !== undefined && data.step_quantity !== undefined;
 }, {
   message: "При ручной настройке весового товара необходимо заполнить все поля: ед. изм., мин. заказ и шаг.",
   path: ["weight_template_id"] 
 });
-
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
@@ -113,7 +102,6 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
   });
 
   useEffect(() => {
-    // Check for deactivated template
     if (product?.weight_template_id && !weightTemplates.some(t => t.id === product.weight_template_id)) {
         toast({
             title: "Шаблон неактивен",
@@ -123,33 +111,30 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
     }
   }, [toast, product, weightTemplates]);
 
-
   const onSubmit = (values: ProductFormValues) => {
     startTransition(async () => {
+      let result;
       try {
         const file = fileInputRef.current?.files?.[0];
-        let imageUrl = product?.imageUrl || values.imageUrl;
+        let imageUrl = values.imageUrl;
 
         if (file) {
           setIsUploading(true);
-          toast({ title: "Загрузка изображения...", description: "Пожалуйста, подождите." });
-
+          toast({ title: "Загрузка изображения..." });
           const formData = new FormData();
           formData.append("file", file);
-          
           const uploadResult = await uploadImageAction(formData);
-
           setIsUploading(false);
 
           if (!uploadResult.success || !uploadResult.imageUrl) {
-            throw new Error(uploadResult.error || "Не удалось загрузить изображение.");
+            toast({ title: "Ошибка загрузки", description: uploadResult.error, variant: "destructive" });
+            return;
           }
           imageUrl = uploadResult.imageUrl;
         }
 
         const finalValues = { ...values, imageUrl };
         
-        let result;
         if (product) {
           result = await updateProductAction(product.id, finalValues);
         } else {
@@ -160,8 +145,10 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
             toast({ title: "Успешно", description: result.message });
             router.push("/admin/products");
         } else {
-            if (result.errors) {
-              for (const [field, messages] of Object.entries(result.errors)) {
+            toast({ title: "Ошибка сохранения", description: result.message, variant: "destructive" });
+            if ("errors" in result && result.errors) {
+              const formErrors = result.errors as unknown as { [K in keyof ProductFormValues]: string[] };
+              for (const [field, messages] of Object.entries(formErrors)) {
                  if (messages && messages.length > 0) {
                     form.setError(field as keyof ProductFormValues, {
                         type: "server",
@@ -170,15 +157,10 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
                  }
               }
             }
-            throw new Error(result.message || "Не удалось сохранить товар.");
         }
       } catch (error) {
         setIsUploading(false);
-        toast({
-          title: "Ошибка",
-          description: (error as Error).message,
-          variant: "destructive",
-        });
+        toast({ title: "Непредвиденная ошибка", description: (error as Error).message, variant: "destructive" });
       }
     });
   };

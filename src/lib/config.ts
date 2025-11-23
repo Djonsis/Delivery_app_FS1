@@ -1,3 +1,4 @@
+
 /**
  * Централизованная конфигурация приложения.
  * 
@@ -42,29 +43,6 @@ function getEnvVar(key: string, fallback?: string): string {
 export function isCloud(): boolean {
   return !!process.env.K_SERVICE;
 }
-
-/**
- * Определяет, нужно ли использовать mock данные.
- * Логика:
- * 1. Если MOCK_DATA=true явно установлена → ВСЕГДА моки
- * 2. Если MOCK_DATA=false явно установлена → НИКОГДА моки
- * 3. По умолчанию (не установлена) → моки, если не в облаке
- */
-export function useMockData(): boolean {
-  const mockEnv = process.env.MOCK_DATA;
-
-  // ✅ КРИТИЧНО: Если явно включен SQLite — отключаем моки
-  if (process.env.USE_SQLITE_DEV === 'true') {
-    return false;
-  }
-
-  if (mockEnv === 'true') return true;
-  if (mockEnv === 'false') return false;
-
-  // По умолчанию: моки выключены (SQLite — основной dev режим)
-  return false;
-}
-
 
 /**
  * Получает ID проекта Google Cloud.

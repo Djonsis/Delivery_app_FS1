@@ -30,6 +30,13 @@ export interface ProductData {
   imageUrl?: string;
 }
 
+export interface NutritionInfo {
+    calories: number;
+    protein: number;
+    fat: number;
+    carbs: number;
+}
+
 export interface Product {
   id: string;
   sku: string | null;
@@ -37,44 +44,43 @@ export interface Product {
   description: string | null;
   price: number;
   currency: string;
-  tags: string[];
+  tags: readonly string[];
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
 
-  category: string | null; // This is the category NAME joined from the categories table
-  category_id: string | null; // The foreign key
+  category: string;
+  category_id: string | null;
 
-  imageUrl: string; // единый формат (camelCase)
+  imageUrl: string;
 
   rating: number;
   reviews: number;
 
-  // --- Весовые товары ---
+  // --- Весовые товары ---\
   is_weighted: boolean;
   unit: UnitType;
   weight_category?: WeightCategory;
 
-  min_order_quantity: number; // поддерживает дробные значения
+  min_order_quantity: number;
   step_quantity: number;
 
-  price_per_unit?: number; // например: 200 руб/кг
+  price_per_unit?: number;
   price_unit?: UnitType;
 
   // Доп. атрибуты
   brand?: string;
   manufacturer?: string;
-  nutrition?: {
-    calories: number;
-    protein: number;
-    fat: number;
-    carbs: number;
-  } | null;
+  nutrition?: NutritionInfo;
 
-  weight_template_id?: string | null;
+  weight_template_id?: string;
 }
 
-export type ProductCreateInput = Omit<Product, 'id' | 'created_at' | 'updated_at' | 'deleted_at' | 'category' | 'sku'> & { category_id: string };
+export type ProductCreateInput = Omit<Product, 'id' | 'created_at' | 'updated_at' | 'deleted_at' | 'category' | 'sku' | 'tags'> & {
+  category_id: string;
+  tags: string[];
+};
+
 export type ProductUpdateInput = Partial<ProductCreateInput>;
 
 export interface CartItem {
