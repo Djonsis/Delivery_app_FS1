@@ -1,18 +1,27 @@
 # Logs
 /logs
+npm-debug.log
+firebase-debug.log
 
 # Local Environment Variables
 .env
 .env*.local
 
-# Next.js
+# Next.js & Vercel
 .next/
+.vercel/
 
 # Node
 node_modules/
 
+# Dependencies
+node_modules/
+
 # NPM
 npm-debug.log
+
+# IDE folders
+.vscode/
 
 # Vercel
 .vercel/
@@ -20,3 +29,9 @@ npm-debug.log
 # VSCode
 .vscode/
 firebase-debug.log
+
+# SQLite databases
+*.sqlite
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
