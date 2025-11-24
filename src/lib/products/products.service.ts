@@ -1,4 +1,5 @@
 
+import { randomUUID } from 'crypto';
 import type { Product, ProductFilter, ProductCreateInput, ProductUpdateInput } from "@/lib/types";
 import { serverLogger } from "@/lib/server-logger";
 import { query } from "@/lib/db";
@@ -12,13 +13,6 @@ const log = serverLogger.withCategory("PRODUCTS_SERVICE");
 // Type guard для ошибок БД
 function isDbError(error: unknown): error is { code: string; constraint: string } {
     return typeof error === "object" && error !== null && "code" in error && "constraint" in error;
-}
-
-// Helper для преобразования JS-массива в формат массива PostgreSQL
-function toPostgresArray(arr?: string[] | null): string | null {
-    if (!arr || arr.length === 0) return null;
-    const escapedElements = arr.map(el => `"${el.replace(/\\/g, '\\\\').replace(/"/g, '\"\"')}"`);
-    return `{${escapedElements.join(',')}}`;
 }
 
 async function getAll(filters: ProductFilter = {}): Promise<Product[]> {
@@ -60,7 +54,6 @@ async function getAll(filters: ProductFilter = {}): Promise<Product[]> {
         const { rows } = await query(baseQuery, queryParams);
         log.debug(`Fetched ${rows.length} raw products from DB.`);
 
-        // Валидируем все строки, пропуская невалидные
         const validatedRows = validateDbRows(rows, DbProductSchema, "getAllProducts", { skipInvalid: true });
         return validatedRows.map(mapDbRowToProduct);
 
@@ -81,7 +74,6 @@ async function getById(id: string): Promise<Product | null> {
 
         if (rows.length === 0) return null;
 
-        // Валидируем одну строку, выбрасывая ошибку, если она невалидна
         const validatedRow = validateDbRow(rows[0], DbProductSchema, "getById");
         return mapDbRowToProduct(validatedRow); 
 
@@ -99,31 +91,58 @@ async function create(data: ProductCreateInput): Promise<{ success: boolean; mes
     log.info("💾 Attempting to create product.", { title: data.title });
 
     try {
-        // 1. Генерация SKU (логика перенесена из helpers)
+        const productId = randomUUID();
+        
         const category = await categoriesService.getById(data.category_id);
         if (!category || !category.sku_prefix) {
             return { success: false, message: "Категория или префикс для артикула не найдены." };
         }
 
-        const countResult = await query('SELECT COUNT(*) FROM products WHERE category_id = $1', [data.category_id]);
-        const productCount = parseInt(countResult.rows[0].count, 10);
-        const nextNumber = productCount + 1;
+        // ✅ ИСПРАВЛЕНИЕ: Находим максимальный существующий SKU в этой категории
+        const maxSkuResult = await query(
+            `SELECT sku FROM products 
+             WHERE category_id = $1 AND sku LIKE $2
+             ORDER BY sku DESC LIMIT 1`,
+            [data.category_id, `${category.sku_prefix}-%`]
+        );
+
+        let nextNumber = 1; // По умолчанию, если товаров нет
+
+        if (maxSkuResult.rows.length > 0) {
+            const lastSku = maxSkuResult.rows[0].sku as string;
+            // Извлекаем номер из "VEG-001" -> "001"
+            const match = lastSku.match(/-(\d+)$/);
+            if (match) {
+                const lastNumber = parseInt(match[1], 10);
+                nextNumber = lastNumber + 1;
+            }
+        }
+
         const paddedNumber = nextNumber.toString().padStart(3, '0');
         const sku = `${category.sku_prefix}-${paddedNumber}`;
 
-        // 2. Подготовка параметров (логика перенесена из helpers)
+        // ✅ ДОБАВЛЕНО: Логирование для отладки
+        log.debug("SKU Generation", {
+            categoryId: data.category_id,
+            prefix: category.sku_prefix,
+            maxExistingSku: maxSkuResult.rows[0]?.sku ?? 'none',
+            nextNumber,
+            generatedSku: sku
+        });
+
         const params = [
+            productId,  
             data.title.trim(),
             sku,
             data.description ?? null,
             data.price,
             data.currency ?? 'RUB',
             data.category_id,
-            toPostgresArray(data.tags),
+            JSON.stringify(data.tags),
             data.imageUrl ?? null,
             data.rating ?? 4.5,
             data.reviews ?? 0,
-            data.is_weighted ?? false,
+            data.is_weighted ? 1 : 0,
             data.unit ?? 'pcs',
             data.price_per_unit ?? null,
             data.price_unit ?? null,
@@ -132,19 +151,26 @@ async function create(data: ProductCreateInput): Promise<{ success: boolean; mes
             data.weight_template_id ?? null,
         ];
 
-        // 3. Выполнение запроса
-        const { rows } = await query(`
+        await query(`
             INSERT INTO products (
-                title, sku, description, price, currency, category_id, tags, image_url,
+                id, title, sku, description, price, currency, category_id, tags, image_url,
                 rating, reviews, is_weighted, unit, price_per_unit, price_unit,
                 min_order_quantity, step_quantity, weight_template_id
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-            RETURNING *
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
         `, params);
+        
+        const { rows } = await query(
+            'SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = $1',
+            [productId]
+        );
+        
+        if (rows.length === 0) {
+            throw new Error('Failed to retrieve created product');
+        }
         
         const validatedRow = validateDbRow(rows[0], DbProductSchema, "createProduct");
         const product = mapDbRowToProduct(validatedRow);
-        log.info("Successfully created product", { id: product.id, title: product.title });
+        log.info("✅ Successfully created product", { id: product.id, title: product.title, sku: product.sku });
 
         return { success: true, message: "Товар успешно создан.", product };
 
@@ -164,7 +190,6 @@ async function update(id: string, data: Partial<ProductUpdateInput>): Promise<{ 
     log.info("💾 Updating product.", { id, changes: data });
 
     try {
-        // 1. Подготовка параметров (логика перенесена из helpers)
         const setClauses: string[] = [];
         const values: unknown[] = [];
         const mapping: Partial<Record<keyof ProductUpdateInput, string>> = {
@@ -177,7 +202,10 @@ async function update(id: string, data: Partial<ProductUpdateInput>): Promise<{ 
         (Object.keys(data) as (keyof ProductUpdateInput)[]).forEach(key => {
             if (data[key] !== undefined && mapping[key]) {
                 let value = data[key];
-                if (key === 'tags') value = toPostgresArray(value as string[]);
+                if (key === 'tags') value = JSON.stringify(value);
+                if (key === 'is_weighted') {
+                    value = value ? 1 : 0;
+                }
                 if (key === 'title' && typeof value === 'string') value = value.trim();
                 
                 setClauses.push(`${mapping[key]} = $${values.length + 1}`);
@@ -193,7 +221,6 @@ async function update(id: string, data: Partial<ProductUpdateInput>): Promise<{ 
         setClauses.push(`updated_at = NOW()`);
         values.push(id);
 
-        // 2. Выполнение запроса
         const { rows } = await query(`
             UPDATE products SET ${setClauses.join(', ')}
             WHERE id = $${values.length} AND deleted_at IS NULL RETURNING *
@@ -233,7 +260,6 @@ async function remove(id: string): Promise<{ success: boolean; message: string }
     }
 }
 
-// Оставшиеся сервисы для полноты картины
 async function getByCategory(categoryName: string, limit: number = 5): Promise<Product[]> {
     const allCategories = await categoriesService.getAll();
     const category = allCategories.find(c => c.name === categoryName);

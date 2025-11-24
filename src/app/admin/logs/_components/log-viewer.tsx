@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition, useCallback, useMemo, useRef, useLayoutEffect } from 'react';
+import { useState, useEffect, useTransition, useCallback, useMemo } from 'react';
 import {
 	getLogsAction,
 	clearLogsAction,
@@ -31,10 +31,9 @@ import { formatBytes } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function LogViewer() {
-	// Данные
+	// Data
 	const [logs, setLogs] = useState<string[]>([]);
-	const [nextPageToken, setNextPageToken] = useState<string | null>(null);
-
+	
 	// UI
 	const [info, setInfo] = useState<{ message?: string, logFilePath?: string, logFileExists?: boolean } | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -42,46 +41,23 @@ export function LogViewer() {
 	const [logSize, setLogSize] = useState<number | undefined>(undefined);
 	const [filter, setFilter] = useState('');
 
-	// Переходы
+	// Transitions
 	const [isFetching, startFetching] = useTransition();
 	const [isClearing, startClearing] = useTransition();
-	const [isLoadingMore, startLoadingMore] = useTransition();
 
 	const { toast } = useToast();
-	const isAnyLoading = isFetching || isClearing || isLoadingMore;
+	const isAnyLoading = isFetching || isClearing;
 
-	// --- Логика плавной прокрутки ---
-	const scrollAreaRef = useRef<HTMLDivElement>(null);
-	const [scrollState, setScrollState] = useState<{ scrollHeight: number; scrollTop: number; } | null>(null);
-
-	useLayoutEffect(() => {
-        const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-		if (scrollState && viewport) {
-			viewport.scrollTop = viewport.scrollHeight - (scrollState.scrollHeight - scrollState.scrollTop);
-			setScrollState(null); // Сбрасываем состояние после применения
-		}
-	}, [logs, scrollState]);
-
-	const fetchLogs = useCallback((pageToken?: string) => {
-		const action = async () => {
+	const fetchLogs = useCallback(() => {
+		startFetching(async () => {
 			setError(null);
-
-            // Перед дозагрузкой сохраняем позицию скролла
-            const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-			if (pageToken && viewport) {
-				setScrollState({ scrollHeight: viewport.scrollHeight, scrollTop: viewport.scrollTop });
-			}
-
-			const result: GetLogsResult = await getLogsAction(pageToken);
+			const result: GetLogsResult = await getLogsAction();
 
 			if (result.error) {
 				setError(result.error);
-				if (!pageToken) {
-					setLogs([]);
-					setNextPageToken(null);
-				}
+				setLogs([]);
 			} else {
-				setLogs(prev => pageToken ? [...prev, ...(result.logs || [])] : (result.logs || []));
+				setLogs(result.logs || []);
 				setInfo({ 
 					message: result.message, 
 					logFilePath: result.logFilePath,
@@ -89,26 +65,13 @@ export function LogViewer() {
 				});
 				setSource(result.source || null);
 				setLogSize(result.size);
-				setNextPageToken(result.nextPageToken || null);
 			}
-		};
-
-		if (pageToken) {
-			startLoadingMore(action);
-		} else {
-			startFetching(action);
-		}
+		});
 	}, []);
 
 	const handleRefresh = useCallback(() => {
-		setLogs([]);
-		setNextPageToken(null);
 		fetchLogs();
 	}, [fetchLogs]);
-
-	const handleLoadMore = useCallback(() => {
-		if (nextPageToken) fetchLogs(nextPageToken);
-	}, [fetchLogs, nextPageToken]);
 
 	const handleClearLogs = useCallback(() => {
 		startClearing(async () => {
@@ -234,7 +197,8 @@ export function LogViewer() {
 					<AlertDescription>{error}</AlertDescription>
 				</Alert>
 			)}
-			{info?.message && logs.length === 0 && !isFetching && (
+			{/* Condition logs.length === 0 removed as per user suggestion for better UI feedback */}
+			{info?.message && !isFetching && (
 				<Alert>
 					<Info className="h-4 w-4" />
 					<AlertTitle>Информация</AlertTitle>
@@ -244,7 +208,7 @@ export function LogViewer() {
 
 			<Card className="flex-1 flex flex-col">
 				<CardContent className="p-2 flex-1 h-[60vh] overflow-hidden">
-					<ScrollArea className="h-full w-full" ref={scrollAreaRef}>
+					<ScrollArea className="h-full w-full">
 						<Table>
 							<TableHeader>
 								<TableRow>
@@ -257,21 +221,6 @@ export function LogViewer() {
 								{showSkeletons ? loadingSkeletons : (logRows.length > 0 ? logRows : emptyState)}
 							</TableBody>
 						</Table>
-
-						{nextPageToken && (
-						<div className="flex justify-center p-4">
-							<Button onClick={handleLoadMore} disabled={isLoadingMore} variant="secondary">
-								{isLoadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-								Загрузить еще
-							</Button>
-						</div>
-						)}
-
-						{source === 'cloud' && !nextPageToken && logs.length > 0 && (
-							<div className="text-center text-sm text-muted-foreground py-4">
-								— Конец истории логов —
-							</div>
-						)}
 					</ScrollArea>
 				</CardContent>
 			</Card>

@@ -1,4 +1,3 @@
-
 import ProductForm from "../../_components/product-form";
 import {
   Card,
@@ -13,14 +12,19 @@ import { categoriesService } from "@/lib/categories.service";
 import { weightTemplatesService } from "@/lib/weight-templates.service";
 
 interface EditProductPageProps {
-    params: {
+    // ✅ FIX 1: params теперь Promise
+    params: Promise<{
         id: string;
-    }
+    }>
 }
 
-export default async function EditProductPage({ params }: EditProductPageProps) {
+export default async function EditProductPage(props: EditProductPageProps) {
+  // ✅ FIX 2: Ожидаем params перед использованием
+  const params = await props.params;
+  const id = params.id;
+
   const [product, categories, weightTemplates] = await Promise.all([
-    productsService.getById(params.id),
+    productsService.getById(id), // Используем уже извлеченный id
     categoriesService.getAll(),
     weightTemplatesService.getActive(),
   ]);

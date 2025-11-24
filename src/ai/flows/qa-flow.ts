@@ -54,7 +54,8 @@ export const askQuestionFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (question) => {
-    const llmResponse = await questionAnsweringPrompt.generate({ body: question });
+    // Fix: Changed .generate({ body: ... }) to .run({ input: ... }) to fix TS2339
+    const llmResponse = await questionAnsweringPrompt.run({ input: question });
     return llmResponse.text();
   }
 );
