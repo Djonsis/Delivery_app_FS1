@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PortableNumber, PortableBoolean, PortableJson } from "./schema-helpers";
+import { PortableNumber, PortableBoolean, PortableJson, PortableDatetime } from "./schema-helpers";
 
 /**
  * Финальная схема продукта из базы данных.
@@ -58,10 +58,10 @@ export const DbProductSchema = z.object({
 
     nutrition: PortableJson.nullable(),
 
-    // --- Метаданные ---
-    created_at: z.string().datetime(),
-    updated_at: z.string().datetime(),
-    deleted_at: z.string().datetime().nullable(),
+    // --- Метаданные (✅ ИСПРАВЛЕНО: используем PortableDatetime) ---
+    created_at: PortableDatetime,
+    updated_at: PortableDatetime,
+    deleted_at: PortableDatetime.nullable(),
 });
 
 export type DbProduct = z.infer<typeof DbProductSchema>;

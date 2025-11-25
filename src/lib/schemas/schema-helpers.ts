@@ -1,4 +1,3 @@
-// src/lib/schemas/portable.ts
 import { z } from "zod";
 
 /**
@@ -79,3 +78,50 @@ export const PortableJson = z
         }
         return val;
     });
+
+/**
+ * -------------------------------------------------------------------
+ *  PortableDatetime
+ * -------------------------------------------------------------------
+ * Универсальный datetime тип для SQLite и PostgreSQL.
+ *
+ * ✔ PostgreSQL возвращает ISO 8601: "2025-11-24T14:02:33.000Z"
+ * ✔ SQLite возвращает: "2025-11-24 14:02:33" (без T и Z)
+ *
+ * Мы нормализуем оба формата в ISO 8601 строку для единообразия:
+ *    "2025-11-24 14:02:33"    → "2025-11-24T14:02:33.000Z"
+ *    "2025-11-24T14:02:33Z"   → "2025-11-24T14:02:33.000Z"
+ *
+ * При этом:
+ * - Валидируем корректность даты
+ * - Отклоняем невалидные форматы с понятной ошибкой
+ */
+export const PortableDatetime = z
+    .string()
+    .transform((val, ctx) => {
+        // Попытка 1: Парсим как есть (работает для ISO 8601)
+        let date = new Date(val);
+
+        // Попытка 2: Если не получилось, пробуем SQLite формат
+        if (isNaN(date.getTime())) {
+            // Проверяем паттерн "YYYY-MM-DD HH:MM:SS"
+            const sqlitePattern = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+            if (sqlitePattern.test(val)) {
+                // Преобразуем "2025-11-24 14:02:33" -> "2025-11-24T14:02:33Z"
+                date = new Date(val.replace(' ', 'T') + 'Z');
+            }
+        }
+
+        // Если все еще невалидно — возвращаем ошибку
+        if (isNaN(date.getTime())) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Invalid datetime format: "${val}". Expected ISO 8601 or SQLite format (YYYY-MM-DD HH:MM:SS).`,
+            });
+            return z.NEVER;
+        }
+
+        // Возвращаем нормализованную ISO 8601 строку
+        return date.toISOString();
+    });
+    
