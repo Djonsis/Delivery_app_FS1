@@ -1,6 +1,6 @@
 import type { Category, CategoryCreateInput, CategoryUpdateInput } from "@/lib/types";
 import { serverLogger } from "@/lib/server-logger";
-import { query } from "@/lib/db";
+import { query } from "@/lib/db/db";
 import { validateDbRows, DbValidationError } from "@/lib/utils/validate-db-row";
 import { DbCategorySchema } from "@/lib/schemas/category.schema";
 import { mapDbRowToCategory, generateSlug, prepareCategoryUpdateParams } from "./categories/helpers";

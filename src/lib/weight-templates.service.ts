@@ -1,5 +1,5 @@
 
-import { query } from "@/lib/db";
+import { query } from "@/lib/db/db";
 import { serverLogger } from "@/lib/server-logger";
 import type { WeightTemplate, WeightTemplateCreateInput, WeightTemplateUpdateInput } from "@/lib/types";
 import { validateDbRows, DbValidationError } from "@/lib/utils/validate-db-row";

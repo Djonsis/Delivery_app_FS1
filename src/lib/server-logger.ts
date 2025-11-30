@@ -162,3 +162,5 @@ class ServerLogger {
  * ```
  */
 export const serverLogger = new ServerLogger(winstonLogger);
+
+export const dbLogger = serverLogger.withCategory('DB');

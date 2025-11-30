@@ -1,5 +1,4 @@
-
-
+// src/lib/actions/db.actions.ts
 "use server";
 
 import { getDbStatus } from "@/lib/db.service";
@@ -34,25 +33,45 @@ const TABLES_TO_CHECK = ['users', 'categories', 'products', 'orders', 'order_ite
 export async function checkTablesAction(): Promise<{ name: string, exists: boolean }[]> {
     dbActionLogger.info("Checking for table existence.");
     const results = [];
+    
+    // Определяем используется ли SQLite
+    const useSqlite = process.env.USE_SQLITE_DEV === 'true';
+    
     try {
         for (const tableName of TABLES_TO_CHECK) {
-            const res = await query(`
-                SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_schema = 'public' 
-                    AND table_name = $1
-                )`, [tableName]);
-            results.push({ name: tableName, exists: res.rows[0].exists });
+            let exists = false;
+
+            if (useSqlite) {
+                // SQLite: используем sqlite_master
+                const res = await query(
+                    `SELECT name FROM sqlite_master 
+                     WHERE type='table' AND name = ?`,
+                    [tableName]
+                );
+                exists = res.rows.length > 0;
+            } else {
+                // Postgres: используем information_schema
+                const res = await query(
+                    `SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = $1
+                    )`,
+                    [tableName]
+                );
+                exists = res.rows[0].exists;
+            }
+
+            results.push({ name: tableName, exists });
         }
+
         dbActionLogger.info("Table existence check completed.", { results });
         return results;
     } catch (error) {
         dbActionLogger.error("Failed to check tables", error as Error);
-        // Return a state indicating failure for all tables if the query fails
         return TABLES_TO_CHECK.map(name => ({ name, exists: false }));
     }
 }
-
 
 export async function initializeDbAction(): Promise<{ success: boolean, error?: string }> {
     dbActionLogger.warn("Attempting to initialize database schema.");

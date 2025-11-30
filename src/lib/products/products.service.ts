@@ -2,7 +2,7 @@
 import { randomUUID } from 'crypto';
 import type { Product, ProductFilter, ProductCreateInput, ProductUpdateInput } from "@/lib/types";
 import { serverLogger } from "@/lib/server-logger";
-import { query } from "@/lib/db";
+import { query } from "@/lib/db/db";
 import { categoriesService } from "@/lib/categories.service";
 import { mapDbRowToProduct } from "./helpers";
 import { validateDbRow, validateDbRows, DbValidationError } from "@/lib/utils/validate-db-row";
