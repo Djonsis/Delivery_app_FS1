@@ -95,12 +95,16 @@ export interface Category {
   slug: string;
   sku_prefix: string;
   description: string | null;
+  is_active: boolean; // ✅ FIX: Добавляем поле is_active
   created_at: string;
   updated_at: string;
 }
 
-export type CategoryCreateInput = Omit<Category, 'id' | 'created_at' | 'updated_at' | 'slug'>;
-export type CategoryUpdateInput = Partial<CategoryCreateInput>;
+export type CategoryCreateInput = Omit<Category, 'id' | 'created_at' | 'updated_at' | 'slug' | 'is_active'> & {
+    is_active?: boolean; // ✅ FIX: Делаем is_active опциональным при создании
+};
+export type CategoryUpdateInput = Partial<Omit<CategoryCreateInput, 'is_active'>> & { is_active?: boolean };
+
 
 export interface WeightTemplate {
   id: string;

@@ -1,4 +1,4 @@
-import { query } from "@/lib/db/db";
+import { query } from "@/lib/db";
 import { serverLogger } from "@/lib/server-logger";
 import type { Order, OrderStatus, CreateOrderPayload } from "@/lib/types";
 import { revalidatePath } from "next/cache";

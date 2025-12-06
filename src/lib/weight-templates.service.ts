@@ -1,10 +1,11 @@
 
-import { query } from "@/lib/db/db";
+import { query } from "@/lib/db";
 import { serverLogger } from "@/lib/server-logger";
 import type { WeightTemplate, WeightTemplateCreateInput, WeightTemplateUpdateInput } from "@/lib/types";
 import { validateDbRows, DbValidationError } from "@/lib/utils/validate-db-row";
 import { DbWeightTemplateSchema } from "@/lib/schemas/weight-template.schema";
-import { mapDbRowToWeightTemplate, prepareWeightTemplateUpdateParams } from "@/lib/weight-templates/helpers";
+// ✅ FIX: Убираем импорт удаленной функции
+import { mapDbRowToWeightTemplate } from "@/lib/weight-templates/helpers";
 
 const log = serverLogger.withCategory("WEIGHT_TEMPLATES_SERVICE");
 
@@ -115,18 +116,26 @@ async function update(
 ): Promise<{ success: boolean; message: string; template?: WeightTemplate }> {
     log.info("💾 Updating weight template.", { id, changes: data });
 
-    const { setClause, values } = prepareWeightTemplateUpdateParams(data);
-    if (values.length === 0) {
+    // ✅ FIX: Логика подготовки параметров для обновления перенесена сюда
+    const updateableFields: (keyof WeightTemplateUpdateInput)[] = ["name", "description", "unit", "min_order_quantity", "step_quantity", "is_active"];
+    const fieldsToUpdate = updateableFields
+        .map(key => data[key] !== undefined ? { key, value: data[key] } : null)
+        .filter(Boolean) as { key: string, value: any }[];
+
+    if (fieldsToUpdate.length === 0) {
         log.warn("Update called with no data.", { id });
         return { success: true, message: "Никаких изменений не было сделано." };
     }
+
+    const setClause = fieldsToUpdate.map((f, i) => `${f.key} = $${i + 1}`).join(", ");
+    const values = fieldsToUpdate.map(f => f.value);
 
     try {
         const queryParams = [...values, id];
         const { rows } = await query(
             `
             UPDATE weight_templates
-            SET ${setClause}
+            SET ${setClause}, updated_at = NOW()
             WHERE id = $${queryParams.length}
             RETURNING *
         `,

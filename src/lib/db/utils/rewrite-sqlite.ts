@@ -43,6 +43,12 @@ export function rewriteSqlForSqlite(sql: string, params: any[]): RewriteResult {
     "strftime('%Y-%m-%dT%H:%M:%SZ','now')"
   );
 
+  // 2b. Заменяем SQLite datetime('now') → ISO timestamp
+  processedSql = processedSql.replace(
+      /datetime\('now'\)/gi,
+      "strftime('%Y-%m-%dT%H:%M:%SZ','now')"
+    );
+
   // 3. Находим все placeholders: $1, $2, ?
   const placeholders = processedSql.match(/(\$[0-9]+)|\?/g);
 

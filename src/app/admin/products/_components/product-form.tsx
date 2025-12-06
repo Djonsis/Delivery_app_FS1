@@ -94,7 +94,7 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
       tags: "",
       imageUrl: "",
       is_weighted: false,
-      weight_template_id: "",
+      weight_template_id: null,
       unit: "pcs",
       min_order_quantity: 1,
       step_quantity: 1,
@@ -166,7 +166,7 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
   };
   
   const handleTemplateChange = (templateId: string) => {
-    const newTemplateId = templateId === "manual" ? "" : templateId;
+    const newTemplateId = templateId === "manual" ? null : templateId;
     
     if (newTemplateId) {
       const template = weightTemplates.find(t => t.id === newTemplateId);
@@ -333,9 +333,9 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
                   <Select 
                     value={field.value ?? ""} 
                     onValueChange={(value) => {
-                      const templateId = value === "manual" ? "" : value;
-                      field.onChange(templateId);
-                      handleTemplateChange(templateId);
+                      const newTemplateId = value === "manual" ? "" : value;
+                      field.onChange(newTemplateId);
+                      handleTemplateChange(newTemplateId);
                   }}>
                     <FormControl>
                       <SelectTrigger>
@@ -344,7 +344,9 @@ export default function ProductForm({ product, categories, weightTemplates }: Pr
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="manual">Настроить вручную</SelectItem>
-                      {weightTemplates.map((template) => (
+                      {weightTemplates
+                      .filter(t => t.unit !== "pcs")  // исключает штучный шаблон
+                      .map((template) => (
                         <SelectItem key={template.id} value={template.id}>
                           <div className="flex flex-col">
                             <span className="font-medium">{template.name}</span>
